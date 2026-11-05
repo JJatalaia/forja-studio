@@ -931,3 +931,18 @@ dialog::backdrop { background: rgba(5, 6, 9, .72); backdrop-filter: blur(3px); }
 .nov-data { font-size: 12px; color: var(--fraco); font-variant-numeric: tabular-nums; }
 .nov h3 { font-size: 15px; line-height: 1.3; }
 .nov p { font-size: 13.5px; line-height: 1.55; color: var(--fraco); }
+
+
+/* "Esqueci minha senha" (05/11/2026). Discreto de proposito: e a saida de emergencia,
+   nao o caminho principal - quem lembra a senha nao pode tropecar nele. */
+.porta-esqueci {
+  display: block; width: 100%; margin: 10px 0 0; padding: 6px;
+  background: none; border: 0; color: var(--fraco); font: inherit; font-size: 13px;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+}
+.porta-esqueci:hover { color: var(--texto); }
+.porta-esqueci[hidden] { display: none; }
+
+/* O mesmo paragrafo serve para erro (vermelho) e para o recado bom do "esqueci minha
+   senha" (verde). Um lugar so na tela, dois significados - a cor diz qual. */
+.porta-erro.porta-erro-ok { color: var(--ok); border-color: rgba(52, 211, 153, .35); }

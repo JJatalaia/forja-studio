@@ -38,14 +38,48 @@
     $$('#portaForm .so-criar input').forEach((i) => { i.required = criando; });
     $('#portaBt').textContent = criando ? 'Criar conta e entrar' : 'Entrar';
     $('#cSenha').setAttribute('autocomplete', criando ? 'new-password' : 'current-password');
+    const esq = $('#portaEsqueci');
+    if (esq) esq.hidden = criando;      // no cadastro o botao nao faz sentido
     $('#portaSub').textContent = criando
       ? 'Uma conta, duas máquinas. As ferramentas daqui são de graça e geram na sua própria placa de vídeo.'
       : 'As ferramentas daqui são de graça e geram na sua própria placa de vídeo. A conta é só para a licença ficar no seu nome.';
     erro('');
   }
 
+  // ------------------------------------------------------ esqueci minha senha (05/11)
+  // O servidor responde "ok" exista a conta ou nao, de proposito: se respondesse
+  // "esse e-mail nao existe", qualquer um descobriria quem tem conta so tentando
+  // enderecos. Por isso a mensagem aqui tambem e a mesma nos dois casos - se ela
+  // mudasse, o cuidado do servidor nao valeria de nada.
+  async function esqueciSenha() {
+    const email = $('#cEmail').value.trim();
+    if (!email || email.indexOf('@') < 0) {
+      erro('Escreva o seu e-mail aqui em cima e clique de novo.');
+      $('#cEmail').focus();
+      return;
+    }
+    const bt = $('#portaEsqueci');
+    const antes = bt.textContent;
+    bt.disabled = true;
+    bt.textContent = 'Mandando…';
+    try {
+      await pedir('/api/conta/recuperar', { email });
+    } catch (e) {
+      // nem o erro muda a resposta: o que a pessoa ve e sempre o mesmo
+    }
+    bt.textContent = antes;
+    bt.disabled = false;
+    const p = $('#portaErro');
+    p.hidden = false;
+    p.classList.add('porta-erro-ok');
+    p.innerHTML = 'Se existir uma conta com <b>' + email.replace(/[<>&]/g, '') + '</b>, '
+      + 'o link para trocar a senha chegou nesse e-mail. Ele vale por 1 hora.'
+      + '<br>Não achou? Olhe no spam.';
+  }
+
   function erro(msg) {
     const p = $('#portaErro');
+    p.classList.remove('porta-erro-ok');
     p.textContent = msg || '';
     p.hidden = !msg;
   }
@@ -175,6 +209,8 @@
     $('#abaEntrar').addEventListener('click', () => trocarModo('entrar'));
     $('#abaCriar').addEventListener('click', () => trocarModo('criar'));
     $('#portaForm').addEventListener('submit', enviar);
+    const esq = $('#portaEsqueci');
+    if (esq) esq.addEventListener('click', esqueciSenha);
     const olho = $('#cVer');
     olho.addEventListener('click', () => {
       const i = $('#cSenha');
