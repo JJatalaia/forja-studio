@@ -1,0 +1,35 @@
+Estúdio Local
+Copyright 2026 Jerffeson
+
+Este produto inclui software desenvolvido pelo autor acima, licenciado sob a
+Apache License 2.0 (veja o arquivo LICENSE).
+
+--------------------------------------------------------------------------------
+PROGRAMAS DE TERCEIROS — este projeto CONVERSA com eles, não os distribui
+--------------------------------------------------------------------------------
+
+Nada aqui contém código de terceiros. O Estúdio Local fala com cada um destes por
+HTTP, na sua própria máquina. É a regra que mantém este projeto com licença
+própria: chamar, nunca copiar.
+
+  ComfyUI            GPL-3.0      https://github.com/comfyanonymous/ComfyUI
+  VoiceStudio        AGPL-3.0     https://github.com/debpalash/VoiceStudio
+  llama.cpp          MIT          https://github.com/ggml-org/llama.cpp
+
+--------------------------------------------------------------------------------
+MODELOS DE IA — não distribuídos; cada um tem a sua licença
+--------------------------------------------------------------------------------
+
+Este repositório NÃO contém modelo nenhum. Quem baixa é você, de quem publicou
+cada um, e a licença que vale é a de lá — não esta.
+
+A lista completa está em IAS-INSTALADAS.md.
+
+⚠️ ATENÇÃO À LICENÇA DA VOZ:
+
+  VoxCPM 2     Apache-2.0   pode usar em vídeo monetizado
+  OmniVoice    CC-BY-NC     NÃO pode usar em vídeo monetizado
+
+O OmniVoice é o motor que vem ligado por padrão no VoiceStudio. Se você ganha
+dinheiro com os vídeos, troque para o VoxCPM 2 antes de publicar. A aba Narração
+do painel mostra a licença do motor ativo.

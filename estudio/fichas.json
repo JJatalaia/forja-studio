@@ -1,0 +1,552 @@
+{
+  "_sobre": "Ficha de cada IA do estudio (texto mostrado na tela). Fonte dos tempos: estudio/tempos.json e historico.json. Gerado pela auditoria de 23/09/2026; manter atualizado quando entrar/sair modelo ou mudar tempo.",
+  "ias": {
+    "z_image_turbo": {
+      "id": "z_image_turbo",
+      "aba": "imagem",
+      "nome": "Z-Image Turbo",
+      "categoria": "Foto realista",
+      "resumo_curto": "Foto realista rápida: retrato, produto e cena do dia a dia",
+      "o_que_faz": "Cria uma imagem com cara de foto a partir do texto, em 8 passos (Normal) ou 12 (Caprichado). É o modelo de imagem mais leve e rápido do estúdio.",
+      "melhor_para": "Fotos realistas do dia a dia, retratos, produtos, testar uma ideia rápido e gerar muitas imagens seguidas.",
+      "evite_para": "Imagem com frase escrita (use o Qwen 2512 em Normal ou Máxima), desenho ou ilustração com estilo próprio (use Krea 2) e cenário grande em alta resolução (use o Qwen 2512 em Caprichado ou Máxima). Não aceita imagem de referência.",
+      "tempo_tipico": "Já carregado: 15–27 s no Normal (8 passos, 1,8 a 2,5 s por passo). 1ª vez: 163–230 s, dos quais 145–205 s são só para carregar do HD. Caprichado (12 passos): 164 s na 1ª vez; já carregado, sem medida ainda.",
+      "limites": "Só cria a partir do texto. Formatos: 9:16 (768×1344), 16:9 (1344×768), 1:1 (1024×1024) e 4:5 (896×1120), cerca de 1 megapixel. Modelo de 11,5 GB.",
+      "dica_prompt": "Descreva como se fosse uma foto (quem, onde, luz, lente) e faça várias seguidas sem trocar de modelo: a 1ª leva uns 3 min e as seguintes uns 20 s.",
+      "tags": [
+        "Rápido",
+        "Foto",
+        "Retrato",
+        "Produto"
+      ],
+      "nota_velocidade": 5,
+      "nota_qualidade": 3
+    },
+    "krea2": {
+      "id": "krea2",
+      "aba": "imagem",
+      "nome": "Krea 2 Turbo",
+      "categoria": "Ilustração",
+      "resumo_curto": "Ilustração autoral, Ghibli e cartoon com visual de cinema",
+      "o_que_faz": "Gera imagem a partir do texto com visual artístico e de cinema. Tem os estilos prontos Livre, Ghibli aquarela, Traço artístico e Cartoon 2D. Os estilos Ghibli e Cartoon põem uma frase de estilo no começo do prompt. Desde 23/09/2026 a IA de texto que vinha escondida dentro do fluxo fica DESLIGADA: o prompt vai do jeito que você escreveu. Para detalhar um pedido curto, use o botão ✨ Melhorar prompt.",
+      "melhor_para": "Ilustração 2D, Ghibli e aquarela, cartoon, capas e cenas com clima de filme, arte conceitual com estilo.",
+      "evite_para": "Texto escrito na imagem (use o Qwen 2512) e foto realista de produto (use o Z-Image Turbo).",
+      "tempo_tipico": "Já carregado: 14–24 s (8 passos). Desde que a ComfyUI passou a rodar no modo acelerado, cada passo leva ~1,5 s; antes levava ~2,7 s. 1ª vez: 168–251 s, dos quais 145–222 s são para carregar do HD. Caprichado (12 passos): sem medida ainda. Esses tempos foram medidos com a IA de texto embutida ligada (ela reescrevia o prompt antes de desenhar); desligada, deve sair alguns segundos mais rápido.",
+      "limites": "Só cria a partir do texto. Formatos 16:9, 9:16, 1:1, 4:3 e 3:4, cerca de 1 megapixel. Atenção: hoje o estilo 'Traço artístico' sai igual ao 'Livre', porque o ajuste que ele muda está desligado no fluxo. Modelo de 12,2 GB.",
+      "dica_prompt": "Descreva a cena: quem, onde, clima e cores. Se o pedido estiver curto, clique em ✨ Melhorar prompt (a IA de texto do estúdio detalha no formato certo, em inglês). Para Ghibli ou cartoon, use o botão de estilo, que já põe a descrição certa no começo.",
+      "tags": [
+        "Ilustração",
+        "Ghibli",
+        "Cartoon",
+        "Cinematográfico"
+      ],
+      "nota_velocidade": 5,
+      "nota_qualidade": 4
+    },
+    "krea2_img2img": {
+      "id": "krea2_img2img",
+      "aba": "imagem",
+      "nome": "Krea 2 - Transformar imagem",
+      "categoria": "Transformar imagem",
+      "resumo_curto": "Transforma uma imagem sua: muda o estilo mantendo a composição",
+      "o_que_faz": "Você envia uma imagem e escreve como quer que ela fique. O modelo redesenha por cima usando a sua imagem como base. A 'força' controla o quanto muda: com força baixa fica parecido com a original, com força alta muda bastante. O padrão é 0,6. Hoje é a única forma de transformar imagem no estúdio, porque o modo de edição do HiDream foi removido.",
+      "melhor_para": "Transformar foto em ilustração, 3D ou cartoon, trocar o estilo de uma arte e fazer variações de uma imagem que você já tem.",
+      "evite_para": "Deixar uma imagem mais realista: o fluxo tem um texto negativo fixo contra fotografia ('photograph, realistic pores...'), que empurra para longe de foto. Também não serve para trocar só um detalhe (não tem pincel ou máscara: mexe na imagem inteira) nem para imagens muito grandes (ele não reduz o tamanho).",
+      "tempo_tipico": "Sem medida ainda: não há nenhuma geração dele no tempos.json nem no histórico. Os ~25 s (já carregado) e ~170 s (1ª vez) do catálogo são uma estimativa copiada do Krea 2 normal (mesmo modelo, 8 passos).",
+      "limites": "Precisa de 1 imagem. A saída tem o mesmo tamanho da imagem enviada, sem escolha de formato. Sem máscara. O efeito de estilo vem fixo em 0,3 e o texto negativo anti-foto também é fixo: o estúdio não deixa mudar. Não tem a IA que melhora o prompt, que o Krea 2 normal tem.",
+      "dica_prompt": "Descreva como quer o resultado final (ex.: 'personagem de animação 3D, olhos grandes, luz suave') e comece com força 0,5–0,6. Se ficou igual à original, suba; se perdeu o rosto ou a composição, desça.",
+      "tags": [
+        "Referência",
+        "Muda estilo",
+        "Imagem para imagem"
+      ],
+      "nota_velocidade": 4,
+      "nota_qualidade": 3
+    },
+    "qwen_image_2512": {
+      "id": "qwen_image_2512",
+      "aba": "imagem",
+      "nome": "Qwen-Image 2512",
+      "categoria": "Foto realista",
+      "resumo_curto": "Gente, pelo e paisagem bem realistas; também escreve texto",
+      "o_que_faz": "Cria imagem a partir do texto com muito detalhe em pessoas, pelos e paisagens, e sabe escrever texto dentro da imagem (placas, cartazes, letreiros). Tem 4 qualidades: Rápido com 4 passos (usa um acelerador), Normal com 20, Caprichado com 30 e Máxima com 50 passos (essas três sem acelerador).",
+      "melhor_para": "Retratos e animais realistas, paisagens detalhadas, placas e letreiros simples dentro de uma foto e gerar em quantidade no Rápido.",
+      "evite_para": "Texto importante no Rápido: às vezes come uma letra (saiu 'PADRIA' no lugar de 'PADARIA'); use Normal ou Máxima. Para cartaz com muito texto e diagramação, nenhuma IA do estúdio está à altura hoje — escreva o texto por cima, na montagem.",
+      "tempo_tipico": "Rápido (4 passos): 1ª vez 266 s, dos quais 248 s são para carregar do HD. Já carregado: ~22 s, uma conta feita com essa mesma geração (4 passos × 4,3 s + 5 s); ainda não houve uma 2ª geração seguida para confirmar. Normal, Caprichado e Máxima: sem medida ainda.",
+      "limites": "Só cria a partir do texto. Formatos: 1:1 (1328×1328), 16:9 (1664×928), 9:16 (928×1664), 4:3 (1472×1104) e 3:4 (1104×1472). O modelo tem 19 GB e o leitor de texto mais 8,8 GB, por isso a 1ª carga é lenta. Tem um texto negativo fixo contra mãos deformadas, cara de cera e texto borrado.",
+      "dica_prompt": "Para escrever na imagem, ponha a frase entre aspas e use Normal ou Máxima (o Rápido às vezes come uma letra).",
+      "tags": [
+        "Realista",
+        "Escreve texto",
+        "Detalhe",
+        "Rápido 4 passos"
+      ],
+      "nota_velocidade": 4,
+      "nota_qualidade": 4
+    },
+    "flux2_dev": {
+      "id": "flux2_dev",
+      "aba": "imagem",
+      "nome": "FLUX.2 dev",
+      "categoria": "Foto realista",
+      "resumo_curto": "Foto realista topo de linha; o mais pesado (1ª carga ~11 min)",
+      "o_que_faz": "Cria imagem a partir do texto com qualidade de foto profissional: luz, pele, materiais e reflexos convincentes, e escreve texto bem. Qualidades: Turbo com 8 passos (usa um acelerador), Normal com 20 e Caprichado com 28.",
+      "melhor_para": "A foto final mais caprichada (campanha, produto premium, retrato de alto nível) quando dá para esperar, e várias imagens seguidas depois que o modelo está carregado.",
+      "evite_para": "Uma imagem rápida e avulsa (só a 1ª carga leva ~11 min), ficar trocando de modelo toda hora, e ilustração ou cartoon (use Krea 2).",
+      "tempo_tipico": "Turbo (8 passos): 1ª vez 725 s (~12 min), dos quais 657 s são só para carregar do HD. Já carregado: ~77 s, uma conta feita com essa mesma geração (8 × 9,2 s + 4 s); ainda sem 2ª geração medida. Normal e Caprichado: sem medida ainda.",
+      "limites": "Só cria a partir do texto. Formatos: 1:1 (1024×1024), 16:9 (1344×768), 9:16 (768×1344), 4:3 (1152×896) e 3:4 (896×1152). Carrega ~66 GB do HD: o modelo tem 33 GB e o leitor de texto (Mistral) mais 33 GB. Por isso ocupa muita memória e demora para carregar.",
+      "dica_prompt": "Gere em série: carregue uma vez e faça várias imagens seguidas no FLUX.2 sem trocar de modelo. A 1ª paga os ~11 min de carga e as seguintes saem em cerca de 1 min.",
+      "tags": [
+        "Fotorrealista",
+        "Escreve texto",
+        "Pesado",
+        "Topo de linha"
+      ],
+      "nota_velocidade": 1,
+      "nota_qualidade": 5
+    },
+    "ideogram4": {
+      "id": "ideogram4",
+      "aba": "imagem",
+      "nome": "Ideogram 4",
+      "categoria": "Texto na imagem",
+      "resumo_curto": "Cartaz, capa e logo: escreve frases sem errar letra",
+      "o_que_faz": "Especialista em imagem com texto e diagramação: cartaz, capa, convite, logo e banner. Escreve frases inteiras sem errar letra e coloca título e subtítulo no lugar pedido. O estúdio embrulha o seu prompt sozinho no 'molde', o formato estruturado que esse modelo exige.",
+      "melhor_para": "Cartaz de evento, capa de vídeo ou álbum, logo, banner, cardápio e qualquer arte com frase escrita.",
+      "evite_para": "Foto ou retrato natural sem texto: nesses casos Z-Image, Qwen 2512 e FLUX.2 são a escolha do catálogo.",
+      "tempo_tipico": "Turbo (12 passos): 1ª vez 214 s (184 s carregando do HD); já carregado 34 s. Normal (20 passos): 52–57 s já carregado (4 gerações medidas). Máxima (48 passos): sem medida ainda.",
+      "limites": "Só cria a partir do texto. Formatos 1:1, 16:9, 9:16, 4:3 e 3:4, em 0,6, 1 ou 1,6 megapixel. Só funciona com o molde que o estúdio aplica: sem ele, aparece desenhada uma placa falsa 'Image blocked by safety filter' (não é censura). O modelo vem em duas partes de 8,9 GB cada, mais um leitor de texto de 9,9 GB.",
+      "dica_prompt": "Escreva normal e ponha cada frase entre aspas, dizendo onde ela fica: o título \"FESTA JUNINA\" em cima e \"SÁBADO 21H\" embaixo.",
+      "tags": [
+        "Cartaz",
+        "Escreve texto",
+        "Logo",
+        "Diagramação"
+      ],
+      "nota_velocidade": 3,
+      "nota_qualidade": 5
+    },
+    "hidream_o1": {
+      "id": "hidream_o1",
+      "aba": "imagem",
+      "nome": "HiDream O1",
+      "categoria": "Alta resolução",
+      "resumo_curto": "Cenário e arte conceitual em alta resolução (até 2048×2048)",
+      "o_que_faz": "Cria imagem grande e muito detalhada a partir do texto, até 2048×2048. Qualidades: Rápido com 16 passos, Normal com 28 e Caprichado com 40. Só cria do zero: o modo 'transformar imagem' dele não funcionava (só saía ruído) e foi removido.",
+      "melhor_para": "Paisagem, cenário, arte conceitual, papel de parede, retrato grande e imagem que vai ser impressa ou recortada.",
+      "evite_para": "Editar ou transformar uma imagem sua (use Krea 2 - Transformar imagem) e texto escrito (use Ideogram 4).",
+      "tempo_tipico": "Normal (28 passos) em 1920×1088: 1ª vez 82 s (59 s carregando do HD). Já carregado: ~24 s, uma conta feita com essa mesma geração (28 × 0,84 s); não houve uma 2ª geração só de texto para confirmar. Rápido, Caprichado e 2048×2048: sem medida ainda.",
+      "limites": "Só cria a partir do texto, sem imagem de referência. Formatos: 1:1 (1536), 1:1 grande (2048×2048), 16:9 (1920×1088), 9:16 (1088×1920), 4:3 (1792×1344) e 3:4 (1344×1792). A IA que melhorava o prompt foi removida do fluxo. Modelo de 7,5 GB.",
+      "dica_prompt": "Descreva a cena final completa (lugar, luz, hora do dia, o que está na frente e no fundo), porque ele não edita imagem: só cria do zero pelo texto.",
+      "tags": [
+        "Alta resolução",
+        "Detalhe",
+        "Cenário",
+        "Arte conceitual"
+      ],
+      "nota_velocidade": 4,
+      "nota_qualidade": 4
+    },
+    "apresentador": {
+      "id": "apresentador",
+      "aba": "video",
+      "nome": "Apresentador (foto falando + voz)",
+      "categoria": "Pessoa falando",
+      "resumo_curto": "Foto + texto vira pessoa falando, com voz e boca sincronizada",
+      "o_que_faz": "Você manda uma foto de frente (rosto e ombros) e o texto. O estúdio cria a voz com o Chatterbox (7 idiomas, e pode clonar uma voz) e depois faz o vídeo com a boca sincronizada. No motor Automático, até 15 s de fala usa o LTX-2.3 (boca mais expressiva, 704×1280); acima disso usa o InfiniteTalk (sem limite de duração, ~480p). Também aceita um áudio pronto no lugar do texto, e as vozes podem ser salvas numa lista para reusar.",
+      "melhor_para": "Apresentador ou narrador, avatar falando, recado em vídeo, aula curta e vídeo para redes com alguém falando para a câmera.",
+      "evite_para": "Cena com ação ou movimento do corpo, várias pessoas ou câmera andando (use MiniMax H3), e foto de perfil, de corpo inteiro ou com o rosto pequeno.",
+      "tempo_tipico": "LTX-2.3: 5,4 s de fala deram 503 s no total na 1ª vez (363 s carregando), em 704×1280; 8 s de fala deram 436 s na 1ª vez (teste feito fora do estúdio). InfiniteTalk: 8 s de fala deram 902 s no total em 480×848 (inclui ~1 min da voz e a carga do HD), cerca de 2,5 min por trecho de ~3 s. Só a voz, com o modelo já carregado: 2 áudios em 24 s. Vídeo com tudo já carregado: sem medida ainda.",
+      "limites": "Uma pessoa só, com foto de frente. O LTX-2.3 vai até 15 s; acima disso entra o InfiniteTalk (sem limite de duração, mas em ~480p e mais lento). O texto é dividido em trechos de até 220 caracteres. Idiomas: português, inglês, espanhol, francês, italiano, alemão e japonês. Para clonar uma voz é preciso um áudio de 10–20 s só com a voz, sem música; a lista de vozes começa vazia. O resultado mostra qual motor fez o vídeo (LTX-2.3 ou InfiniteTalk) e qual voz foi usada.",
+      "dica_prompt": "Escreva frases curtas terminadas em ponto: o estúdio corta o texto por frase e confere cada pedaço, e isso evita a voz 'inventar' fala. Para clonar voz, grave 10–20 s só falando, sem música nem ruído.",
+      "tags": [
+        "Voz",
+        "Clonagem de voz",
+        "Boca sincronizada",
+        "7 idiomas"
+      ],
+      "nota_velocidade": 2,
+      "nota_qualidade": 4
+    },
+    "fasth3": {
+      "id": "fasth3",
+      "aba": "video",
+      "nome": "MiniMax H3 Fast (8 passos, com áudio)",
+      "categoria": "Vídeo com som",
+      "resumo_curto": "Vídeo com som em 8 passos; pode começar ou terminar numa imagem",
+      "o_que_faz": "Versão acelerada (8 passos fixos) do MiniMax H3. Gera vídeo com o som junto (voz, efeitos, música) só pelo texto, ou começando numa imagem de primeiro quadro e, se quiser, terminando numa imagem de último quadro. Serve para emendar cenas: o último quadro da cena anterior vira o primeiro quadro da próxima.",
+      "melhor_para": "Continuar uma cena, cena curta com som, transição entre duas imagens e vídeo com som mais rápido que o MiniMax H3 Referências.",
+      "evite_para": "Manter vários personagens ou objetos iguais às fotos (não aceita várias referências: use MiniMax H3 Referências) e vídeo longo de uma vez só (máximo de 15 s).",
+      "tempo_tipico": "10 s em 720p (1280×736, 8 passos): 1065 s no total na 1ª vez. Desse total, 706 s foram só carregando do HD (com um download disputando o disco) e ~6 min gerando (~40 s por passo + 80 s montando o vídeo). Já carregado: sem medida ainda. 5 s, 15 s, 480p/540p e o modo com primeiro quadro: sem medida ainda.",
+      "limites": "Duração de 5, 10 ou 15 s (máximo de 15 s por geração). Resolução 480p, 540p ou 720p; formatos 16:9, 9:16 e 1:1; 24 quadros por segundo. Os 8 passos são fixos, sem escolha de qualidade. Aceita no máximo 2 imagens (primeiro e último quadro). O modelo tem 20,6 GB e o leitor de texto mais 14,6 GB.",
+      "dica_prompt": "Para emendar cenas, use o último quadro da cena anterior como 'Primeiro quadro' e descreva só uma ação simples por plano.",
+      "tags": [
+        "Com áudio",
+        "Primeiro/último quadro",
+        "Emendar cenas",
+        "Até 15 s"
+      ],
+      "nota_velocidade": 2,
+      "nota_qualidade": 4
+    },
+    "minimax_h3_r2v": {
+      "id": "minimax_h3_r2v",
+      "aba": "video",
+      "nome": "MiniMax H3 - Referências (com áudio)",
+      "categoria": "Vídeo com som",
+      "resumo_curto": "Vídeo com som usando até 9 fotos de referência (rosto, roupa…)",
+      "o_que_faz": "Gera vídeo com o som junto a partir de até 9 imagens de referência (pessoas, roupa, carro, cenário). No prompt, você chama cada imagem pela etiqueta <Picture 1>, <Picture 2>... Qualidades: Rápido com 4 passos e a de 8 passos (esses dois usam um acelerador), depois 12, 15, 18, Normal com 20 e Máxima com 25 passos (sem acelerador).",
+      "melhor_para": "Manter o mesmo personagem, roupa ou cenário em várias cenas, curta com diálogo e som, e cenas com 2 ou 3 pessoas definidas por foto.",
+      "evite_para": "Pressa (é um dos mais lentos), as de 4 ou 8 passos quando física e rosto importam (o acelerador estraga os dois) e mais de 15 s por cena.",
+      "tempo_tipico": "15 s em 480p com 8 passos: 538–822 s no total em 5 gerações (130–296 s carregando, ~42–60 s por passo, ~104 s montando o vídeo). 15 s em 480p com 12 passos: 828 s (250 s carregando). 5 s em 480p no Rápido (4 passos): 418 s na 1ª vez. 720p e 15, 18, 20 ou 25 passos: sem medida ainda (um teste em 720p com 20 passos foi cancelado).",
+      "limites": "Duração de 5, 10 ou 15 s (máximo oficial de ~15 s). Resolução 480p, 540p ou 720p; formatos 16:9, 9:16 e 1:1; 24 quadros por segundo. Até 9 imagens. O som sai em estéreo junto com o vídeo. O modelo tem 19,6 GB e o leitor de texto mais 14,6 GB.",
+      "dica_prompt": "Chame cada foto pela etiqueta (\"<Picture 1> senta na poltrona vermelha\"), descreva 1 ação simples por plano e use 12 passos ou mais: as de 4 e 8 passos estragam a física e o rosto.",
+      "tags": [
+        "Referências",
+        "Com áudio",
+        "Personagem fixo",
+        "Até 15 s"
+      ],
+      "nota_velocidade": 1,
+      "nota_qualidade": 5
+    },
+    "wan22_5b": {
+      "id": "wan22_5b",
+      "aba": "video",
+      "nome": "Wan 2.2 5B",
+      "categoria": "Vídeo rápido",
+      "resumo_curto": "Vídeo curto rápido e barato, de texto ou de uma imagem inicial",
+      "o_que_faz": "Gera vídeo curto (2, 5 ou 8 s, 24 quadros por segundo) a partir do texto ou dando movimento a uma imagem inicial. Movimento natural, sem som. Resolução 512p (rápido) ou 720p (~2× mais lento).",
+      "melhor_para": "Vídeo rápido em quantidade, testar ideias de movimento, dar vida a uma imagem gerada no Z-Image ou no Krea e cenas curtas de apoio.",
+      "evite_para": "Cena com som (use MiniMax H3), personagem que precisa ficar idêntico em várias cenas e vídeos com mais de 8 s.",
+      "tempo_tipico": "2 s em 512p (30 passos): 146 s já carregado; 351 s na 1ª vez (196 s carregando). 5 s em 512p (30 passos): 334 s no total, com 138 s carregando. 5 s no Rápido (20 passos): 408 s, numa medida antiga de 21/09, feita antes de a ComfyUI passar a rodar no modo acelerado. 8 s e 720p: sem medida ainda.",
+      "limites": "Duração de 2, 5 ou 8 s; 24 quadros por segundo; sem áudio. 512p (896×512, 512×896, 640×640) ou 720p (1280×704, 704×1280, 960×960). Modelo de 9,3 GB.",
+      "dica_prompt": "Quando usar imagem inicial, descreva só o movimento (o que se mexe e como a câmera anda), sem descrever a imagem de novo.",
+      "tags": [
+        "Rápido",
+        "Texto",
+        "Imagem inicial",
+        "Sem áudio"
+      ],
+      "nota_velocidade": 3,
+      "nota_qualidade": 3
+    },
+    "wan_animate": {
+      "id": "wan_animate",
+      "aba": "video",
+      "nome": "Wan Animate 14B - Personagem + movimento",
+      "categoria": "Personagem",
+      "resumo_curto": "Seu personagem copia o movimento de um vídeo real (até 60 s)",
+      "o_que_faz": "Você manda a imagem de um personagem e um vídeo de uma pessoa se mexendo, e ele anima o personagem copiando os movimentos do vídeo. O estúdio recorta a imagem sozinho no enquadramento do vídeo. A opção 'Igual ao vídeo' usa a duração e a proporção do vídeo enviado, até 60 s. O som do vídeo de movimento vai junto no resultado.",
+      "melhor_para": "Dança, caminhada e gestos com um personagem seu (robô, mascote, avatar), e vídeos mais longos que os outros modelos (até 60 s).",
+      "evite_para": "Vídeo com várias pessoas, câmera se mexendo ou corpo cortado. Também evite personagem só de rosto (selfie) com vídeo de corpo inteiro: sai cortado e com mãos gigantes.",
+      "tempo_tipico": "~10 s no Normal (6 passos) em 480p: 1420 s no total (396 s carregando, ~90 s por passo). Vídeo de 18 s em 'Igual ao vídeo', no Rápido (4 passos) e em 480p: 1028 s (251 s carregando, ~50 s por passo). ~5 s e 720p: sem medida ainda.",
+      "limites": "O vídeo sai com 16 quadros por segundo (o vídeo enviado é convertido). Até 60 s. Resolução 480p ou 720p (~2,5× mais lento). Precisa de 1 imagem e 1 vídeo. Não cria som novo: usa o som do vídeo enviado. Robôs não são reconhecidos pelo detector de pose e o recorte vai pela silhueta, por isso fundo liso ajuda. Modelo de 17,1 GB.",
+      "dica_prompt": "Use vídeo com 1 pessoa, câmera parada e corpo inteiro, e uma imagem do personagem com o mesmo enquadramento (corpo inteiro se o vídeo for de corpo inteiro), de preferência em fundo liso.",
+      "tags": [
+        "Personagem",
+        "Movimento real",
+        "Até 60 s",
+        "Som do vídeo"
+      ],
+      "nota_velocidade": 1,
+      "nota_qualidade": 4
+    },
+    "hunyuan15_i2v": {
+      "id": "hunyuan15_i2v",
+      "aba": "video",
+      "nome": "HunyuanVideo 1.5 - Imagem para vídeo",
+      "categoria": "Imagem para vídeo",
+      "resumo_curto": "Imagem vira vídeo, só 480p e lento; prefira o Wan 2.2 5B",
+      "o_que_faz": "Dá movimento a uma imagem inicial (2 ou 5 s, 24 quadros por segundo, sem som). Nesta placa ficou limitado a 480p, e a montagem do vídeo é feita em blocos para não travar a ComfyUI.",
+      "melhor_para": "Segunda opção de imagem para vídeo, quando quiser comparar com o Wan 2.2 5B.",
+      "evite_para": "720p (levava 55 min e derrubava a ComfyUI na montagem do vídeo, por isso foi retirado), uso diário ou em quantidade (2,5× mais lento que o Wan 2.2 5B), vídeo com som e vídeo só a partir do texto (precisa de imagem).",
+      "tempo_tipico": "2 s em 480p no Rápido (15 passos): 357 s no total na 1ª vez (207 s carregando, ~7,6 s por passo, 44 s montando o vídeo); o reteste anotado na memória deu 361 s. Já carregado e 5 s: sem medida ainda. Registro antigo em 720p com 20 passos: 55 min e travou.",
+      "limites": "Só 480p (832×480, 480×832, 640×640). Duração de 2 ou 5 s. Sem áudio. Exige imagem inicial. Modelo de 15,6 GB.",
+      "dica_prompt": "Teste com 2 s no Rápido. Se o resultado ficar parecido com o do Wan 2.2 5B, use o Wan: 2 s saíram em 146 s nele contra 357 s aqui.",
+      "tags": [
+        "Lento",
+        "480p",
+        "Imagem inicial",
+        "Sem áudio"
+      ],
+      "nota_velocidade": 1,
+      "nota_qualidade": 3
+    },
+    "ace-step-official": {
+      "id": "ace-step-official",
+      "aba": "musica",
+      "nome": "ACE-Step 1.5 · Oficial",
+      "categoria": "Música",
+      "resumo_curto": "Música com letra rápida; o único ACE que faz cover",
+      "o_que_faz": "É o ACE-Step 1.5 Turbo, o modelo menor da família ACE, rodando pelo programa oficial no próprio PC (porta 8193). Cria música com letra a partir do estilo descrito (o instrumental foi tirado em 24/09: ficava ruim). Também faz cover a partir de um áudio seu, com os controles 'influência do áudio' e 'proximidade sonora'. Tem 'planejamento': uma IA pequena pensa a estrutura da música antes.",
+      "melhor_para": "Gerar rápido várias versões com letra, cover ou nova versão de uma música e testar estilos.",
+      "evite_para": "Instrumental (a opção foi tirada: use o Stable Audio 3 ou o ACE-Step 1.5 XL). Acabamento mais refinado (use ACE XL Turbo ou SFT). Para uma música pronta sem voz, use 'Tirar voz' na biblioteca.",
+      "tempo_tipico": "Instrumental de 3 min com planejamento: 47–57 s cada (4 gerações seguidas); a 1ª do dia levou 185 s. 2 min: 12–56 s (12 s sem planejamento). Cover: 23–27 s. Com letra, 3 min: 16 s sem planejamento e 45 s com planejamento.",
+      "limites": "De 10 a 360 s: o 'Padrão' é 2 min e, no cover, a duração do original. BPM opcional de 30 a 300. Passos de síntese de 1 a 20 (padrão 8). A letra é cantada em português (o painel fixa o idioma). Roda com parte na memória do processador para caber junto com o resto. Depois de enviado, não dá para cancelar.",
+      "dica_prompt": "Escreva o BPM no texto do estilo (ex.: '100 BPM'): quando o campo BPM fica vazio, o painel lê o número do texto.",
+      "tags": [
+        "Rápido",
+        "Cover",
+        "Com letra"
+      ],
+      "nota_velocidade": 5,
+      "nota_qualidade": 3
+    },
+    "yue2-int8": {
+      "id": "yue2-int8",
+      "aba": "musica",
+      "nome": "YuE2 · INT8",
+      "categoria": "Música",
+      "resumo_curto": "Música com letra cantada e cover guiado pela melodia",
+      "o_que_faz": "Modelo de música com voz, em versão comprimida, que roda na ComfyUI de música. Com o planejamento ligado, compõe a melodia em partitura antes e depois canta e toca. No cover, transcreve a melodia do áudio de referência e recria no novo estilo. Na duração 'Automática', o modelo decide onde a música acaba, até 6 min.",
+      "melhor_para": "Música completa com letra cantada, cover guiado pela melodia e músicas longas (até 6 min).",
+      "evite_para": "Pressa (é mais lento que o ACE). Já houve um cover de 1763 s (29 min) contra 99–164 s nos outros; a causa não foi registrada.",
+      "tempo_tipico": "Com letra e duração automática: 113–187 s (as medidas saíram com 3 min 18 s e 4 min 4 s de música). Instrumental de 3 min: 247 s; instrumental automático (saiu com 4 min 21 s): 483 s. Cover: 99–164 s, com um caso fora da curva de 1763 s.",
+      "limites": "Até 6 min. Criatividade de 0,7 a 1,2 e orientação de 1,0 a 1,5. O cover usa o transcritor de melodia SheetSage (instalado, 1,3 GB) e aceita um trecho de 20 s a 2 min ou a música inteira. Modelo de 3,7 GB. O modo Instrumental é experimental: para garantir sem voz, deixe marcada 'Tirar qualquer voz no final'.",
+      "dica_prompt": "Mantenha o 'Planejamento musical' ligado (é o padrão): ele escreve a partitura da melodia antes de cantar, e o painel confere essa partitura antes de sintetizar.",
+      "tags": [
+        "Com letra",
+        "Cover",
+        "Até 6 min",
+        "Partitura"
+      ],
+      "nota_velocidade": 3,
+      "nota_qualidade": 3
+    },
+    "ace-xl-turbo": {
+      "id": "ace-xl-turbo",
+      "aba": "musica",
+      "nome": "ACE-Step 1.5 XL · Turbo",
+      "categoria": "Música",
+      "resumo_curto": "Música com voz ou instrumental, com mais acabamento que o ACE comum",
+      "o_que_faz": "Versão grande (XL) do ACE-Step 1.5, acelerada para 8 passos, rodando na ComfyUI de música. Cria música com letra ou instrumental a partir do estilo descrito. Ele não descobre o ritmo e o tom sozinho, então o painel lê o BPM e o tom do texto do estilo. Se não achar, usa 110 BPM e tom Mi menor para estilos escuros (metal, triste...) ou Dó maior para os outros.",
+      "melhor_para": "Instrumental pesado (ex.: nu metal no estilo Korn), música com voz com melhor acabamento e instrumental garantido com a opção 'Tirar qualquer voz no final'.",
+      "evite_para": "Cover (não faz) e pressa quando o modelo ainda não está carregado.",
+      "tempo_tipico": "Instrumental de 30 s com separação de voz: 250 s na 1ª vez, carregando do HD. Com letra, 2 min: 177 s, logo depois de outro motor (também carregando). Já carregado: sem medida ainda.",
+      "limites": "Não faz cover. Até 6 min: o 'Padrão' é 2 min. A letra é cantada em português (idioma fixo). O BPM e o tom vêm do texto. O modelo tem 9,3 GB e os leitores de texto mais 8,9 GB.",
+      "dica_prompt": "Descreva o som, não o artista, e ponha BPM e tom no texto. Ex.: 'nu metal, guitarra de 7 cordas em drop A, baixo slap, bateria com pegada hip-hop, 100 BPM, E minor'.",
+      "tags": [
+        "Com letra",
+        "Instrumental",
+        "XL",
+        "Local"
+      ],
+      "nota_velocidade": 3,
+      "nota_qualidade": 4
+    },
+    "ace-xl-sft": {
+      "id": "ace-xl-sft",
+      "aba": "musica",
+      "nome": "ACE-Step 1.5 XL · SFT",
+      "categoria": "Música",
+      "resumo_curto": "ACE XL mais fiel ao estilo descrito; 50 passos, mais lento",
+      "o_que_faz": "O mesmo modelo XL do ACE-Step, na versão sem acelerador: 50 passos e orientação forte, para seguir mais de perto o estilo descrito. Assim como no XL Turbo, o BPM e o tom são lidos do texto do estilo.",
+      "melhor_para": "Versão final de uma música quando o estilo precisa ser respeitado, e instrumental caprichado.",
+      "evite_para": "Cover (não faz) e muitas variações rápidas (use ACE Oficial ou XL Turbo).",
+      "tempo_tipico": "Instrumental de 30 s: 175 s na 1ª vez, carregando do HD. Já carregado e músicas longas: sem medida ainda. No único teste, a carga do HD pesou mais que os passos: ficou parecido com o XL Turbo (250 s, esse com separação de voz), apesar dos 50 passos contra 8.",
+      "limites": "Não faz cover. Até 6 min: o 'Padrão' é 2 min. A letra é cantada em português (idioma fixo). O BPM e o tom vêm do texto. O modelo tem 9,3 GB e os leitores de texto mais 8,9 GB.",
+      "dica_prompt": "Ponha BPM e tom no texto do estilo (ex.: '100 BPM, E minor'). Ele não detecta sozinho, e sem isso usa 110 BPM.",
+      "tags": [
+        "Fiel ao estilo",
+        "Lento",
+        "XL",
+        "Instrumental"
+      ],
+      "nota_velocidade": 2,
+      "nota_qualidade": 4
+    },
+    "minimax-music3": {
+      "id": "minimax-music3",
+      "aba": "musica",
+      "nome": "MiniMax Music 3",
+      "categoria": "Música",
+      "resumo_curto": "Música completa com som de produção, até 6 min",
+      "o_que_faz": "Gera música completa, com letra, com som mais 'produzido', de rádio. A duração escolhida é o MÁXIMO: o modelo pode terminar antes (pedi 30 s e saiu com 22 s). Músicas acima de 2,5 min são montadas em blocos para gastar menos memória.",
+      "melhor_para": "Pop ou rock com letra pronta para ouvir, e faixa completa com começo, meio e fim.",
+      "evite_para": "Cover (não faz), casos em que a duração precisa ser exata, e pressa.",
+      "tempo_tipico": "30 s com letra: 181 s na 1ª vez (saiu com 22 s). 2 min com letra: 421 s (saiu com 2 min). Já carregado: sem medida ainda.",
+      "limites": "Até 6 min (360 s). A duração é um limite máximo, não exata. Não faz cover e não tem a opção de planejamento. Instrumental: sem teste ainda. O modelo tem 4,6 GB e o leitor de texto mais 8,6 GB.",
+      "dica_prompt": "Peça um pouco mais de tempo do que precisa (a duração é só o limite máximo) e corte depois se sobrar.",
+      "tags": [
+        "Com letra",
+        "Produzido",
+        "Até 6 min"
+      ],
+      "nota_velocidade": 2,
+      "nota_qualidade": 4
+    },
+    "stable-audio3": {
+      "id": "stable-audio3",
+      "aba": "musica",
+      "nome": "Stable Audio 3",
+      "categoria": "Música",
+      "resumo_curto": "Só instrumental, trilha e efeitos sonoros; rápido já carregado",
+      "o_que_faz": "Gera instrumental, trilha e efeitos sonoros a partir de uma descrição (Stable Audio 3.0 Medium, 8 passos). Não canta: o painel sempre força instrumental. Com a opção 'Melhorar a descrição com IA' (ligada por padrão), uma IA de texto reescreve a sua descrição antes de gerar.",
+      "melhor_para": "Trilha de fundo para vídeo, efeitos sonoros, ambiente e instrumental curto em quantidade.",
+      "evite_para": "Música com voz ou letra, cover, e músicas com mais de ~3 min (o limite é 190 s).",
+      "tempo_tipico": "30 s: 97 s na 1ª vez. 2 min: 101 s. 3 min, já carregado: 14–27 s. Uma geração na duração padrão, disparada junto com outros motores, falhou com o erro 'Fault failed: 2' (causa não registrada).",
+      "limites": "Só instrumental e efeitos. Máximo de 190 s (3 min 10 s). Não faz cover. A opção de tirar a voz não aparece (ele não canta). O modelo tem 8,6 GB e usa mais 2 leitores de texto (5,4 GB).",
+      "dica_prompt": "Descreva instrumentos, clima e andamento em frases curtas (ex.: 'trilha cinematográfica sombria, guitarras graves, 90 BPM'). Não peça voz: as partes que falam de voz são tiradas do texto automaticamente.",
+      "tags": [
+        "Instrumental",
+        "Efeitos sonoros",
+        "Trilha",
+        "Rápido"
+      ],
+      "nota_velocidade": 5,
+      "nota_qualidade": 3
+    },
+    "treblo-v3": {
+      "id": "treblo-v3",
+      "aba": "musica",
+      "nome": "Treblo v3 · nuvem (paga)",
+      "categoria": "Música",
+      "resumo_curto": "Música completa com acabamento de rádio, na nuvem; cada música usa 100 créditos",
+      "o_que_faz": "Gera a música na NUVEM da Treblo (API paga, precisa de internet), sem usar a placa de vídeo: roda junto com o vídeo sem esperar a fila. Cria música completa com letra (ou instrumental) a partir do estilo descrito, e faz cover/remix a partir de um áudio seu: o painel sobe o áudio e a Treblo usa os primeiros 90 segundos como referência, com o controle 'Fidelidade ao original' (1 a 5). No cover, se a letra ficar vazia, a Treblo transcreve o original e ESCREVE UMA LETRA NOVA; para manter a letra, escreva-a. O painel baixa a música na hora (FLAC) e guarda na biblioteca como as outras.",
+      "melhor_para": "Música completa com letra e acabamento de rádio; cover/remix a partir de música sua.",
+      "evite_para": "Testes em quantidade (cada tentativa custa 100 créditos), duração exata, uso sem internet e músicas de outros artistas ou geradas no Suno como referência do cover.",
+      "tempo_tipico": "Estimado em 1–3 min por música (a confirmar: ainda sem medida neste PC).",
+      "limites": "100 créditos por música (a Treblo não cobra quando a geração falha). Músicas de 2 a 4 min em geral; a duração escolhida vira uma faixa aproximada (máx. 5 min; no cover, máx. 3 min, porque a referência + a música nova cabem em 4 min 45 s). Os links da Treblo expiram em 7 dias, mas o painel baixa na hora. Precisa de internet e da chave em _segredos\\treblo_api_key.txt. Depois de enviada, não dá para cancelar. Não tem BPM, passos, planejamento nem variação fixa.",
+      "dica_prompt": "Descreva gênero, clima, instrumentos e voz em frases curtas, em inglês (ex.: 'brazilian sertanejo, acoustic guitar, emotional male vocals'). No cover, escreva a letra para manter a original.",
+      "tags": [
+        "Nuvem",
+        "Pago",
+        "Cover",
+        "Com letra",
+        "Instrumental"
+      ],
+      "nota_velocidade": 4,
+      "nota_qualidade": 4
+    },
+    "separador": {
+      "id": "separador",
+      "aba": "musica",
+      "nome": "MelBandRoFormer (Tirar voz)",
+      "categoria": "Ferramenta",
+      "resumo_curto": "Tira a voz de qualquer música e deixa só o instrumental",
+      "o_que_faz": "Separa a voz do instrumental e guarda só o instrumental; a parte da voz é descartada. Funciona de dois jeitos: pela opção 'Tirar qualquer voz no final', que aparece quando a voz está em 'Instrumental' em todas as IAs que cantam (ACE-Step Oficial, YuE2, XL Turbo, XL SFT e MiniMax Music 3), e pelo botão 'Tirar voz' em qualquer música pronta da biblioteca, que cria uma cópia '(sem voz)'. O original fica sempre salvo.",
+      "melhor_para": "Instrumental garantido, tirar a voz que o modelo cantou sem querer e fazer versão karaokê ou base de uma música já gerada.",
+      "evite_para": "Quando você quer a voz separada: ele só guarda o instrumental e não entrega a voz sozinha.",
+      "tempo_tipico": "Sem medida isolada ainda. A única medida junta foi 30 s gerados no ACE XL Turbo + separação = 250 s no total, na 1ª vez.",
+      "limites": "Roda na ComfyUI de música, uma tarefa por vez (espera o vídeo terminar). Entrega só o instrumental. Não aparece no Stable Audio 3, que já não canta. Modelo pequeno: 0,43 GB.",
+      "dica_prompt": "Para ter instrumental garantido, escolha a voz 'Instrumental' e deixe marcada a opção 'Tirar qualquer voz no final'. Numa música que já ficou pronta com voz, use o botão 'Tirar voz'.",
+      "tags": [
+        "Ferramenta",
+        "Tirar voz",
+        "Instrumental",
+        "Karaokê"
+      ],
+      "nota_velocidade": 4,
+      "nota_qualidade": 4
+    },
+    "texto_rapido": {
+      "id": "texto_rapido",
+      "aba": "texto",
+      "categoria": "IA de texto",
+      "licenca": "Apache 2.0 (pode usar em conteúdo monetizado)",
+      "motor": "llama.cpp oficial b10964 (v0.4.1), 100% local",
+      "nome": "Qwen3.5-9B (IA de texto rápida)",
+      "resumo_curto": "Melhora prompts, traduz, escreve legendas e descreve imagens",
+      "o_que_faz": "IA de texto rápida do estúdio. É ela que atende o botão ✨ Melhorar prompt (reescreve o seu pedido em inglês, no formato de cada IA de imagem e vídeo), traduz e olha uma imagem para escrever a descrição (botão Descrever esta imagem). Com a placa de vídeo livre roda nela e é descarregada logo depois; com a placa ocupada roda no processador, sem atrapalhar a geração. Para economizar memória ela fica desligada e liga sozinha quando você usa (desliga de novo depois de 10 min parada). Se quiser deixá-la “Pronta” (~8 GB na memória do computador, sem usar a placa), use Ligar agora no Início (Sua máquina → IA de texto) ou marque para ligar ao abrir o estúdio.",
+      "melhor_para": "Prompts de imagem e vídeo, tradução, descrever imagem, respostas rápidas.",
+      "evite_para": "Letra de música com métrica e roteiro longo (quem faz é o Qwen3.6-35B).",
+      "tempo_tipico": "Na placa: melhorar um prompt levou 21 s no total (carregar + escrever, 63 tokens/s). No processador (placa ocupada): tradução curta 3 s e prompt de ~150 palavras ~20 s já ligado; descrever imagem ~1 min. A 1ª vez no processador carrega o modelo do HD: ~40 s (ou alguns minutos com o HD ocupado); com ela “Pronta” (ligada pelo Início ou ao abrir o estúdio) essa espera já aconteceu. Ligar de novo com o arquivo ainda na memória do Windows: ~5 s.",
+      "limites": "Modelo de 6,0 GB (+0,9 GB do arquivo de visão). Contexto de 16 mil tokens na placa e 8 mil no processador.",
+      "dica_prompt": "Escreva o pedido curto, em português, do seu jeito, e clique em ✨ Melhorar prompt: a IA de texto devolve em inglês no formato da IA escolhida. Revise antes de gerar; dá para desfazer.",
+      "tags": [
+        "Texto",
+        "Prompt",
+        "Tradução",
+        "Visão"
+      ],
+      "nota_velocidade": 5,
+      "nota_qualidade": 3
+    },
+    "texto_principal": {
+      "id": "texto_principal",
+      "aba": "texto",
+      "categoria": "IA de texto",
+      "licenca": "Apache 2.0 (pode usar em conteúdo monetizado)",
+      "motor": "llama.cpp oficial b10964 (v0.4.1), 100% local",
+      "nome": "Qwen3.6-35B-A3B (IA de texto principal)",
+      "resumo_curto": "Letras, roteiro de fala e assistente",
+      "o_que_faz": "IA de texto principal do estúdio: escreve letras em português com [Verso]/[Refrão] e métrica cantável, o texto que a Pessoa falando vai dizer (botão Escrever o texto), roteiros em cenas de 10–15 s e responde perguntas. Só roda na placa de vídeo livre; se a placa estiver ocupada, o estúdio usa o Qwen3.5-9B no processador no lugar dela.",
+      "melhor_para": "Letra de música, texto falado do Apresentador, roteiro de curta, perguntas sobre qual IA usar.",
+      "evite_para": "Descrever imagem (ela roda sem o arquivo de visão; quem vê imagem é o Qwen3.5-9B).",
+      "tempo_tipico": "Na placa: uma letra completa (~300 palavras) levou 16,5 s no total (87 tokens/s). A 1ª vez depois de ligar o PC carrega 13 GB do HD: ~1 a 4 min.",
+      "limites": "Modelo de 13,2 GB comprimido em 3 bits (UD-IQ3_XXS) para caber na placa de 16 GB junto com o Windows; memória de conversa comprimida (q4_0), contexto de 16 mil tokens. Carregar do HD leva ~1 min na 1ª vez.",
+      "tags": [
+        "Texto",
+        "Letra",
+        "Roteiro",
+        "Assistente"
+      ],
+      "nota_velocidade": 4,
+      "nota_qualidade": 4
+    },
+    "h3_contexto": {
+      "id": "h3_contexto",
+      "aba": "video",
+      "nome": "MiniMax H3 Singularity - Plano-sequência",
+      "categoria": "Pessoa real (tomada contínua)",
+      "resumo_curto": "Uma tomada contínua, sem corte, com pessoa de verdade — 16 a 32 s",
+      "o_que_faz": "Gera um vídeo realista de pessoa de verdade em UMA tomada contínua (sem corte), usando o MiniMax H3 Singularity 1.3 com a técnica Motion Context: a cena é quebrada em segmentos de 8 s que se emendam sozinhos (o segmento seguinte continua do anterior). É o fluxo aprovado para clipe com gente real (estilo '45 s sem corte'). Sai com som ambiente junto. Ninguém fala nem canta.",
+      "melhor_para": "Tomada longa e contínua com pessoa real: música/atuação, close de rosto, olhar, sorriso, mãos, cena de cinema com gente de verdade. Até 32 s de uma vez.",
+      "evite_para": "Fala/diálogo (a boca atrapalha e o H3 troca de idioma — a voz se troca depois), duas pessoas no mesmo bloco (costuma duplicar ou trocar de lado), ação complexa tipo levantar/andar/cortar coisas (a física falha) e refazer só um pedaço (é uma tomada só).",
+      "tempo_tipico": "16 s (2×8 s) a 0,8 MP: ~26 min. 24 s (3×8 s): 43 min medido (segmento 1: 8m44; 2: 12m56; 3: ~11 min — os segmentos 'context' são mais lentos). A 1ª vez soma a ficha no Krea 2 (~3 min) e o roteiro na IA de texto local (~1 min).",
+      "limites": "16, 24 ou 32 s (dois, três ou quatro segmentos de 8 s — o script não aceita um segmento só); 0,5, 0,8 ou 1,0 MP; 24 fps; som ambiente (sem fala). Como é uma tomada contínua, refazer significa gerar o bloco inteiro de novo. Uma pessoa por bloco.",
+      "dica_prompt": "Escreva a CENA INTEIRA em português, do começo ao fim. Uma ação simples por momento, movimentos lentos. Diga onde a câmera está ('na altura dos olhos, chegando bem devagar, mantendo o rosto no quadro'). Ninguém fala nem canta — só expressão, olhar e corpo. Evite levantar e andar (a câmera cola e perde o rosto). Deixe a imagem vazia para ele criar a pessoa no Krea 2, ou envie uma foto para manter o MESMO rosto em vários blocos.",
+      "tags": [
+        "Pessoa real",
+        "Sem corte",
+        "Som ambiente",
+        "16 a 32 s"
+      ],
+      "nota_velocidade": 1,
+      "nota_qualidade": 5
+    },
+    "ltx25_t2v": {
+      "id": "ltx25_t2v",
+      "nome": "LTX 2.5 - Texto para vídeo (rápido, com áudio)",
+      "resumo_curto": "Vídeo com som a partir do texto, muito rápido",
+      "o_que_faz": "Gera vídeo com áudio (ambiente, efeitos e fala) a partir de um texto, em 720p, em uns 2 minutos para 5 s.",
+      "melhor_para": "Cenas de apoio sem personagem fixo (chuva, incêndio, cidade, natureza), anime, testes rápidos de ideia, B-roll.",
+      "dica_prompt": "Escreva em inglês, num parágrafo bem descritivo: estilo (live-action, anime...), o que se vê, o que acontece em ordem, câmera e som.",
+      "tags": [
+        "Rápido",
+        "Com áudio",
+        "Texto",
+        "720p"
+      ],
+      "aba": "video",
+      "categoria": "Vídeo rápido",
+      "tempo_tipico": "Medido em 06/10 na placa de 16 GB: 5 s em 720p = 2,2 min já carregado; a 1ª vez leva uns 4–5 min (carrega 27 GB de modelos). 8 e 10 s: estimado, sem medida ainda.",
+      "limites": "5, 8 ou 10 s; 24 quadros por segundo; 720p (704×1280, 1280×704 ou 960×960); com som (efeitos, ambiente, fala). Modelo reduzido GGUF Q4 (12 GB) para caber nos 16 GB; o melhorador de prompt fica desligado (deixava lento).",
+      "evite_para": "Personagem que precisa ficar IDÊNTICO em várias cenas (não aceita fichas de referência: para isso use MiniMax H3 - Referências) e falas longas em português (ainda não testado).",
+      "nota_velocidade": 5,
+      "nota_qualidade": 4
+    },
+    "ltx25_i2v": {
+      "id": "ltx25_i2v",
+      "nome": "LTX 2.5 - Imagem para vídeo (rápido, com áudio)",
+      "resumo_curto": "Dá movimento e som a uma imagem, muito rápido",
+      "o_que_faz": "Parte de uma imagem sua (primeiro quadro) e gera o vídeo com som em 720p, em uns 2 minutos para 5 s.",
+      "melhor_para": "Animar uma imagem gerada no Krea/Qwen/Z-Image, continuar uma cena a partir do último quadro, anime a partir de um desenho.",
+      "dica_prompt": "Em inglês: descreva o que acontece DEPOIS da imagem (movimento, câmera, som), sem descrever a imagem de novo.",
+      "tags": [
+        "Rápido",
+        "Com áudio",
+        "Imagem inicial",
+        "720p"
+      ],
+      "aba": "video",
+      "categoria": "Vídeo rápido",
+      "tempo_tipico": "Medido em 06/10 na placa de 16 GB: 5 s em 720p = 2,2 min já carregado; a 1ª vez leva uns 4–5 min (carrega 27 GB de modelos). 8 e 10 s: estimado, sem medida ainda.",
+      "limites": "5, 8 ou 10 s; 24 quadros por segundo; 720p (704×1280, 1280×704 ou 960×960); com som (efeitos, ambiente, fala). Modelo reduzido GGUF Q4 (12 GB) para caber nos 16 GB; o melhorador de prompt fica desligado (deixava lento).",
+      "evite_para": "Personagem que precisa ficar IDÊNTICO em várias cenas (não aceita fichas de referência: para isso use MiniMax H3 - Referências) e falas longas em português (ainda não testado).",
+      "nota_velocidade": 5,
+      "nota_qualidade": 4
+    }
+  }
+}

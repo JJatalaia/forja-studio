@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>JerS · Forja Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d7ff3a'/%3E%3Cpath d='M16 5l2.6 7.4L26 15l-7.4 2.6L16 25l-2.6-7.4L6 15l7.4-2.6z' fill='%230b0d12'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="estilo.css?v=20261102-brasa3">
+<link rel="stylesheet" href="voz.css?v=20261103-nuvem">
+<link rel="stylesheet" href="canal.css?v=20261102-molde">
+<link rel="stylesheet" href="plano.css?v=20261102-molde2">
+<link rel="stylesheet" href="conta.css?v=20261103-conta2">
+</head>
+<body>
+<a class="pular" id="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<!-- A PORTA DE ENTRADA. Fica escondida; o conta.js a mostra quando nao ha licenca valida.
+     Comeca com [hidden] de proposito: se o JavaScript falhar, o estudio abre em vez de
+     ficar preso numa tela de login que ninguem consegue passar. -->
+<div class="porta" id="porta" hidden>
+  <div class="porta-arte" aria-hidden="true"><span class="porta-brasa"></span></div>
+  <section class="porta-cartao" role="dialog" aria-labelledby="portaTitulo" aria-modal="true">
+    <p class="porta-marca"><span class="heroi-jers">JerS</span><i aria-hidden="true"></i>Forja Studio</p>
+    <h1 id="portaTitulo">Entre na sua conta</h1>
+    <p class="porta-sub" id="portaSub">As ferramentas daqui são de graça e geram na sua
+      própria placa de vídeo. A conta é só para a licença ficar no seu nome.</p>
+
+    <div class="porta-abas" role="tablist">
+      <button type="button" id="abaEntrar" role="tab" aria-selected="true">Já tenho conta</button>
+      <button type="button" id="abaCriar" role="tab" aria-selected="false">Criar conta</button>
+    </div>
+
+    <form class="porta-form" id="portaForm" autocomplete="on" novalidate>
+      <label class="so-criar" hidden>Seu nome
+        <input type="text" id="cNome" name="nome" autocomplete="name" maxlength="80"
+               placeholder="Como você quer ser chamado">
+      </label>
+      <label>E-mail
+        <input type="email" id="cEmail" name="email" autocomplete="username"
+               required maxlength="160" placeholder="voce@exemplo.com">
+      </label>
+      <label class="so-criar" hidden>Telefone (com DDD)
+        <input type="tel" id="cTel" name="telefone" autocomplete="tel" maxlength="24"
+               placeholder="11 99999-8888">
+      </label>
+      <label>Senha
+        <span class="porta-senha">
+          <input type="password" id="cSenha" name="senha" autocomplete="current-password"
+                 required minlength="8" maxlength="256" placeholder="pelo menos 8 letras ou números">
+          <button type="button" id="cVer" class="porta-olho" aria-label="Mostrar a senha">ver</button>
+        </span>
+      </label>
+      <p class="porta-erro" id="portaErro" role="alert" hidden></p>
+      <button type="submit" class="gerar porta-bt" id="portaBt">Entrar</button>
+    </form>
+
+    <p class="porta-pe" id="portaPe"></p>
+  </section>
+</div>
+
+<header class="topo">
+  <a class="marca" href="#/" aria-label="JerS Forja Studio — início">
+    <span class="marca-ic" id="marcaIc"></span>
+    <span class="marca-txt"><span class="marca-jers">JerS</span><b>Forja</b></span>
+  </a>
+  <nav class="nav" id="nav" aria-label="Seções">
+    <a href="#/" data-rota="inicio"><span data-ic="inicio"></span><span>Início</span></a>
+    <a href="#/tudo" data-rota="tudo"><span data-ic="estrela"></span><span>Minhas criações</span></a>
+    <a href="#/imagem" data-rota="imagem"><span data-ic="imagem"></span><span>Imagem</span></a>
+    <a href="#/video" data-rota="video"><span data-ic="video"></span><span>Vídeo</span></a>
+    <a href="#/apresentador" data-rota="apresentador"><span data-ic="apresentador"></span><span>Pessoa falando</span></a>
+    <a href="#/plano" data-rota="plano"><span data-ic="video"></span><span>Plano-sequência</span></a>
+    <a href="#/canal" data-rota="canal"><span data-ic="fila"></span><span>Canal</span></a>
+    <a href="#/voz" data-rota="voz"><span data-ic="onda"></span><span>Narração</span></a>
+    <a href="#/musica" data-rota="musica"><span data-ic="musica"></span><span>Música</span></a>
+  </nav>
+  <a class="maq-mini" id="maqMini" href="#/" title="Sua máquina (abre o Início)">
+    <i class="ponto" id="maqPonto"></i><span id="maqTxt">verificando…</span>
+  </a>
+  <div class="conta-canto" id="contaCanto"></div>
+  <!-- fio de progresso: aparece em QUALQUER aba enquanto algo gera (02/11/2026) -->
+  <i class="topo-prog" id="topoProg" hidden aria-hidden="true"></i>
+</header>
+
+<main id="conteudo" tabindex="-1">
+
+  <!-- recado de configuracao nova (atualizacao.js) -->
+  <div id="atualizacaoTarja"></div>
+
+  <!-- ============================== INÍCIO ============================== -->
+  <section id="vInicio" class="vista inicio" hidden aria-labelledby="inicioTitulo">
+    <div id="contaRecado"></div>
+    <div class="heroi">
+      <div class="heroi-brasa" aria-hidden="true"></div>
+      <div class="heroi-corpo">
+        <p class="heroi-marca"><span class="heroi-jers">JerS</span><i aria-hidden="true"></i>Forja Studio</p>
+        <h1 id="inicioTitulo" tabindex="-1">O que vamos <em>forjar</em> hoje?</h1>
+        <p class="heroi-sub">Imagem, vídeo, pessoa falando, narração e música — forjados na sua
+          própria placa de vídeo. Sem mensalidade, sem nuvem, sem fila de ninguém.</p>
+        <div class="heroi-tiras" id="heroiTiras" role="status"></div>
+        <!-- os fornos: a linha de serviços da "Sua máquina" é MOVIDA para cá pelo app.js.
+             Movida, não copiada: os botões continuam os mesmos, com o mesmo código. -->
+        <div class="forja-fornos" id="forjaFornos"></div>
+      </div>
+    </div>
+
+    <div class="escolhas" id="escolhas"></div>
+
+    <div class="dica-faixa" id="dicaFaixa">
+      <span class="dica-ic" data-ic="dica"></span>
+      <div class="dica-corpo"><p class="dica-rot" id="dicaRot">Dica</p><p class="dica-txt" id="dicaTxt"></p></div>
+      <button type="button" class="bt-fantasma" id="dicaOutra" aria-label="Mostrar outra dica"><span data-ic="dir"></span></button>
+    </div>
+
+    <!-- ====== Novidades (02/11/2026): vem de estudio/novidades.json ====== -->
+    <section class="bloco-inicio novidades" id="blocoNovidades" aria-labelledby="novTitulo" hidden>
+      <div class="bloco-cab">
+        <h2 id="novTitulo"><span data-ic="brilho"></span> Novidades</h2>
+        <button type="button" class="bt-fantasma mini" id="novVerTodas" hidden>Ver todas</button>
+      </div>
+      <div class="nov-lista" id="novLista"></div>
+    </section>
+
+    <div class="inicio-grade">
+      <section class="bloco-inicio" aria-labelledby="contTitulo">
+        <div class="bloco-cab">
+          <h2 id="contTitulo">Continue de onde parou</h2>
+          <p class="fraco" id="contConta"></p>
+        </div>
+        <div class="recentes" id="recentes"><p class="fraco">Carregando…</p></div>
+      </section>
+
+      <section class="bloco-inicio maquina" id="maquina" aria-labelledby="maqTitulo">
+        <div class="bloco-cab">
+          <h2 id="maqTitulo">Sua máquina</h2>
+          <span class="ao-vivo" id="maqAoVivo"><i></i>ao vivo</span>
+        </div>
+        <div id="maqCorpo"><p class="fraco">Verificando…</p></div>
+      </section>
+    </div>
+
+    <!-- ====== o atalho que a IA escreve (02/11/2026) ====== -->
+    <section class="bloco-inicio atalho-ia" aria-labelledby="atalhoTitulo">
+      <div class="bloco-cab">
+        <h2 id="atalhoTitulo"><span data-ic="raio"></span> Peça para uma IA fazer o trabalho repetido</h2>
+        <p class="fraco">Sem programar. Você descreve, ela escreve o atalho, você clica.</p>
+      </div>
+
+      <div class="atalho-corpo">
+        <p>Este estúdio é um servidor na sua própria máquina, em
+          <code>http://127.0.0.1:8194</code>. Quem sabe conversar com ele por HTTP comanda o
+          estúdio inteiro — e uma <b>IA de código</b> (Claude Code, Codex, Gemini CLI) sabe.</p>
+
+        <p>Você pede em português: <i>“lê o arquivo cenas.json, manda o estúdio gerar a imagem
+          de cada cena no Qwen 2512 em 9:16, espera cada uma terminar, e no fim junta tudo com a
+          narração. Me entrega isso como um .bat que eu clico.”</i> Ela entrega o arquivo. Você
+          clica.</p>
+
+        <p class="atalho-chave"><b>É aqui que o token fica barato:</b> você paga a IA de código
+          <b>uma vez</b>, para escrever o atalho. Daí em diante o atalho roda sozinho, quantas
+          vezes você quiser, sem conversa e sem cobrança por geração — porque quem gera é a sua
+          placa, aqui dentro.</p>
+
+        <details class="atalho-cola">
+          <summary>O que colar na conversa com a IA (clique para abrir)</summary>
+          <p class="fraco">Cole este bloco e ela já sabe falar com o estúdio:</p>
+          <pre id="atalhoTexto">O Estúdio Local roda em http://127.0.0.1:8194 e tem estes endereços:
+
+  GET  /api/presets      a lista de IAs instaladas, com formatos e qualidades de cada uma
+  POST /api/gerar        põe um trabalho na fila
+                         corpo: {"preset": "...", "modo": "...", "prompt": "...",
+                                 "formato": "9:16", "qualidade": "Caprichado"}
+                         devolve o id do trabalho
+  GET  /api/trabalhos?aba=imagem&amp;limite=60    o estado da fila (pronto / gerando / erro)
+  GET  /api/midia/{id}/{i}                    baixa o arquivo pronto
+  POST /api/voz/falar    gera narração com a voz local (de graça)
+  GET  /api/ocupado      diz se a placa está ocupada
+
+REGRAS que já custaram caro aqui:
+1. UMA geração por vez. Só mande a próxima quando a anterior aparecer como pronta em
+   /api/trabalhos. A placa não divide: duas ao mesmo tempo deixam as duas lentas.
+2. O estúdio PISCA quando carrega um modelo grande. Não desista no primeiro erro: conte
+   as falhas seguidas e só pare depois de umas 30 tentativas (uns 4 minutos de silêncio).
+3. Se o estúdio cair no meio, PROCURE O ARQUIVO ÓRFÃO na pasta de saída da ComfyUI antes
+   de mandar refazer: quase sempre ele já está pronto, só não foi registrado.
+
+Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
+          <button type="button" class="bt-sec" id="atalhoCopiar"><span data-ic="copiar"></span>Copiar este bloco</button>
+          <p class="nota fraco">Peça o que é repetitivo: gerar uma lista de cenas, refazer só as
+            que ficaram ruins, juntar vídeo com narração, montar a versão vertical. Não peça que
+            ela <b>escolha o que ficou bonito</b>: ela não vê a imagem. O atalho automatiza o
+            braço, não o olho.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="bloco-inicio catalogo" aria-labelledby="catTitulo">
+      <div class="bloco-cab">
+        <h2 id="catTitulo">Conheça as IAs do estúdio</h2>
+        <p class="fraco">Clique numa IA para ver a ficha completa.</p>
+      </div>
+      <div class="catalogo-grade" id="catalogo"></div>
+    </section>
+  </section>
+
+  <!-- ============================== GERADOR (imagem / vídeo / pessoa falando) ============================== -->
+  <section id="vGerador" class="vista gerador" hidden>
+    <aside class="painel" id="painel" aria-labelledby="rotaTitulo">
+      <div class="painel-corpo" id="painelCorpo">
+        <div class="painel-cab">
+          <span class="painel-ic" id="rotaIc"></span>
+          <div>
+            <p class="sobrelinha" id="rotaSobre">Criar</p>
+            <h1 id="rotaTitulo" tabindex="-1">Imagem</h1>
+          </div>
+        </div>
+
+        <section class="bloco" id="secIA" aria-labelledby="hIA">
+          <h2 class="passo" id="hIA">Escolha a IA</h2>
+          <div id="iaAtual"></div>
+          <div id="seletorIA" class="seletor-ia" hidden>
+            <label class="busca">
+              <span data-ic="busca"></span>
+              <input id="buscaIA" type="search" placeholder="Buscar (ex.: cartaz, retrato, com som)" aria-label="Buscar IA" autocomplete="off">
+            </label>
+            <div id="listaIA" class="lista-ia"></div>
+            <details class="em-teste" id="emTeste" hidden>
+              <summary>Em teste — ainda não liberadas</summary>
+              <ul id="listaTeste"></ul>
+            </details>
+          </div>
+        </section>
+
+        <section class="bloco" id="secModo" hidden aria-labelledby="hModo">
+          <h2 class="passo" id="hModo">Como começar</h2>
+          <div class="chips" id="modos" role="group" aria-labelledby="hModo"></div>
+        </section>
+
+        <section class="bloco" id="secImagem" hidden aria-labelledby="tituloImagem">
+          <h2 class="passo" id="tituloImagem">Imagem</h2>
+          <label class="upload" id="upImagem">
+            <input type="file" accept="image/*" class="sr-only" aria-describedby="tituloImagem">
+            <span class="up-ic" data-ic="enviar"></span>
+            <span class="up-txt">Clique, arraste ou cole (Ctrl+V) a imagem</span>
+            <img alt="Imagem enviada" hidden>
+          </label>
+          <div class="texto-ia-barra" id="barraDescrever" hidden>
+            <button type="button" class="bt-sec bt-texto" id="btDescrever" title="A IA de texto olha a imagem e escreve uma descrição que pode virar prompt"><span data-ic="ver"></span><span>Descrever esta imagem</span></button>
+            <span class="texto-ia-status" id="descreverStatus" aria-live="polite"></span>
+          </div>
+        </section>
+
+        <section class="bloco" id="secRefs" hidden aria-labelledby="hRefs">
+          <h2 class="passo" id="hRefs">Imagens de referência <small id="refsConta"></small></h2>
+          <div class="refs" id="refs"></div>
+          <label class="upload baixo" id="upRefs">
+            <input type="file" accept="image/*" multiple class="sr-only" aria-describedby="refsDica">
+            <span class="up-ic" data-ic="mais"></span>
+            <span class="up-txt">Adicionar imagens (rosto, roupa, carro, cenário…)</span>
+          </label>
+          <p class="nota" id="refsDica">Clique numa imagem para colocar a etiqueta dela no prompt.</p>
+        </section>
+
+        <section class="bloco" id="secVideo" hidden aria-labelledby="hVideo">
+          <h2 class="passo" id="hVideo">Vídeo de movimento</h2>
+          <label class="upload" id="upVideo">
+            <input type="file" accept="video/*" class="sr-only" aria-describedby="hVideo">
+            <span class="up-ic" data-ic="video"></span>
+            <span class="up-txt">1 pessoa, câmera parada, corpo inteiro</span>
+            <video muted playsinline hidden></video>
+          </label>
+        </section>
+
+        <section class="bloco" id="secEnquadrar" hidden aria-labelledby="hEnq">
+          <h2 class="passo" id="hEnq">Enquadramento do personagem</h2>
+          <div class="chips" id="enquadrarChips" role="group" aria-labelledby="hEnq"></div>
+          <div class="enquadre" id="enquadre" hidden>
+            <figure><video id="enqVideo" muted playsinline preload="auto"></video><figcaption>Vídeo (1º quadro)</figcaption></figure>
+            <figure><img id="enqImagem" alt="Personagem enquadrado"><figcaption>Personagem enquadrado</figcaption></figure>
+          </div>
+          <p class="nota" id="enqStatus" aria-live="polite"></p>
+        </section>
+
+        <section class="bloco" id="secPrompt" aria-labelledby="hPrompt">
+          <h2 class="passo" id="hPrompt">Descreva o que você quer</h2>
+          <textarea id="prompt" rows="5" aria-labelledby="hPrompt" aria-describedby="dicaPrompt" placeholder="Descreva o que você quer gerar…"></textarea>
+          <div class="texto-ia-barra" id="barraTexto">
+            <button type="button" class="bt-sec bt-texto" id="btMelhorar" title="A IA de texto do estúdio reescreve o seu pedido no formato que esta IA entende melhor (em inglês). Você vê antes e depois e pode desfazer.">✨ Melhorar prompt</button>
+            <button type="button" class="bt-sec bt-texto" id="btEscrever" hidden title="Escreva o tema na caixa (ex.: dicas para dormir melhor) e a IA de texto escreve o que a pessoa vai falar."><span data-ic="texto"></span><span>Escrever o texto</span></button>
+            <span class="texto-ia-status" id="textoStatus" aria-live="polite"></span>
+          </div>
+          <div class="texto-ia-caixa" id="textoCaixa" hidden>
+            <div class="texto-ia-cab"><b id="textoTitulo">Prompt melhorado</b><span class="texto-ia-onde" id="textoOnde"></span></div>
+            <div class="texto-ia-comparar" id="textoComparar">
+              <div><span class="texto-ia-rot">Antes</span><p class="texto-ia-antes" id="textoAntes"></p></div>
+              <div><span class="texto-ia-rot" id="textoDepoisRot">Depois (já está na caixa acima)</span><p class="texto-ia-depois" id="textoDepois"></p></div>
+            </div>
+            <p class="aviso-linha" id="textoAviso" hidden></p>
+            <div class="texto-ia-acoes">
+              <button type="button" class="bt-sec" id="btUsarTexto" hidden><span data-ic="ok"></span><span>Usar como prompt</span></button>
+              <button type="button" class="bt-sec" id="btJuntarTexto" hidden><span data-ic="mais"></span><span>Juntar ao prompt</span></button>
+              <button type="button" class="bt-sec" id="btDesfazer"><span data-ic="reusar"></span><span>Desfazer</span></button>
+              <button type="button" class="bt-fantasma mini" id="btFecharTexto">Fechar</button>
+            </div>
+          </div>
+          <p class="dica-prompt" id="dicaPrompt" hidden></p>
+        </section>
+
+        <section class="bloco" id="secVoz" hidden aria-labelledby="hVoz">
+          <h2 class="passo" id="hVoz">Voz e motor do vídeo</h2>
+          <h3 class="sub" id="hIdioma">Idioma da fala</h3>
+          <div class="chips" id="idiomas" role="group" aria-labelledby="hIdioma"></div>
+          <h3 class="sub" id="hVozes">Voz <small>(escolha uma salva ou clone uma nova)</small></h3>
+          <div class="chips" id="vozes" role="group" aria-labelledby="hVozes"></div>
+          <label class="upload baixo" id="upVoz">
+            <input type="file" accept="audio/*,video/*" class="sr-only" aria-describedby="hVozes">
+            <span class="up-ic" data-ic="microfone"></span>
+            <span class="up-txt">Clonar uma voz nova: envie 10–20 s só da voz (sem música)</span>
+            <audio controls preload="none" hidden></audio>
+          </label>
+          <div class="salvar-voz" id="salvarVoz" hidden>
+            <input id="nomeVoz" placeholder="Nome desta voz (ex.: Minha voz, Locutor)" aria-label="Nome da voz">
+            <button type="button" id="btSalvarVoz" class="bt-sec">Salvar na lista</button>
+          </div>
+          <p class="nota" id="vozStatus" aria-live="polite"></p>
+          <h3 class="sub" id="hAudio">Ou áudio pronto <small>(opcional · ele dubla esse áudio em vez do texto)</small></h3>
+          <label class="upload baixo" id="upAudio">
+            <input type="file" accept="audio/*,video/*" class="sr-only" aria-describedby="hAudio">
+            <span class="up-ic" data-ic="onda"></span>
+            <span class="up-txt">Clique ou arraste o áudio que ele vai falar</span>
+            <audio controls preload="none" hidden></audio>
+          </label>
+          <button type="button" id="limparAudio" class="bt-sec" hidden>Remover áudio pronto (voltar a usar o texto)</button>
+          <h3 class="sub" id="hMotor">Motor do vídeo</h3>
+          <div class="chips" id="motores" role="group" aria-labelledby="hMotor"></div>
+          <p class="nota" id="motorNota"></p>
+        </section>
+
+        <section class="bloco" id="secAjustes" aria-labelledby="hAjustes">
+          <h2 class="passo" id="hAjustes">Ajustes</h2>
+          <div class="opcoes">
+            <div id="optEstilo" hidden><h3 class="sub" id="hEstilo">Estilo</h3><div class="chips" id="estilos" role="group" aria-labelledby="hEstilo"></div></div>
+            <div id="optFormato" hidden><h3 class="sub" id="hFormato">Formato</h3><div class="chips" id="formatos" role="group" aria-labelledby="hFormato"></div></div>
+            <div id="optResolucao" hidden><h3 class="sub" id="hResolucao">Resolução</h3><div class="chips" id="resolucoes" role="group" aria-labelledby="hResolucao"></div></div>
+            <div id="optDuracao" hidden><h3 class="sub" id="hDuracao">Duração</h3><div class="chips" id="duracoes" role="group" aria-labelledby="hDuracao"></div></div>
+            <div id="optQualidade" hidden><h3 class="sub" id="hQualidade">Qualidade</h3><div class="chips" id="qualidades" role="group" aria-labelledby="hQualidade"></div></div>
+            <div id="optForca" hidden>
+              <h3 class="sub"><label for="forca">Força da transformação</label> <b id="forcaVal">0,60</b></h3>
+              <input type="range" id="forca" min="0.2" max="0.9" step="0.05" value="0.6">
+              <p class="nota">Baixa = fica parecida com a original. Alta = muda mais.</p>
+            </div>
+          </div>
+          <p class="nota" id="ajustesFixos"></p>
+        </section>
+
+        <details class="bloco avancado" id="secAvancado">
+          <summary>Avançado</summary>
+          <label class="campo" for="seed">Semente (seed) <small>(vazio = aleatória; repita a mesma para refazer igual)</small></label>
+          <input id="seed" inputmode="numeric" placeholder="aleatória" autocomplete="off">
+        </details>
+      </div>
+
+      <div class="painel-rodape" id="painelRodape">
+        <div class="estimativa" id="estimativa" aria-live="polite"></div>
+        <button type="button" class="gerar" id="gerar"><span data-ic="brilho"></span><span id="gerarTxt">Gerar</span></button>
+        <div class="erro" id="erro" role="alert" hidden></div>
+      </div>
+    </aside>
+
+    <section class="criacoes" aria-labelledby="tituloCriacoes">
+      <div class="cri-cab">
+        <div>
+          <h2 id="tituloCriacoes" tabindex="-1">Criações</h2>
+          <p class="fraco" id="contaCriacoes" aria-live="polite"></p>
+        </div>
+        <label class="busca busca-cri">
+          <span data-ic="busca"></span>
+          <input id="buscaCri" type="search" placeholder="Buscar no prompt" aria-label="Buscar nas criações" autocomplete="off">
+        </label>
+      </div>
+      <div class="filtros">
+        <div class="segmentado" id="filtroEstado" role="group" aria-label="Filtrar por estado"></div>
+        <div class="chips-ia" id="filtroIA" role="group" aria-label="Filtrar por IA"></div>
+      </div>
+      <div class="grade" id="grade"></div>
+      <div class="vazio" id="vazio" hidden></div>
+      <div class="mais" id="maisBox" hidden>
+        <button type="button" class="bt-sec" id="carregarMais">Carregar mais</button>
+      </div>
+      <div class="limite-box" id="limiteBox" hidden>
+        <p class="nota centro" id="limiteAviso"></p>
+        <button type="button" class="bt-sec" id="carregarAntigas" hidden>Carregar as mais antigas</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============================== MÚSICA ============================== -->
+  <section id="vMusica" class="vista musica" hidden aria-labelledby="musTitulo">
+    <h1 class="sr-only" id="musTitulo" tabindex="-1">Música</h1>
+    <div class="musica-off" id="musicaOff" hidden>
+      <div class="musica-off-card">
+        <span class="musica-off-ic" data-ic="musica"></span>
+        <h2>O painel de música está desligado</h2>
+        <p>Ele gera músicas com letra cantada, instrumentais e separa a voz (YuE2, ACE-Step, MiniMax Music, Stable Audio). Ligar leva uns 30 segundos.</p>
+        <button type="button" class="gerar" id="ligarMusica"><span data-ic="ligar"></span><span>Ligar música</span></button>
+        <p class="nota" id="ligarMusicaStatus" aria-live="polite"></p>
+      </div>
+    </div>
+    <p class="musica-faixa" id="musicaFaixa" role="status" hidden></p>
+    <iframe id="musicaFrame" title="Painel de música" allow="clipboard-write; clipboard-read; autoplay" hidden></iframe>
+  </section>
+
+  <!-- ============================== PLANO-SEQUÊNCIA ============================== -->
+  <section id="vPlano" class="vista plano" hidden aria-labelledby="planoTitulo">
+    <p class="aviso-linha" id="planoErro" hidden></p>
+
+    <div id="planoCorpo" hidden>
+      <div class="plano-grade">
+        <aside class="painel">
+          <div class="painel-corpo">
+            <div class="painel-cab">
+              <span class="painel-ic" data-ic="video"></span>
+              <div>
+                <p class="sobrelinha">Uma tomada só, sem corte</p>
+                <h1 id="planoTitulo" tabindex="-1">Plano-sequência</h1>
+              </div>
+            </div>
+            <p class="plano-sub">Pessoa de verdade, numa tomada contínua — a cena não é cortada e
+              emendada: ela sai inteira. <b id="planoNomeIA"></b></p>
+
+            <section class="bloco">
+              <h2 class="passo">A cena, em português</h2>
+              <textarea id="planoCena" class="voz-texto" rows="7"
+                placeholder="Conte a cena inteira, como se estivesse descrevendo um take.&#10;&#10;Ex.: Um rapaz sentado na cama do quarto, de fones, aperta o play num gravador antigo. Ele fecha os olhos enquanto a fita começa a rodar, abaixa a cabeça devagar e respira fundo."></textarea>
+              <p class="plano-dica">⚠️ <b>Ninguém fala e ninguém canta</b> — a boca fica fechada e o
+                que entra é som ambiente. E <b>não use frase negativa</b> (&ldquo;sem olhar para a
+                câmera&rdquo;): descreva o que acontece, não o que não acontece.</p>
+            </section>
+
+            <section class="bloco">
+              <h2 class="passo">Duração</h2>
+              <div class="chips plano-chips" id="planoDuracoes"></div>
+            </section>
+
+            <section class="bloco">
+              <h2 class="passo">Tamanho do quadro</h2>
+              <div class="chips" id="planoResolucoes"></div>
+            </section>
+
+            <section class="bloco">
+              <h2 class="passo">A pessoa <small>(opcional)</small></h2>
+              <label class="upload" id="planoUp">
+                <input type="file" accept="image/*" class="sr-only">
+                <span class="up-ic" data-ic="enviar"></span>
+                <span class="up-txt">Clique ou arraste a foto (opcional — sem ela, o estúdio cria a pessoa)</span>
+              </label>
+              <button type="button" class="bt-fantasma mini" id="planoTirarFoto">Tirar a foto</button>
+            </section>
+
+            <div class="plano-andamento" id="planoAndamento" hidden>
+              <p><b id="planoAndTitulo"></b></p>
+              <div class="plano-progresso"><i id="planoAndBarra"></i></div>
+              <p class="fraco" id="planoAndDetalhe"></p>
+              <a class="bt-sec" id="planoVer" target="_blank" rel="noopener" hidden><span data-ic="ver"></span>Ver o vídeo</a>
+            </div>
+
+            <details class="ficha-tecnica">
+              <summary>Ficha técnica e o que já aprendemos</summary>
+              <h3 class="plano-lado-tit">A configuração</h3>
+              <div class="plano-config" id="planoConfig"></div>
+
+              <h3 class="plano-lado-tit">O que já aprendemos</h3>
+              <ul class="plano-licoes">
+                <li><b>Ao levantar, a câmera cola</b> e mostra nuca e tronco. Se a pessoa for se
+                  levantar, escreva <i>&ldquo;a câmera recua acompanhando, rosto sempre no
+                  quadro&rdquo;</i> — ou escolha uma cena em que ninguém levanta.</li>
+                <li><b>É uma tomada só.</b> Não dá para refazer um pedaço: se um trecho sair
+                  ruim, a tomada inteira é gerada de novo.</li>
+                <li><b>Cerca de 10 minutos de placa para cada 8 segundos.</b> Um clipe contínuo de
+                  4 minutos daria umas 7 horas — por isso o combinado é <b>2 ou 3 blocos de 24 s</b>
+                  por música, alternados na montagem.</li>
+              </ul>
+            </details>
+          </div>
+
+          <div class="painel-rodape">
+            <div class="plano-conta" id="planoConta"></div>
+            <button type="button" class="gerar" id="planoGerar"><span data-ic="play"></span><span>Gerar a tomada</span></button>
+          </div>
+        </aside>
+
+        <section class="criacoes" aria-labelledby="planoCriTitulo">
+          <div class="cri-cab">
+            <div>
+              <h2 id="planoCriTitulo" tabindex="-1">Tomadas geradas</h2>
+              <p class="fraco" id="planoCriConta" aria-live="polite"></p>
+            </div>
+          </div>
+          <div class="grade" id="planoGrade"></div>
+          <div class="vazio" id="planoVazio" hidden>
+            <p>Nenhuma tomada ainda. Conte a cena ao lado, escolha a duração e clique em Gerar a tomada.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== MINHAS CRIAÇÕES ============================== -->
+  <section id="vTudo" class="vista tudo" hidden aria-labelledby="tudoTitulo">
+    <section class="criacoes">
+      <div class="cri-cab">
+        <div>
+          <h1 id="tudoTitulo" tabindex="-1">Minhas criações</h1>
+          <p class="fraco" id="tudoConta" aria-live="polite">Carregando…</p>
+        </div>
+        <label class="busca busca-cri">
+          <span data-ic="busca"></span>
+          <input id="tudoBusca" type="search" placeholder="Buscar no prompt" aria-label="Buscar nas criações" autocomplete="off">
+        </label>
+      </div>
+      <div class="filtros">
+        <div class="chips-ia" id="tudoFiltro" role="group" aria-label="Filtrar por tipo"></div>
+      </div>
+      <div class="grade" id="tudoGrade"></div>
+      <div class="vazio" id="tudoVazio" hidden><p>Nada por aqui ainda.</p></div>
+      <div class="mais" id="tudoMaisBox" hidden>
+        <button type="button" class="bt-sec" id="tudoMais">Carregar mais</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============================== CANAL AUTOMÁTICO ============================== -->
+  <section id="vCanal" class="vista canal" hidden aria-labelledby="canalTitulo">
+    <div class="canal-cab">
+      <div class="canal-cab-tit">
+        <span class="painel-ic" data-ic="fila"></span>
+        <div>
+          <p class="sobrelinha">Do texto ao vídeo pronto</p>
+          <h1 id="canalTitulo" tabindex="-1">Canal automático</h1>
+          <p class="canal-pasta" id="canalPasta"></p>
+        </div>
+      </div>
+      <div class="canal-cab-bts">
+        <button type="button" class="bt-sec" id="canalAtualizar"><span data-ic="reusar"></span>Atualizar</button>
+        <button type="button" class="gerar" id="canalNovoBt"><span data-ic="mais"></span><span>Vídeo novo</span></button>
+      </div>
+    </div>
+
+    <p class="aviso-linha" id="canalErro" hidden></p>
+
+    <!-- a fila, quando está rodando -->
+    <div class="canal-fila" id="canalFila" hidden>
+      <span class="canal-fila-ic" data-ic="relogio"></span>
+      <div class="canal-fila-corpo">
+        <p><b id="canalFilaAgora"></b></p>
+        <p class="fraco" id="canalFilaDetalhe"></p>
+      </div>
+      <button type="button" class="bt-sec" id="canalFilaParar"><span data-ic="parar"></span>Parar</button>
+    </div>
+
+    <!-- vídeo novo -->
+    <div class="canal-novo" id="canalNovo" hidden>
+      <h2 class="passo">O texto da narração</h2>
+      <label class="voz-campo"><span>Título (vira o nome da pasta)</span>
+        <input id="canalTituloIn" type="text" maxlength="80" placeholder="Ex.: A pedra de Ebenézer"></label>
+      <textarea id="canalTexto" class="voz-texto" rows="9"
+        placeholder="Cole aqui a narração inteira.&#10;&#10;Gancho nos 5 primeiros segundos, uma ideia só, a referência falada por extenso e uma pergunta no fim."></textarea>
+      <div class="canal-conta">
+        <b id="canalLetras">0</b> letras · <b id="canalSegundos">0 s</b> de narração ·
+        <span id="canalPlaca">0 min de placa</span>
+      </div>
+      <p class="canal-dica" id="canalDica" hidden></p>
+      <div class="canal-novo-bts">
+        <button type="button" class="bt-sec" id="canalCancelar">Cancelar</button>
+        <button type="button" class="gerar" id="canalCriar"><span data-ic="ok"></span><span>Criar o vídeo</span></button>
+      </div>
+    </div>
+
+    <!-- lista -->
+    <div class="canal-lista" id="canalLista"><p class="fraco">Carregando…</p></div>
+
+    <!-- barra de ação quando há selecionados -->
+    <div class="canal-barra" id="canalBarra" hidden>
+      <span id="canalBarraTxt"></span>
+      <div class="canal-barra-bts">
+        <button type="button" class="bt-sec" id="canalLimparSel">Limpar seleção</button>
+        <button type="button" class="gerar" id="canalFazer"><span data-ic="play"></span><span>Fazer os escolhidos</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- janela das cenas -->
+  <dialog class="janela canal-cenas" id="dlgCenas" aria-labelledby="cenasTitulo">
+    <div class="janela-corpo">
+      <h2 id="cenasTitulo">Imagens de apoio</h2>
+      <p class="fraco" id="cenasSub"></p>
+      <div class="cenas-topo">
+        <label class="voz-campo pequeno"><span>Quantas imagens</span>
+          <input id="cenasQuantas" type="number" min="2" max="12" value="6"></label>
+        <button type="button" class="bt-sec" id="cenasSugerir"><span data-ic="brilho"></span>Sugerir sozinho</button>
+        <button type="button" class="bt-sec" id="cenasMais"><span data-ic="mais"></span>Linha em branco</button>
+      </div>
+      <p class="canal-dica">A imagem entra quando a <b>palavra-gatilho</b> é dita — por isso ela
+        precisa existir no texto. A primeira linha é a <b>prioritária</b>: o objeto que dá nome ao vídeo.</p>
+      <div class="cenas-tabela" id="cenasTabela"></div>
+      <p class="nota" id="cenasStatus" aria-live="polite"></p>
+      <div class="janela-acoes">
+        <button type="button" class="bt-sec" id="cenasFechar">Fechar</button>
+        <button type="button" class="gerar" id="cenasGravar"><span data-ic="ok"></span>Gravar as cenas</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============================== NARRAÇÃO (voz local, VoiceStudio) ============================== -->
+  <section id="vVoz" class="vista voz" hidden aria-labelledby="vozTitulo">
+    <h1 class="sr-only" id="vozTitulo" tabindex="-1">Narração</h1>
+
+    <!-- com o VoiceStudio fechado a tela CONTINUA à mostra; isto aqui é só uma faixa em cima -->
+    <div class="voz-off" id="vozOff" role="status" hidden>
+      <div class="voz-off-card">
+        <span class="voz-off-ic" data-ic="microfone"></span>
+        <div class="voz-off-texto">
+          <h2>A voz local está desligada</h2>
+          <p>A tela abaixo é a da narração — ela volta a funcionar assim que o
+            <b>VoiceStudio</b> estiver aberto.</p>
+        </div>
+        <div class="voz-off-bts">
+          <button type="button" class="gerar" id="vozLigar"><span data-ic="ligar"></span><span>Ligar a voz local</span></button>
+          <button type="button" class="bt-sec" id="vozReprocurar"><span data-ic="reusar"></span>Procurar de novo</button>
+        </div>
+        <details class="voz-off-ajuda">
+          <summary>Como ligar na mão / não tenho o VoiceStudio</summary>
+          <ol class="voz-passos">
+            <li>Abra o VoiceStudio (ícone na Área de Trabalho ou no menu Iniciar).</li>
+            <li>Espere a janela dele carregar por completo.</li>
+            <li>Volte aqui e clique em <b>Procurar de novo</b>.</li>
+          </ol>
+          <p class="nota" id="vozOffDetalhe" aria-live="polite"></p>
+          <p class="nota fraco">Não tem o VoiceStudio? Ele é gratuito e de código aberto:
+            <span class="voz-link">github.com/debpalash/VoiceStudio</span> — baixe o arquivo
+            <b>win-x64</b> da página de releases.</p>
+        </details>
+      </div>
+    </div>
+
+    <div class="voz-tela" id="vozTela" hidden>
+      <!-- coluna da esquerda: as três coisas que dá para fazer -->
+      <nav class="voz-lado" aria-label="Ferramentas de voz">
+        <button type="button" class="voz-lado-bt" data-tela="falar" aria-current="page">
+          <span data-ic="onda"></span><span>Texto para fala</span></button>
+        <button type="button" class="voz-lado-bt" data-tela="desenhar">
+          <span data-ic="brilho"></span><span>Criar uma voz</span></button>
+        <button type="button" class="voz-lado-bt" data-tela="clonar">
+          <span data-ic="microfone"></span><span>Clonar uma voz</span></button>
+        <!-- Vozes na nuvem: a chave e de QUEM USA, nunca vem no pacote (03/11/2026) -->
+        <details class="nuvem" id="nuvemBloco">
+          <summary><span data-ic="onda"></span> Vozes na nuvem <i class="nuvem-selo" id="nuvemSelo"></i></summary>
+          <div class="nuvem-corpo">
+            <p class="nuvem-ex">A narração aqui é <b>local e de graça</b>. Se você tiver conta
+              no ElevenLabs e quiser as vozes de lá, cole a <b>sua</b> chave. Elas gastam
+              crédito da <b>sua</b> conta.</p>
+            <label class="nuvem-rot" for="nuvemChave">Chave do ElevenLabs</label>
+            <input type="password" id="nuvemChave" autocomplete="off" spellcheck="false"
+                   placeholder="cole a chave aqui" maxlength="300">
+            <div class="nuvem-bts">
+              <button type="button" class="gerar" id="nuvemSalvar">Salvar</button>
+              <button type="button" class="bt-sec" id="nuvemTirar">Remover</button>
+            </div>
+            <p class="nuvem-msg" id="nuvemMsg" role="status"></p>
+            <p class="nuvem-pe">Fica num arquivo de texto na sua máquina, na pasta
+              <code>API</code>. Nunca sai daqui e nunca vai para o GitHub.</p>
+          </div>
+        </details>
+        <div class="voz-lado-pe">
+          <p class="voz-maq" id="vozMaq"><i class="ponto"></i><span>verificando…</span></p>
+          <p class="voz-motor" id="vozMotor" hidden></p>
+        </div>
+      </nav>
+
+      <!-- meio: o texto, como no ElevenLabs -->
+      <div class="voz-meio">
+        <div class="voz-meio-cab">
+          <span class="voz-chip" id="vozChipVoz">Nenhuma voz escolhida</span>
+          <span class="voz-selo" id="vozChipLic" hidden></span>
+        </div>
+
+        <!-- TELA 1: texto para fala -->
+        <div class="voz-pagina" data-pagina="falar">
+          <textarea id="vozTexto" class="voz-texto" rows="12" spellcheck="true"
+            placeholder="Escreva aqui o texto da narração.&#10;&#10;Dica: reticências… são onde a voz respira. Não escreva número em algarismo (6:33) — escreva por extenso (Mateus seis), senão ele lê errado."></textarea>
+          <div class="voz-barra">
+            <div class="voz-conta">
+              <b id="vozLetras">0</b> letras · <b id="vozEstimado">0 s</b> estimados
+              <span class="voz-real" id="vozReal" hidden></span>
+            </div>
+            <div class="voz-barra-bts">
+              <button type="button" class="bt-sec" id="vozLimpar"><span data-ic="lixo"></span>Limpar</button>
+              <button type="button" class="gerar" id="vozFalar"><span data-ic="play"></span><span>Gerar narração</span></button>
+            </div>
+          </div>
+          <div class="voz-saida" id="vozSaida" hidden>
+            <audio id="vozAudio" controls preload="none"></audio>
+            <div class="voz-saida-info" id="vozSaidaInfo"></div>
+            <a class="bt-sec" id="vozBaixar" download><span data-ic="baixar"></span>Baixar o .wav</a>
+          </div>
+        </div>
+
+        <!-- TELA 2: criar uma voz pela descrição -->
+        <div class="voz-pagina" data-pagina="desenhar" hidden>
+          <h2 class="passo">Descreva a voz que você quer</h2>
+          <textarea id="vozDesc" class="voz-texto curta" rows="4"
+            placeholder="Ex.: homem idoso, voz grave, calma e acolhedora, sotaque brasileiro, fala devagar como quem conta história"></textarea>
+          <p class="voz-entendeu" id="vozEntendeu" aria-live="polite"></p>
+          <h2 class="passo">Ponto de partida</h2>
+          <div class="chips" id="vozEstilos" role="group" aria-label="Ponto de partida"></div>
+          <label class="voz-campo"><span>Nome desta voz</span>
+            <input id="vozDescNome" type="text" maxlength="60" placeholder="Ex.: Senhor da varanda"></label>
+          <button type="button" class="gerar" id="vozCriar"><span data-ic="brilho"></span><span>Criar a voz</span></button>
+          <p class="nota" id="vozCriarStatus" aria-live="polite"></p>
+        </div>
+
+        <!-- TELA 3: clonar -->
+        <div class="voz-pagina" data-pagina="clonar" hidden>
+          <h2 class="passo">Áudio de referência</h2>
+          <label class="upload" id="vozUp">
+            <input type="file" accept="audio/*" class="sr-only">
+            <span class="up-ic" data-ic="enviar"></span>
+            <span class="up-txt">Clique ou arraste um áudio limpo (10 a 60 s, uma pessoa só, sem música)</span>
+          </label>
+          <h2 class="passo">O que está falado no áudio <span class="fraco">(pode deixar em branco)</span></h2>
+          <textarea id="vozTransc" class="voz-texto curta" rows="4"
+            placeholder="As PALAVRAS que a pessoa fala no áudio, do jeito que ela fala. Na dúvida, deixe vazio."></textarea>
+          <p class="aviso-linha">⚠️ Só escreva aqui se for <b>exatamente o que se ouve</b>. Texto
+            errado é pior que campo vazio: medido em 31/10, uma transcrição trocada fez a fala
+            sair <b>cortada pela metade</b>. Em branco, o motor se vira sozinho.</p>
+          <label class="voz-campo"><span>Nome desta voz</span>
+            <input id="vozClonNome" type="text" maxlength="60" placeholder="Ex.: Minha voz"></label>
+          <p class="aviso-linha">Clone apenas a sua própria voz ou a de quem autorizou você.</p>
+          <button type="button" class="gerar" id="vozClonar"><span data-ic="microfone"></span><span>Clonar a voz</span></button>
+          <p class="nota" id="vozClonarStatus" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <!-- direita: os ajustes, como no painel do ElevenLabs -->
+      <aside class="voz-ajustes" aria-label="Configurações da narração">
+        <h2 class="voz-ajustes-tit">Configurações</h2>
+
+        <div class="voz-grupo">
+          <label class="voz-rot" for="vozVoz">Voz</label>
+          <select id="vozVoz" class="voz-select"></select>
+          <p class="voz-licenca" id="vozLicenca"></p>
+        </div>
+
+        <div class="voz-grupo">
+          <label class="voz-rot" for="vozIdioma">Idioma</label>
+          <select id="vozIdioma" class="voz-select"></select>
+        </div>
+
+        <div class="voz-grupo">
+          <span class="voz-rot">Emoção e entrega</span>
+          <div class="chips" id="vozEmocoes" role="group" aria-label="Emoção"></div>
+          <input id="vozInstruct" type="text" class="voz-instruct" maxlength="200"
+                 placeholder="ou escreva: fale devagar, com calma, como quem conta história">
+          <p class="voz-nota-peq">⚠️ A entrega entra na <b>voz</b>, não em cada fala: este motor
+            só a aceita na hora de criar ou clonar.
+            <button type="button" class="voz-link-bt" id="vozIrCriar">Criar uma voz com essa
+            entrega</button> — aí ela fala assim em tudo que você gerar com ela.</p>
+        </div>
+
+        <div class="voz-grupo">
+          <label class="voz-rot" for="vozVel">Velocidade <b id="vozVelVal">1,00×</b></label>
+          <input id="vozVel" type="range" min="0.6" max="1.4" step="0.05" value="1">
+          <div class="voz-extremos"><span>devagar</span><span>rápido</span></div>
+        </div>
+
+        <details class="voz-avancado">
+          <summary>Ajuste fino</summary>
+          <label class="voz-rot" for="vozSteps">Capricho <b id="vozStepsVal">16</b></label>
+          <input id="vozSteps" type="range" min="4" max="48" step="2" value="16">
+          <div class="voz-extremos"><span>rápido</span><span>caprichado</span></div>
+          <p class="voz-nota-peq">Mais passos = mais tempo de placa pela mesma fala. Em 16 a
+            narração sai bem e mais rápida que o tempo real.</p>
+        </details>
+
+        <p class="voz-rodape">Tudo isto roda no seu computador. Nenhum texto sai daqui e não
+          existe mensalidade.</p>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<!-- ============================== JANELAS ============================== -->
+<dialog class="janela confirmar" id="dlgConfirmar" aria-labelledby="confTitulo" aria-describedby="confTexto">
+  <div class="janela-corpo">
+    <span class="conf-ic" id="confIc"></span>
+    <h2 id="confTitulo"></h2>
+    <p id="confTexto"></p>
+    <ul class="conf-lista" id="confLista" hidden></ul>
+    <p class="conf-rodape" id="confRodape" hidden></p>
+    <div class="janela-acoes">
+      <button type="button" class="bt-sec" id="confNao">Voltar</button>
+      <button type="button" class="bt-perigo" id="confSim">Confirmar</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="janela ficha-dlg" id="dlgFicha" aria-labelledby="fichaNome">
+  <div class="janela-corpo" id="fichaCorpo"></div>
+</dialog>
+
+<dialog class="lupa" id="lupa" aria-labelledby="lupaTitulo">
+  <div class="lupa-grade">
+    <div class="lupa-midia" id="lupaMidia"></div>
+    <aside class="lupa-info">
+      <div class="lupa-topo">
+        <span class="selo" id="lupaSelo"></span>
+        <span class="lupa-pos" id="lupaPos"></span>
+        <button type="button" class="ic-bt" id="lupaFechar" aria-label="Fechar (Esc)"><span data-ic="fechar"></span></button>
+      </div>
+      <h2 id="lupaTitulo"></h2>
+      <p class="lupa-sub" id="lupaSub"></p>
+      <dl class="lupa-dados" id="lupaDados"></dl>
+      <p class="aviso-linha" id="lupaAviso" hidden></p>
+      <div class="lupa-prompt-cab"><h3>Prompt</h3><button type="button" class="bt-fantasma mini" id="lupaCopiar"><span data-ic="copiar"></span>Copiar</button></div>
+      <p class="lupa-prompt" id="lupaPrompt"></p>
+      <p class="lupa-ficha" id="lupaFicha"></p>
+      <div class="lupa-saidas" id="lupaSaidas" hidden></div>
+      <div class="lupa-acoes">
+        <a class="gerar" id="lupaBaixar" download><span data-ic="baixar"></span><span id="lupaBaixarTxt">Baixar no tamanho original</span></a>
+        <div class="lupa-acoes-2">
+          <button type="button" class="bt-sec" id="lupaReusar"><span data-ic="reusar"></span>Reusar</button>
+          <a class="bt-sec" id="lupaAbrir" target="_blank" rel="noopener"><span data-ic="externo"></span>Nova aba</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <button type="button" class="lupa-nav ant" id="lupaAnt" aria-label="Criação anterior (seta para a esquerda)"><span data-ic="esq"></span></button>
+  <button type="button" class="lupa-nav prox" id="lupaProx" aria-label="Próxima criação (seta para a direita)"><span data-ic="dir"></span></button>
+</dialog>
+
+<div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+
+<script src="icones.js?v=20260924-desligar2"></script>
+<script src="conta.js?v=20261103-conta2"></script>
+<script src="atualizacao.js?v=20261103-atu"></script>
+<script src="app.js?v=20261102-brasa"></script>
+<script src="voz.js?v=20261103-nuvem"></script>
+<script src="canal.js?v=20261030-canal"></script>
+<script src="plano.js?v=20261102-molde2"></script>
+<script src="tudo.js?v=20261102-tudo2"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+/* Estúdio Local — Narração (voz local).
+   Arquivo à parte do estilo.css: usa só as variáveis que já existem lá, para a tela nascer
+   com a mesma cara do resto e para nada daqui vazar para as outras seções (tudo sob .voz). */
+
+.vista.voz { --tipo: var(--c-voz); padding: 18px 20px 28px; }
+
+/* ---------------------------------------------------------------- VoiceStudio fechado */
+.voz-off { padding: 14px 20px 0; }
+.voz-off-card { max-width: 560px; text-align: center; background: var(--painel); border: 1px solid var(--borda);
+  border-radius: var(--raio); padding: 30px 28px; box-shadow: var(--sombra); }
+.voz-off-ic { display: inline-flex; width: 46px; height: 46px; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--acento-suave); color: var(--acento); margin-bottom: 12px; }
+.voz-off-card h2 { font-size: 19px; margin-bottom: 8px; }
+.voz-off-card p { color: var(--fraco); }
+.voz-passos { text-align: left; color: var(--fraco); margin: 14px auto 18px; padding-left: 22px; max-width: 420px; }
+.voz-passos li { margin: 5px 0; }
+.voz-off-card .nota { margin-top: 12px; font-size: 12.5px; color: var(--fraco); word-break: break-word; }
+.voz-link { color: var(--acento); font-family: ui-monospace, Consolas, monospace; }
+
+/* ---------------------------------------------------------------- as três colunas */
+.voz-tela { display: grid; grid-template-columns: 206px minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+
+.voz-lado { display: flex; flex-direction: column; gap: 4px; background: var(--painel); border: 1px solid var(--borda);
+  border-radius: var(--raio); padding: 10px; position: sticky; top: calc(var(--topo-h) + 14px); }
+.voz-lado-bt { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; background: none;
+  border: 1px solid transparent; border-radius: var(--raio-c); padding: 9px 11px; color: var(--texto); font-size: 13.5px;
+  transition: background .15s, border-color .15s, color .15s; }
+.voz-lado-bt:hover { background: var(--fundo-2); }
+.voz-lado-bt[aria-current] { background: var(--acento-suave); border-color: var(--acento-borda); color: var(--acento); font-weight: 600; }
+.voz-lado-pe { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--borda); }
+.voz-maq { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--fraco); }
+.voz-maq .ponto { width: 7px; height: 7px; border-radius: 50%; background: var(--fraco); flex: none; }
+.voz-maq.ligado .ponto { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+
+/* ---------------------------------------------------------------- meio: o texto */
+.voz-meio { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio); padding: 16px; min-width: 0; }
+.voz-meio-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.voz-chip { display: inline-flex; align-items: center; gap: 7px; background: var(--fundo-2); border: 1px solid var(--borda);
+  border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; }
+.voz-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--tipo); flex: none;
+  box-shadow: 0 0 8px var(--tipo); }
+
+/* o selo da licença — é ele que impede publicar com motor proibido sem perceber */
+.voz-selo { font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.voz-selo.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent); }
+.voz-selo.alerta { color: var(--aviso); background: color-mix(in srgb, var(--aviso) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--aviso) 40%, transparent); }
+
+/* os passos numerados são os mesmos do resto do estúdio (.passo do estilo.css); só falta
+   reiniciar a contagem em cada sub-tela, senão todas aparecem como "1" */
+.voz-pagina { counter-reset: passo; }
+.voz-pagina .passo { margin: 16px 0 8px; }
+.voz-pagina > .passo:first-child { margin-top: 0; }
+
+.voz-texto { width: 100%; resize: vertical; background: var(--fundo-2); border: 1px solid var(--borda);
+  border-radius: var(--raio-c); padding: 14px 15px; color: var(--texto); font-size: 15px; line-height: 1.65;
+  min-height: 150px; }
+.voz-texto.curta { min-height: 84px; font-size: 14px; }
+.voz-texto:focus-visible { outline: none; border-color: var(--acento-borda); box-shadow: 0 0 0 3px var(--acento-suave); }
+.voz-texto::placeholder { color: var(--fraco); }
+
+.voz-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.voz-conta { color: var(--fraco); font-size: 13px; font-variant-numeric: tabular-nums; }
+.voz-conta b { color: var(--texto); }
+.voz-real { color: var(--ok); font-weight: 700; margin-left: 4px; }
+.voz-barra-bts { display: flex; gap: 8px; }
+
+.voz-saida { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--borda); display: flex;
+  flex-wrap: wrap; align-items: center; gap: 12px; }
+.voz-saida audio { flex: 1 1 260px; min-width: 0; height: 38px; }
+.voz-saida-info { flex: 1 1 100%; order: 3; color: var(--fraco); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.voz-saida-info b { color: var(--texto); }
+
+.voz-campo { display: block; margin: 14px 0; }
+.voz-campo span { display: block; font-size: 12.5px; color: var(--fraco); margin-bottom: 5px; }
+.voz-campo input { width: 100%; background: var(--fundo-2); border: 1px solid var(--borda); border-radius: var(--raio-c);
+  padding: 9px 12px; }
+.voz-campo input:focus-visible { outline: none; border-color: var(--acento-borda); }
+
+.voz-entendeu { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 12.5px; min-height: 1em; }
+.voz-entendeu .ok { color: var(--ok); }
+.voz-entendeu .alerta { color: var(--aviso); }
+
+/* ---------------------------------------------------------------- direita: ajustes */
+.voz-ajustes { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio); padding: 16px;
+  position: sticky; top: calc(var(--topo-h) + 14px); }
+.voz-ajustes-tit { font-size: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--borda); }
+.voz-grupo { padding: 14px 0; border-bottom: 1px solid var(--borda); }
+.voz-rot { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--fraco);
+  margin-bottom: 7px; }
+.voz-rot b { color: var(--texto); font-variant-numeric: tabular-nums; }
+.voz-select { width: 100%; background: var(--fundo-2); border: 1px solid var(--borda); border-radius: var(--raio-c);
+  padding: 9px 11px; }
+.voz-select:focus-visible { outline: none; border-color: var(--acento-borda); }
+.voz-licenca { margin-top: 7px; font-size: 12px; line-height: 1.45; color: var(--fraco); }
+.voz-licenca.ok { color: var(--ok); }
+.voz-licenca.alerta { color: var(--aviso); }
+.voz-nota-peq { margin-top: 8px; font-size: 11.5px; line-height: 1.5; color: var(--fraco); }
+.voz-link-bt { background: none; border: 0; padding: 0; color: var(--acento); text-decoration: underline;
+  font-size: inherit; }
+.voz-extremos { display: flex; justify-content: space-between; font-size: 11px; color: var(--fraco); margin-top: 3px; }
+.voz-ajustes input[type=range] { width: 100%; accent-color: var(--acento); }
+.voz-avancado { padding: 14px 0; border-bottom: 1px solid var(--borda); }
+.voz-avancado summary { cursor: pointer; font-size: 12.5px; color: var(--fraco); }
+.voz-avancado summary:hover { color: var(--texto); }
+.voz-avancado > *:not(summary) { margin-top: 10px; }
+.voz-rodape { padding-top: 14px; font-size: 11.5px; line-height: 1.5; color: var(--fraco); }
+
+/* ---------------------------------------------------------------- telas estreitas */
+@media (max-width: 1100px) {
+  .voz-tela { grid-template-columns: minmax(0, 1fr); }
+  .voz-lado, .voz-ajustes { position: static; }
+  .voz-lado { flex-direction: row; flex-wrap: wrap; }
+  .voz-lado-bt { width: auto; }
+  .voz-lado-pe { width: 100%; margin-top: 0; padding-top: 8px; }
+}
+
+/* a caixa da entrega (instruct): texto livre, que é como o motor realmente recebe a emoção */
+.voz-instruct { width: 100%; margin-top: 8px; background: var(--fundo-2); border: 1px solid var(--borda);
+  border-radius: var(--raio-c); padding: 8px 10px; font-size: 12.5px; }
+.voz-instruct:focus-visible { outline: none; border-color: var(--acento-borda); }
+.voz-off-bts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+/* qual motor de voz esta ligado, e se o que sair dele pode ser publicado */
+.voz-motor { margin-top: 8px; font-size: 11px; line-height: 1.45; color: var(--fraco);
+  padding-top: 8px; border-top: 1px solid var(--borda); }
+.voz-motor b { color: var(--texto); font-size: 11.5px; }
+.voz-motor.ok { color: var(--ok); }
+.voz-motor.alerta { color: var(--aviso); }
+
+
+/* ---- faixa de "voz desligada" (02/11/2026): a tela da narracao nao some mais ---- */
+.voz-off-card { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px;
+  max-width: none; text-align: left; padding: 12px 16px; }
+.voz-off-texto { flex: 1 1 280px; min-width: 0; }
+.voz-off-card h2 { font-size: 16px; margin-bottom: 2px; }
+.voz-off-card > .voz-off-ic { flex: none; margin: 0; }
+.voz-off-bts { flex: none; justify-content: flex-start; }
+.voz-off-ajuda { flex: 1 1 100%; margin-top: 2px; }
+.voz-off-ajuda > summary { cursor: pointer; color: var(--fraco); font-size: 13px; padding: 4px 0; }
+.voz-off-ajuda > summary:hover { color: var(--texto); }
+.voz-off-ajuda .voz-passos { margin-top: 8px; }
+.voz-desligada .voz-tela { opacity: .42; filter: grayscale(.45); pointer-events: none;
+  user-select: none; }
+
+/* ------------------------------------------ vozes na nuvem: a chave de QUEM USA (03/11) */
+/* Fica fechado por padrao: a voz local e de graca e e o caminho principal. Isto aqui e
+   um extra para quem JA tem conta no ElevenLabs - nao pode parecer que falta alguma coisa
+   para a narracao funcionar. */
+.nuvem { margin: 10px 8px 0; border: 1px solid var(--borda); border-radius: var(--raio-c);
+         background: var(--painel); font-size: 12.5px; }
+.nuvem > summary { padding: 9px 11px; cursor: pointer; color: var(--fraco);
+                   display: flex; align-items: center; gap: 7px; list-style: none; }
+.nuvem > summary::-webkit-details-marker { display: none; }
+.nuvem > summary:hover { color: var(--texto); }
+.nuvem[open] > summary { color: var(--texto); border-bottom: 1px solid var(--borda); }
+.nuvem-selo { width: 7px; height: 7px; border-radius: 50%; background: var(--borda-forte);
+              margin-left: auto; flex: none; }
+.nuvem-selo.on { background: var(--ok); }
+.nuvem-corpo { padding: 11px; display: grid; gap: 8px; }
+.nuvem-ex { color: var(--fraco); line-height: 1.5; }
+.nuvem-rot { color: var(--fraco); font-size: 11.5px; }
+.nuvem-corpo input { padding: 9px 10px; border-radius: 8px; background: var(--fundo-2);
+                     border: 1px solid var(--borda); color: var(--texto); width: 100%; }
+.nuvem-bts { display: flex; gap: 7px; }
+.nuvem-bts .gerar { padding: 8px 14px; font-size: 13px; border-radius: 8px; }
+.nuvem-msg:empty { display: none; }
+.nuvem-msg { padding: 8px 10px; border-radius: 8px; background: var(--fundo-2);
+             border: 1px solid var(--borda); line-height: 1.45; }
+.nuvem-msg.ruim { background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.4); }
+.nuvem-msg.bom { background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.4); }
+.nuvem-pe { color: var(--fraco); font-size: 11px; opacity: .85; line-height: 1.45; }
+.nuvem-pe code { background: var(--fundo-2); padding: 1px 4px; border-radius: 4px; }

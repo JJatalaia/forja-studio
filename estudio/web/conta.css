@@ -1,0 +1,165 @@
+/* A PORTA DE ENTRADA do Forja Studio (03/11/2026).
+
+   Mesma paleta da forja: fundo escuro, lima como acento e a brasa aquecendo a arte do
+   lado. Nada de internet aqui - sem fonte de fora, sem imagem de fora. Uma tela de login
+   que carrega antes do resto nao pode depender de nada que possa faltar.
+
+   A porta cobre a pagina inteira enquanto nao houver conta. Quando o estudio esta liberado,
+   o conta.js tira o [hidden] do corpo e esta folha nao pinta mais nada. */
+
+.porta {
+  position: fixed; inset: 0; z-index: 90; display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--fundo);
+  background-image:
+    radial-gradient(900px 600px at 12% -10%, rgba(215, 255, 58, .07), transparent 60%),
+    radial-gradient(800px 600px at 100% 110%, rgba(255, 138, 61, .09), transparent 60%);
+}
+
+/* o lado da arte: a brasa viva, feita so com gradiente - zero imagem */
+.porta-arte { position: relative; overflow: hidden; border-right: 1px solid var(--borda); }
+.porta-brasa {
+  position: absolute; left: 50%; top: 50%; width: min(60vh, 460px); aspect-ratio: 1;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(255, 221, 150, .95) 0%, rgba(255, 138, 61, .85) 26%,
+                    rgba(215, 255, 58, .25) 48%, transparent 70%);
+  filter: blur(2px);
+  animation: porta-respira 7s ease-in-out infinite;
+}
+.porta-arte::after {           /* a bigorna: duas faixas, so geometria */
+  content: ""; position: absolute; left: 50%; bottom: 18%; translate: -50% 0;
+  width: min(46vh, 320px); height: 14px; border-radius: 6px;
+  background: linear-gradient(180deg, #2a3040, #141821);
+  box-shadow: 0 -26px 60px rgba(255, 138, 61, .35), 0 10px 30px rgba(0, 0, 0, .5);
+}
+@keyframes porta-respira {
+  0%, 100% { opacity: .82; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.06); }
+}
+/* quem pediu menos movimento no sistema nao ve a brasa pulsar */
+@media (prefers-reduced-motion: reduce) {
+  .porta-brasa { animation: none; }
+}
+
+/* o lado do formulario */
+.porta-cartao {
+  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+  padding: 40px clamp(24px, 5vw, 64px); max-width: 560px; width: 100%;
+  margin: 0 auto; overflow-y: auto;
+}
+.porta-marca { font-size: 12.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--fraco); }
+.porta-marca i {
+  display: inline-block; width: 4px; height: 4px; border-radius: 50%;
+  background: var(--brasa); margin: 0 8px; vertical-align: middle;
+}
+.porta-cartao h1 { font-size: clamp(26px, 3.4vw, 34px); line-height: 1.15; }
+.porta-sub { color: var(--fraco); max-width: 46ch; }
+
+.porta-abas { display: flex; gap: 6px; margin-top: 6px; }
+.porta-abas button {
+  flex: 1; padding: 10px 12px; border-radius: var(--raio-c); cursor: pointer;
+  background: var(--painel); border: 1px solid var(--borda); color: var(--fraco);
+}
+.porta-abas button[aria-selected="true"] {
+  background: var(--acento-suave); border-color: var(--acento-borda); color: var(--texto);
+  font-weight: 600;
+}
+.porta-abas button:hover { border-color: var(--borda-forte); }
+
+.porta-form { display: grid; gap: 12px; }
+.porta-form label { display: grid; gap: 5px; font-size: 12.5px; color: var(--fraco); }
+.porta-form input {
+  padding: 11px 12px; border-radius: var(--raio-c); background: var(--fundo-2);
+  border: 1px solid var(--borda); color: var(--texto); width: 100%;
+}
+.porta-form input:focus-visible { outline: 2px solid var(--acento-borda); outline-offset: 1px; }
+.porta-form input:user-invalid { border-color: var(--erro); }
+
+.porta-senha { position: relative; display: block; }
+.porta-senha input { padding-right: 56px; }
+.porta-olho {
+  position: absolute; right: 6px; top: 50%; translate: 0 -50%;
+  background: none; border: 0; color: var(--fraco); cursor: pointer;
+  padding: 6px 8px; border-radius: 8px; font-size: 12px;
+}
+.porta-olho:hover { color: var(--texto); background: var(--painel-2); }
+
+/* usa a classe .gerar, o mesmo botao de acao do resto do estudio: um botao de
+   entrar que nao parece o botao principal faz a pessoa procurar outro. */
+.porta-bt { margin-top: 4px; padding: 12px; width: 100%; border-radius: var(--raio-c); }
+.porta-bt[disabled] { opacity: .6; cursor: progress; }
+
+.porta-erro {
+  padding: 10px 12px; border-radius: var(--raio-c); font-size: 13px;
+  background: rgba(248, 113, 113, .1); border: 1px solid rgba(248, 113, 113, .4);
+  color: #ffd7d7;
+}
+.porta-pe { color: var(--fraco); font-size: 12px; margin-top: 8px; }
+.porta-pe b { color: var(--texto); font-weight: 600; }
+
+/* telefone e janela estreita: a arte sai e sobra a largura toda para o formulario */
+@media (max-width: 860px) {
+  .porta { grid-template-columns: minmax(0, 1fr); }
+  .porta-arte { display: none; }
+  .porta-cartao { padding: 28px 20px; justify-content: flex-start; }
+}
+
+/* ---------------------------------------------------- a conta no rodape do trilho/topo */
+.conta-chip {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border-radius: 999px; background: var(--painel); border: 1px solid var(--borda);
+  font-size: 12px; color: var(--fraco); cursor: default; max-width: 100%;
+}
+.conta-chip b { color: var(--texto); font-weight: 600; overflow: hidden; text-overflow: ellipsis;
+                white-space: nowrap; }
+.conta-chip .conta-plano {
+  padding: 1px 7px; border-radius: 999px; font-size: 10.5px; letter-spacing: .06em;
+  text-transform: uppercase; background: var(--acento-suave); border: 1px solid var(--acento-borda);
+  color: var(--texto);
+}
+.conta-chip .conta-plano.pago { background: var(--brasa-suave); border-color: var(--brasa-borda); }
+.conta-sair {
+  background: none; border: 0; color: var(--fraco); cursor: pointer; font-size: 12px;
+  text-decoration: underline; padding: 2px 4px; border-radius: 6px;
+}
+.conta-sair:hover { color: var(--texto); }
+
+/* No TRILHO lateral a largura e de 104px: a pilula deitada vaza para fora e some atras do
+   conteudo (visto na tela em 03/11/2026). Aqui ela vira uma coluna, o nome ganha reticencias
+   e o "sair" desce para baixo. A pilula deitada continua valendo no topo, em tela estreita. */
+@media (min-width: 981px) {
+  .conta-canto { width: 100%; padding: 0 8px 10px; }
+  .conta-chip {
+    flex-direction: column; gap: 4px; border-radius: var(--raio-c);
+    padding: 8px 6px; text-align: center; width: 100%;
+  }
+  .conta-chip b { max-width: 100%; font-size: 11px; }
+  .conta-chip .conta-plano { font-size: 9.5px; }
+}
+
+/* aviso de licença perto de vencer / na folga sem internet */
+.conta-recado {
+  margin: 0 0 12px; padding: 10px 12px; border-radius: var(--raio-c); font-size: 13px;
+  background: var(--brasa-suave); border: 1px solid var(--brasa-borda);
+}
+
+/* --------------------------------------------- a tarja de atualizacao de configuracao */
+/* Fica no alto do conteudo, acima de tudo que rola junto: ela e um recado do sistema, nao
+   um cartao da pagina. Por isso nao usa a cor da brasa (que significa "gerando agora") -
+   usa o azul de informacao. */
+.atu-tarja {
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  margin: 0 0 14px; padding: 12px 14px; border-radius: var(--raio);
+  background: rgba(96, 165, 250, .1); border: 1px solid rgba(96, 165, 250, .4);
+}
+.atu-txt { flex: 1 1 320px; min-width: 0; }
+.atu-titulo { font-weight: 600; }
+.atu-sub { color: var(--fraco); margin-top: 2px; }
+.atu-pe { color: var(--fraco); font-size: 11.5px; margin-top: 4px; opacity: .85; }
+.atu-bts { display: flex; gap: 8px; flex: 0 0 auto; }
+.atu-bts .gerar { padding: 9px 16px; font-size: 14px; }
+
+.atu-indo { background: var(--painel); border-color: var(--borda-forte); }
+.atu-pronto { background: rgba(52, 211, 153, .1); border-color: rgba(52, 211, 153, .45); }
+.atu-erro { background: rgba(248, 113, 113, .1); border-color: rgba(248, 113, 113, .45); }

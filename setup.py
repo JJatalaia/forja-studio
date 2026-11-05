@@ -1,0 +1,322 @@
+# -*- coding: utf-8 -*-
+"""SETUP do Estudio Local: aplica a configuracao depois que voce baixou as IAs.
+
+    python setup.py
+
+O QUE ELE FAZ, E O QUE ELE NAO FAZ
+----------------------------------
+Este projeto NAO carrega as IAs: sao 165 GB, nao cabem num repositorio. O que ele carrega e
+o painel e a configuracao -- quais IAs valem a pena, ajustadas como, ligadas entre si.
+
+Entao sao dois momentos:
+
+    1. voce baixa os modelos           (a lista esta em IAS-INSTALADAS.md)
+    2. voce roda este setup            (ele poe a configuracao no lugar e confere tudo)
+
+O setup NAO baixa modelo. Ele CONFERE o que voce baixou, diz o que falta e em que pasta cada
+coisa tem que estar -- que e o erro mais comum de todos.
+
+NADA DAQUI E DESTRUTIVO
+-----------------------
+Ele nunca sobrescreve um arquivo seu sem avisar, nunca apaga modelo e nunca mexe no que ja
+estava funcionando. Se achar que vai estragar alguma coisa, ele para e explica.
+"""
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+AQUI = Path(__file__).resolve().parent
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+OK, AVISO, ERRO = "  [ok] ", "  [!]  ", "  [X]  "
+_problemas = []
+_avisos = []
+
+
+def titulo(n, t):
+    print("\n%s\n%d. %s\n%s" % ("-" * 66, n, t, "-" * 66))
+
+
+def falhou(msg):
+    _problemas.append(msg)
+    print(ERRO + msg)
+
+
+def cuidado(msg):
+    _avisos.append(msg)
+    print(AVISO + msg)
+
+
+# ---------------------------------------------------------------------- 1. a maquina
+def conferir_maquina():
+    titulo(1, "A sua maquina")
+    v = sys.version_info
+    if v < (3, 10):
+        falhou("Python %d.%d e antigo demais; precisa de 3.10 ou mais novo." % (v.major, v.minor))
+    else:
+        print(OK + "Python %d.%d.%d" % (v.major, v.minor, v.micro))
+
+    try:
+        r = subprocess.run(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
+                           capture_output=True, text=True, timeout=20)
+        linha = (r.stdout or "").strip().splitlines()
+        if not linha:
+            raise OSError("sem resposta")
+        nome, mem = [x.strip() for x in linha[0].split(",")[:2]]
+        gb = int("".join(c for c in mem if c.isdigit())) / 1024
+        print(OK + "placa: %s (%.0f GB)" % (nome, gb))
+        if gb < 15:
+            cuidado("Com menos de 16 GB de placa, as IAs de video nao cabem. "
+                    "A parte de imagem funciona.")
+    except Exception:
+        cuidado("Nao achei a nvidia-smi. Sem placa NVIDIA, so o que roda no processador "
+                "vai funcionar -- e vai ser muito lento.")
+
+    try:
+        livre = shutil.disk_usage(AQUI).free / 1024 ** 3
+        print(OK + "espaco livre aqui: %.0f GB" % livre)
+        if livre < 170:
+            cuidado("A trilha completa pede 165 GB de modelos. "
+                    "Veja as trilhas menores em INSTALAR.md.")
+    except OSError:
+        pass
+
+
+# ------------------------------------------------------------------- 2. a ComfyUI
+def achar_comfy():
+    titulo(2, "A ComfyUI")
+    if os.environ.get("ESTUDIO_COMFY_DIR"):
+        c = Path(os.environ["ESTUDIO_COMFY_DIR"])
+        print(OK + "ESTUDIO_COMFY_DIR aponta para %s" % c)
+    else:
+        c = AQUI / "ComfyUI_windows_portable" / "ComfyUI"
+    if not (c / "main.py").is_file():
+        falhou("Nao achei a ComfyUI em %s.\n"
+               "       Descompacte a ComfyUI portatil aqui, ou aponte com ESTUDIO_COMFY_DIR." % c)
+        return None
+    print(OK + "achei em %s" % c)
+
+    # 02/11/2026: eram 6. O segment-anything-2 e o controlnet_aux so serviam ao Wan Animate,
+    # que saiu do pacote -- e o INSTALAR.md ja manda instalar 4. Aqui tambem tem que ser 4,
+    # senao quem segue o manual direitinho e reprovado por um complemento que nao usa.
+    NOS = ("ComfyUI-Easy-Media", "ComfyUI-GGUF", "ComfyUI-KJNodes", "ComfyUI_Fill-ChatterBox")
+    faltam = [n for n in NOS if not (c / "custom_nodes" / n).is_dir()]
+    if faltam:
+        cuidado("Faltam %d complementos: %s\n"
+                "       Instale pelo ComfyUI Manager (procure pelo nome). Sem eles as IAs\n"
+                "       aparecem na tela mas nao rodam." % (len(faltam), ", ".join(faltam)))
+    else:
+        print(OK + "os %d complementos estao instalados" % len(NOS))
+    return c
+
+
+# -------------------------------------------------------------------- 3. os modelos
+def conferir_modelos(comfy):
+    titulo(3, "Os modelos que voce baixou")
+    man = AQUI / "modelos.json"
+    if not man.is_file():
+        cuidado("Nao achei o modelos.json; pulei a conferencia.")
+        return
+    lista = json.loads(man.read_text(encoding="utf-8")).get("comfyui", {})
+    if not comfy:
+        cuidado("Sem a ComfyUI nao da para conferir os %d modelos." % len(lista))
+        return
+    tem, falta, lugar_errado = [], [], []
+    raiz = comfy / "models"
+    onde = {}
+    for p, _, arqs in os.walk(raiz):
+        for a in arqs:
+            onde.setdefault(a, []).append(str(Path(p).relative_to(raiz)).replace("\\", "/"))
+    for nome, info in sorted(lista.items()):
+        if nome not in onde:
+            falta.append((nome, info))
+        elif info.get("pasta") and info["pasta"] not in onde[nome]:
+            lugar_errado.append((nome, info["pasta"], onde[nome][0]))
+        else:
+            tem.append(nome)
+    print(OK + "%d de %d modelos no lugar certo" % (len(tem), len(lista)))
+    if lugar_errado:
+        print(AVISO + "%d na PASTA ERRADA (por isso a IA nao aparece na lista):" % len(lugar_errado))
+        for nome, certo, achado in lugar_errado:
+            print("        %s\n           esta em models/%s  ->  tem que ir para models/%s"
+                  % (nome, achado, certo))
+        _avisos.append("%d modelos na pasta errada" % len(lugar_errado))
+    if falta:
+        gb = sum(i.get("bytes", 0) for _, i in falta) / 1024 ** 3
+        print(AVISO + "%d ainda nao baixados (%.0f GB). As IAs que dependem deles vao" % (len(falta), gb))
+        print("        aparecer como nao instaladas -- o painel funciona assim mesmo.")
+        for nome, info in falta[:8]:
+            print("        falta: %-58s -> models/%s" % (nome[:58], info.get("pasta", "?")))
+        if len(falta) > 8:
+            print("        ... e mais %d (a lista inteira esta em IAS-INSTALADAS.md)" % (len(falta) - 8))
+        _avisos.append("%d modelos faltando" % len(falta))
+
+
+# --------------------------------------------------------------- 4. as dependencias
+def instalar_dependencias(comfy):
+    titulo(4, "As 6 dependencias do Python")
+    if "--conferir" in sys.argv:
+        print(OK + "modo conferencia: nao instalei nada")
+        return
+    py = (comfy.parent / "python_embeded" / "python.exe") if comfy else None
+    if not (py and py.is_file()):
+        py = Path(sys.executable)
+        cuidado("Nao achei o python da ComfyUI portatil; vou usar %s." % py.name)
+    req = AQUI / "requirements.txt"
+    if not req.is_file():
+        falhou("Nao achei o requirements.txt.")
+        return
+    print("  instalando com %s ..." % py)
+    r = subprocess.run([str(py), "-m", "pip", "install", "-r", str(req)],
+                       capture_output=True, text=True)
+    if r.returncode:
+        falhou("O pip falhou. As ultimas linhas:\n       "
+               + "\n       ".join((r.stderr or r.stdout or "").strip().splitlines()[-4:]))
+    else:
+        print(OK + "instaladas")
+
+
+# --------------------------------------------------------------- 5. a configuracao
+def conferir_configuracao():
+    titulo(5, "A nossa configuracao")
+    est = AQUI / "estudio"
+    if not (est / "server.py").is_file():
+        falhou("Nao achei a pasta estudio aqui do lado.")
+        return
+    pres = json.loads((est / "presets.json").read_text(encoding="utf-8"))
+    n = sum(len(v) for v in pres.values() if isinstance(v, list))
+    wf = len(list((est / "presets").glob("*.api.json")))
+    print(OK + "%d IAs configuradas, %d workflows ajustados" % (n, wf))
+    if (est / "tempos.json").is_file():
+        print(OK + "tempos medidos: o painel ja mostra quanto falta na primeira geracao")
+
+    cfg = est / "config.json"
+    if "--conferir" in sys.argv:
+        pass
+    elif cfg.is_file():
+        print(OK + "config.json ja existe (e seu, nao mexi)")
+    elif True:
+        cfg.write_text(json.dumps({"canal_dir": "", "hermes_dir": ""}, indent=2), encoding="utf-8")
+        print(OK + "criei o config.json vazio (as suas pastas vao aqui)")
+
+    cl = AQUI / ".claude"
+    if cl.is_dir():
+        s = len(list((cl / "skills").glob("*"))) if (cl / "skills").is_dir() else 0
+        a = len(list((cl / "agents").glob("*.md"))) if (cl / "agents").is_dir() else 0
+        m = len(list((cl / "memory").glob("*.md"))) if (cl / "memory").is_dir() else 0
+        print(OK + "Claude Code: %d skills, %d agentes, %d memorias "
+                   "(apague a pasta .claude se nao usa)" % (s, a, m))
+
+
+# ------------------------------------------------------------------ 6. o atalho
+def criar_atalho(comfy):
+    """Os atalhos de abrir. Eles VEM prontos no pacote; aqui so conferimos e explicamos.
+
+    Antes este trecho escrevia um .bat na hora, e ele tinha um defeito feio: mandava abrir
+    o navegador ANTES de ligar o servidor. A primeira coisa que a pessoa via, depois de
+    baixar 235 GB, era "nao foi possivel conectar" - e tinha de adivinhar sozinha que
+    bastava atualizar a pagina. Os atalhos de agora esperam o estudio responder de verdade.
+    """
+    titulo(6, "Os atalhos para abrir")
+    principal = AQUI / "Forja Studio.bat"
+    if not principal.is_file():
+        cuidado("Nao achei o 'Forja Studio.bat' aqui do lado. Da para abrir na mao:\n"
+                "       ComfyUI_windows_portable\\python_embeded\\python.exe estudio\\server.py")
+        return None
+    print(OK + "%-29s abre o painel (espera ficar pronto antes)" % "Forja Studio.bat")
+    for extra, oque in (("Ligar com o Windows.bat", "abre sozinho quando voce entra no PC"),
+                        ("Nao ligar com o Windows.bat", "desfaz o de cima"),
+                        ("Desligar o estudio.bat", "fecha tudo e libera a placa de video")):
+        if (AQUI / extra).is_file():
+            print(OK + "%-29s %s" % (extra, oque))
+
+    # Icone na Area de Trabalho so se a pessoa quiser: mexer na area de trabalho dos
+    # outros sem perguntar e falta de educacao.
+    #
+    # 04/11/2026: era um .bat e virou um .lnk de verdade. O .bat abria uma janela preta
+    # antes de qualquer coisa, nao tinha icone proprio e parecia gambiarra. O .lnk aponta
+    # para o pythonw.exe (o Python SEM console) rodando estudio\abrir.py: a pessoa clica e
+    # ve o navegador, mais nada. Quem acha a Area de Trabalho e o atalho.py, que pergunta
+    # ao Windows em vez de adivinhar "C:\Users\<nome>\Desktop" - quem usa OneDrive tem ela
+    # redirecionada, e num Windows noutro idioma a pasta nem se chama "Desktop".
+    if "--conferir" not in sys.argv and os.name == "nt":
+        try:
+            sys.path.insert(0, str(AQUI / "estudio"))
+            import atalho as _atalho
+            mesa = _atalho._area_de_trabalho()
+            if mesa and not (mesa / "Forja Studio.lnk").exists():
+                if input("\n   Quer o icone do Forja Studio na Area de Trabalho? (S/n): "
+                         ).strip().lower() != "n":
+                    feito = _atalho.criar(mesa)
+                    if feito:
+                        print(OK + "icone criado na Area de Trabalho")
+                        print("       Clicar nele abre SO a pagina - nenhuma janela preta e")
+                        print("       nenhuma IA ligada. As IAs voce liga pelos botoes la dentro,")
+                        print("       uma de cada vez, do jeito que o seu computador aguentar.")
+                    else:
+                        cuidado("nao consegui criar o icone. Da para abrir pelo"
+                                " 'Forja Studio.bat' aqui da pasta.")
+        except (OSError, EOFError, KeyboardInterrupt):
+            pass
+        except Exception as erro_icone:
+            cuidado("nao consegui criar o icone (%s). Da para abrir pelo"
+                    " 'Forja Studio.bat' aqui da pasta." % erro_icone)
+    return principal
+
+
+def main():
+    print("=" * 66)
+    print("  SETUP DO ESTUDIO LOCAL")
+    print("  Poe a configuracao no lugar. Nao baixa modelo e nao apaga nada.")
+    if "--conferir" in sys.argv:
+        print("  MODO CONFERENCIA: so olha, nao instala nem cria nada.")
+    print("=" * 66)
+    conferir_maquina()
+    # Onde guardar os 235 GB. So pergunta na PRIMEIRA vez: quem ja escolheu nao quer ser
+    # perguntado de novo toda vez que roda o setup so para conferir alguma coisa.
+    if "--conferir" not in sys.argv and not (AQUI / "caminhos.bat").is_file():
+        try:
+            sys.path.insert(0, str(AQUI))
+            import escolher_pasta
+            escolher_pasta.escolher(AQUI)
+        except (EOFError, KeyboardInterrupt):
+            print("\n   Tudo bem, fica onde esta. Rode 'python escolher_pasta.py' quando quiser.")
+        except Exception as exc:
+            cuidado("Nao consegui perguntar onde instalar (%s). Fica onde esta." % exc)
+
+    comfy = achar_comfy()
+    conferir_modelos(comfy)
+    instalar_dependencias(comfy)
+    conferir_configuracao()
+    bat = criar_atalho(comfy)
+
+    print("\n" + "=" * 66)
+    if _problemas:
+        print("  PAREI EM %d PROBLEMA(S):" % len(_problemas))
+        for p in _problemas:
+            print("   - " + p.splitlines()[0])
+        print("\n  Resolva e rode de novo: python setup.py")
+        return 1
+    if _avisos:
+        print("  PRONTO, com %d aviso(s):" % len(_avisos))
+        for a in _avisos:
+            print("   - " + a.splitlines()[0])
+        print("\n  Da para abrir assim mesmo: o que falta aparece como nao instalado.")
+    else:
+        print("  PRONTO. Esta tudo no lugar.")
+    print("\n  Abra o painel:  %s" % (bat.name if bat else "python estudio/server.py"))
+    print("  Depois:         http://127.0.0.1:8194")
+    print("  Primeira vez?   leia USAR.md")
+    print("=" * 66)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

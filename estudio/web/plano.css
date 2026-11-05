@@ -1,0 +1,93 @@
+/* Estúdio Local — Plano-sequência. Só variáveis do estilo.css; tudo sob .plano. */
+
+.vista.plano { --tipo: var(--c-video); padding: 18px 20px 40px; }
+
+.plano-cab { margin-bottom: 18px; }
+.plano-cab h1 { font-size: 26px; margin-top: 4px; }
+.plano-sub { margin-top: 7px; color: var(--fraco); font-size: 13.5px; max-width: 720px; line-height: 1.6; }
+.plano-sub b { color: var(--tipo); }
+
+/* 02/11/2026: mesma grade da aba Imagem/Video — painel de passos a esquerda, galeria a direita */
+.plano-grade { display: grid; grid-template-columns: minmax(340px, 420px) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 980px) { .plano-grade { grid-template-columns: minmax(0, 1fr); } }
+
+/* o .passo do estilo.css numera por contador; sem reiniciar aqui, todos saem "1" */
+.plano-meio { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio);
+  padding: 18px; counter-reset: passo; }
+.plano-meio .passo { margin: 18px 0 9px; }
+.plano-meio > .passo:first-child { margin-top: 0; }
+.plano-meio .passo small { font-weight: 400; color: var(--fraco); }
+
+.plano-dica { margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--aviso); }
+.plano-dica b { color: var(--aviso); }
+
+/* a duração traz o custo junto: escolher sem ver o preço é como esse projeto perde noite */
+.plano-chips button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  padding: 9px 14px; border-radius: var(--raio-c); line-height: 1.3; }
+.plano-chips b { font-size: 14px; }
+.plano-chips small { font-size: 11px; color: var(--fraco); }
+.plano-chips button[aria-pressed=true] small { color: inherit; opacity: .85; }
+.plano-chips .custo { font-variant-numeric: tabular-nums; }
+
+#planoTirarFoto { margin-top: 6px; font-size: 12px; color: var(--fraco); }
+
+.plano-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--borda); }
+.plano-conta { color: var(--fraco); font-size: 13px; font-variant-numeric: tabular-nums; }
+.plano-conta b { color: var(--texto); }
+
+.plano-andamento { margin-top: 16px; padding: 14px; border-radius: var(--raio-c);
+  background: var(--fundo-2); border: 1px solid var(--borda); }
+.plano-andamento.ok { border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.plano-andamento.erro { border-color: color-mix(in srgb, var(--erro) 45%, transparent); }
+.plano-progresso { height: 6px; border-radius: 999px; background: var(--borda); overflow: hidden; margin: 9px 0; }
+.plano-progresso i { display: block; height: 100%; background: var(--tipo); transition: width .4s ease; }
+.plano-andamento .fraco { font-size: 12.5px; line-height: 1.5; }
+.plano-andamento .bt-sec { margin-top: 11px; }
+
+/* o lado direito: a configuração escrita, que é o que ele pediu para ficar à vista */
+.plano-lado { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio);
+  padding: 16px; position: sticky; top: calc(var(--topo-h) + 14px); }
+.plano-lado-tit { font-size: 13px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--fraco); margin-bottom: 10px; }
+.plano-lado-tit + * { margin-bottom: 18px; }
+
+.plano-config { display: flex; flex-direction: column; gap: 9px; }
+.plano-linha { display: flex; flex-direction: column; gap: 2px; padding-bottom: 9px;
+  border-bottom: 1px solid var(--borda); }
+.plano-linha:last-child { border-bottom: 0; padding-bottom: 0; }
+.plano-linha span { font-size: 11px; color: var(--fraco); text-transform: uppercase; letter-spacing: .04em; }
+.plano-linha b { font-size: 12.5px; line-height: 1.5; font-weight: 500; }
+
+.plano-licoes { margin: 0; padding-left: 17px; display: flex; flex-direction: column; gap: 9px; }
+.plano-licoes li { font-size: 12.5px; line-height: 1.55; color: var(--fraco); }
+.plano-licoes b { color: var(--texto); }
+.plano-licoes i { color: var(--tipo); font-style: normal; }
+
+@media (max-width: 980px) {
+  .plano-grade { grid-template-columns: minmax(0, 1fr); }
+  .plano-lado { position: static; }
+}
+
+
+/* ---- ficha tecnica: o que era a coluna cinza da direita agora abre so quando se quer ---- */
+.vista.plano .plano-sub { color: var(--fraco); font-size: 13px; margin: -4px 2px 10px; }
+.vista.plano .painel-rodape .plano-conta { font-size: 12.5px; color: var(--fraco); }
+.ficha-tecnica { margin: 14px 0 6px; border-top: 1px solid var(--borda); padding-top: 10px; }
+.ficha-tecnica > summary { cursor: pointer; color: var(--fraco); font-size: 13px; padding: 4px 0; }
+.ficha-tecnica > summary:hover { color: var(--texto); }
+.ficha-tecnica .plano-lado-tit { margin-top: 14px; }
+.ficha-tecnica .plano-lado-tit:first-of-type { margin-top: 8px; }
+
+/* ---- cartoes da galeria de tomadas (02/11/2026) ---- */
+#planoGrade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+#planoGrade .card { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio);
+  overflow: hidden; display: flex; flex-direction: column; }
+#planoGrade .midia { aspect-ratio: 16 / 9; background: #0c0f0c; display: grid; place-items: center; }
+#planoGrade .midia video, #planoGrade .midia img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#planoGrade .sem-midia { color: var(--fraco); font-size: 13px; }
+#planoGrade .info { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+#planoGrade .prompt { font-size: 13px; line-height: 1.4; }
+#planoGrade .meta { font-size: 12px; }
+#planoGrade .bts { display: flex; gap: 8px; margin-top: 2px; }
+#planoGrade .bts .bt-sec { text-decoration: none; }

@@ -1,0 +1,35 @@
+# --- o que NUNCA pode subir ---
+API/                    # as chaves (elevenlabs, civitai, huggingface, higgsfield, ...)
+*.key
+*_api_key.txt
+.env
+contas/                 # o servidor de contas NAO faz parte do pacote
+**/segredos/            # chave privada da licenca, senha do admin, chave do cofre
+chave_presets.json      # abre o cofre dos presets: mora so no seu PC e na VPS
+chave_vps*              # a chave que entra na sua VPS
+
+# --- dados de quem usa ---
+estudio/config.json      # pastas e ajustes da maquina de quem usa
+estudio/historico.json
+estudio/licenca.json      # a licenca E o token de quem usa
+estudio/chave_presets.bin # a chave do cofre guardada nesta maquina (DPAPI)
+estudio/versao_config.json  # que versao de config esta nesta maquina
+estudio/*.bak_antes_da_atualizacao
+estudio/vozes/
+estudio/vozes.json
+outputs/
+saidas/
+
+# --- modelos: 388 GB, baixados pelo instalador ---
+ComfyUI_windows_portable/
+modelos_texto/*.gguf
+*.safetensors
+*.ckpt
+*.gguf
+*.pth
+*.onnx
+
+# --- lixo ---
+*.bak*
+__pycache__/
+*.pyc

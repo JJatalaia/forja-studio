@@ -1,0 +1,100 @@
+/* Estúdio Local — Canal automático. Só variáveis do estilo.css; tudo sob .canal. */
+
+/* 02/11/2026: sem o max-width central — as outras telas ocupam a largura toda, e o Canal
+   centralizado era a 1ª coisa que denunciava que ele tinha nascido noutro dia. */
+.vista.canal { --tipo: var(--acento); padding: 18px 20px 120px; }
+
+.canal-cab { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: 14px; margin-bottom: 16px; }
+.canal-cab h1 { font-size: 26px; }
+/* mesmo bloco de titulo das abas Imagem/Video/Plano: icone em quadrado arredondado + sobrelinha */
+.canal-cab-tit { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.canal-cab-tit .painel-ic { flex: none; margin-top: 2px; }
+.canal-cab-tit .sobrelinha { color: var(--tipo); font-size: 11px; }
+.canal-pasta { margin-top: 5px; font-size: 12px; color: var(--fraco);
+  font-family: ui-monospace, Consolas, monospace; word-break: break-all; }
+.canal-cab-bts { display: flex; gap: 8px; }
+
+/* a fila rodando */
+.canal-fila { display: flex; align-items: center; gap: 12px; background: var(--acento-suave);
+  border: 1px solid var(--acento-borda); border-radius: var(--raio); padding: 12px 14px; margin-bottom: 14px; }
+.canal-fila-ic { color: var(--acento); }
+.canal-fila-corpo { flex: 1; min-width: 0; }
+.canal-fila-corpo .fraco { font-size: 12.5px; }
+
+/* vídeo novo */
+.canal-novo { background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio);
+  padding: 16px; margin-bottom: 16px; }
+.canal-novo .passo { margin-bottom: 10px; }
+.canal-conta { margin-top: 10px; color: var(--fraco); font-size: 13px; font-variant-numeric: tabular-nums; }
+.canal-conta b { color: var(--texto); }
+.canal-dica { margin-top: 10px; font-size: 12.5px; line-height: 1.5; color: var(--aviso); }
+.canal-novo-bts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+/* a lista */
+.canal-lista { display: flex; flex-direction: column; gap: 10px; }
+.canal-item { display: flex; align-items: flex-start; gap: 12px; background: var(--painel);
+  border: 1px solid var(--borda); border-radius: var(--raio); padding: 13px 15px;
+  transition: border-color .15s; }
+.canal-item:hover { border-color: var(--borda-forte); }
+.canal-item.pronto { opacity: .62; }
+.canal-escolher input { width: 17px; height: 17px; accent-color: var(--acento); margin-top: 3px; }
+.canal-item-corpo { flex: 1; min-width: 0; }
+.canal-item-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.canal-item-cab b { font-size: 14px; }
+.canal-frase { margin-top: 4px; color: var(--fraco); font-size: 12.5px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.canal-num { margin-top: 6px; font-size: 11.5px; color: var(--fraco); font-variant-numeric: tabular-nums; }
+.canal-num .medido { color: var(--ok); }
+.canal-item-bts { display: flex; flex-direction: column; gap: 6px; }
+
+.canal-selo { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+.canal-selo.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent); }
+.canal-aviso { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px;
+  color: var(--aviso); background: color-mix(in srgb, var(--aviso) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--aviso) 40%, transparent); }
+.canal-falta { font-size: 11.5px; color: var(--fraco); font-variant-numeric: tabular-nums; }
+
+/* as 7 etapas */
+.canal-etapas { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.etapa { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 9px;
+  border-radius: 999px; border: 1px solid var(--borda); color: var(--fraco); white-space: nowrap; }
+.etapa i { width: 6px; height: 6px; border-radius: 50%; background: var(--borda-forte); flex: none; }
+.etapa.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+.etapa.ok i { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+.etapa.meio { color: var(--aviso); border-color: color-mix(in srgb, var(--aviso) 35%, transparent); }
+.etapa.meio i { background: var(--aviso); }
+
+/* barra de baixo */
+.canal-barra { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 15;
+  display: flex; align-items: center; gap: 16px; background: var(--painel-2);
+  border: 1px solid var(--acento-borda); border-radius: 999px; padding: 10px 10px 10px 20px;
+  box-shadow: var(--sombra); max-width: calc(100vw - 32px); }
+.canal-barra span { font-size: 13px; }
+.canal-barra-bts { display: flex; gap: 8px; }
+
+/* janela das cenas */
+.canal-cenas { max-width: 860px; width: calc(100vw - 32px); }
+.canal-cenas .janela-corpo { padding: 20px; }
+.cenas-topo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin: 14px 0 10px; }
+.voz-campo.pequeno { margin: 0; width: 130px; }
+.cenas-tabela { display: flex; flex-direction: column; gap: 6px; margin-top: 12px;
+  max-height: 46vh; overflow-y: auto; }
+.cena-linha { display: flex; align-items: center; gap: 7px; }
+.cena-n { width: 16px; text-align: center; color: var(--acento); font-size: 13px; flex: none; }
+.cena-gatilho { width: 150px; flex: none; }
+.cena-prompt { flex: 1; min-width: 0; }
+.cena-linha input { background: var(--fundo-2); border: 1px solid var(--borda);
+  border-radius: var(--raio-c); padding: 8px 10px; font-size: 13px; }
+.cena-linha input:focus-visible { outline: none; border-color: var(--acento-borda); }
+.canal-cenas .nota { margin-top: 12px; font-size: 12.5px; color: var(--fraco); white-space: pre-wrap;
+  max-height: 110px; overflow-y: auto; }
+
+@media (max-width: 760px) {
+  .canal-item { flex-wrap: wrap; }
+  .canal-item-bts { flex-direction: row; width: 100%; }
+  .cena-linha { flex-wrap: wrap; }
+  .cena-gatilho { width: 100%; }
+  .canal-barra { flex-direction: column; border-radius: var(--raio); align-items: stretch; padding: 12px; }
+}

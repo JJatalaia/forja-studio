@@ -1,0 +1,637 @@
+"""VoiceStudio (voz local, de graça) como fonte de narração do estúdio.
+
+O VoiceStudio é um aplicativo separado (https://github.com/debpalash/VoiceStudio, AGPL-3.0).
+NÓS NÃO COPIAMOS CÓDIGO DELE: falamos pela rede, com o servidor MCP que ele publica em
+http://127.0.0.1:3900/mcp/. Isso mantém o estúdio sendo nosso — copiar um arquivo que fosse
+obrigaria o estúdio inteiro a virar AGPL. Chamar, nunca copiar.
+
+Com ele desligado tudo aqui degrada em silêncio: `estado()` devolve no_ar=False e a tela
+mostra o cartão de "ligar", igual ao painel de música.
+
+AS FERRAMENTAS QUE ELE EXPÕE (docs/mcp.md do projeto):
+  generate_speech(text, profile_id?, language?, format?)  -> áudio (base64 embutido, por padrão)
+  clone_voice(ref_audio_path | ref_audio_base64, ...)     -> profile_id
+  design_voice(description)                               -> profile_id
+  describe_voice(description)   -> o que ele entendeu e o que NÃO entendeu da descrição
+  list_voices / list_languages / check_health
+
+⚠️ LICENÇA DOS MODELOS: o motor que vem de fábrica (OmniVoice) tem pesos CC-BY-NC, ou seja,
+NÃO pode ser usado em vídeo monetizado. O VoxCPM 2 é Apache-2.0 (pesos e código) e é o alvo.
+Por isso `vozes()` devolve um selo de licença em cada voz: é ele que a tela mostra, para
+ninguém publicar sem querer com um motor proibido.
+"""
+import asyncio
+import base64
+import binascii
+import json
+import os
+import re
+import shutil
+import subprocess
+import time
+from pathlib import Path
+
+import aiohttp
+
+URL = os.environ.get("ESTUDIO_VOZ_URL") or "http://127.0.0.1:3900"
+MCP = URL.rstrip("/") + "/mcp/"
+PROTOCOLO = "2025-06-18"
+# A primeira geração depois de ligar é sempre a mais lenta (carrega os pesos e compila os
+# kernels da CUDA). A documentação deles fala em ~8 s só de carga, e o tempo de espera aqui
+# tem de caber uma narração inteira de 40 s, não só uma frase.
+TEMPO_RAPIDO, TEMPO_FALA = 30, 600
+
+_sessao = {"id": None, "ate": 0.0}        # id da sessão MCP (vem no cabeçalho mcp-session-id)
+_cache = {"vozes": None, "ate": 0.0, "idiomas": None, "idiomas_ate": 0.0}
+_vez = asyncio.Lock()                      # UMA geração por vez: a regra da casa vale aqui também
+
+# ----------------------------------------------------------------- licença dos motores
+# Medido em 30/10/2026 lendo os cards dos modelos. O que não estiver nesta lista entra como
+# "não conferida" — que na tela é amarelo, nunca verde. Verde só com licença lida.
+LICENCAS = {
+    "voxcpm":     ("ok",       "Apache-2.0 — pode publicar e monetizar"),
+    "mosstts":    ("ok",       "Apache-2.0 — pode publicar e monetizar"),
+    "gptsovits":  ("ok",       "MIT — pode publicar e monetizar"),
+    "pockettts":  ("ok",       "MIT / CC-BY-4.0 — pode publicar, com crédito"),
+    "supertonic": ("duvida",   "Licença não conferida — olhe o card antes de publicar"),
+    "cosyvoice":  ("ok",       "Apache-2.0 — mas NÃO fala português"),
+    "omnivoice":  ("proibido", "CC-BY-NC — só rascunho, não pode monetizar"),
+    "kitten":     ("limite",   "Licença com teto de US$ 1 milhão de faturamento"),
+    "indextts":   ("duvida",   "Licença da bilibili, contestada — evitar"),
+    "whisper":    ("ok",       "MIT — transcrição"),
+}
+
+
+# nomes em português dos idiomas que ele devolve como código solto ("en", "es"...)
+NOMES_IDIOMA = {
+    "en": "Inglês", "es": "Espanhol", "fr": "Francês", "de": "Alemão", "it": "Italiano",
+    "ru": "Russo", "ja": "Japonês", "ko": "Coreano", "zh": "Chinês", "ar": "Árabe",
+    "hi": "Híndi", "tr": "Turco", "nl": "Holandês", "pl": "Polonês", "sv": "Sueco",
+    "da": "Dinamarquês", "fi": "Finlandês", "no": "Norueguês", "el": "Grego",
+}
+
+
+def achar_backend():
+    """A pasta do motor do VoiceStudio instalado, ou None.
+
+    Procura nos dois lugares: o que o instalador usa por padrão (via %APPDATA%, que aqui é
+    uma junção para o E:) e a pasta do E: direto, para o caso de a junção não existir na
+    máquina de quem baixar o estúdio.
+    """
+    tentativas = []
+    ap = os.environ.get("APPDATA")
+    if ap:
+        tentativas.append(Path(ap) / "VoiceStudio" / "runtime" / "project")
+    # instalado AO LADO do projeto -- e onde ele costuma estar
+    _irmao = Path(__file__).resolve().parent.parent.parent / "VoiceStudio"
+    tentativas.append(_irmao / "runtime" / "project")
+    if os.environ.get("ESTUDIO_VOZ_DIR"):
+        tentativas.insert(0, Path(os.environ["ESTUDIO_VOZ_DIR"]))
+    for p in tentativas:
+        if (p / ".venv" / "Scripts" / "python.exe").is_file() and (p / "backend" / "main.py").is_file():
+            return p
+    return None
+
+
+def ligar(saida_audio=None):
+    """Sobe o motor SEM JANELA. Devolve (ok, recado).
+
+    Por que sem janela: ele fechou o aplicativo e a aba caiu junto. Uma esteira que roda de
+    madrugada não pode depender de alguém ter deixado um programa aberto.
+    As variáveis de ambiente não são decoração: sem VOICESTUDIO_URL ele monta a própria URL
+    SEM a porta ("http://127.0.0.1/transcribe") e devolve 403 na transcrição.
+    """
+    proj = achar_backend()
+    if not proj:
+        return False, ("Não achei o VoiceStudio instalado. Baixe o VoiceStudio-0.5.7-win-x64.exe "
+                       "da página de releases e rode o assistente uma vez.")
+    porta = URL.rsplit(":", 1)[-1]
+    amb = dict(os.environ,
+               OMNIVOICE_PORT=porta, VOICESTUDIO_URL=URL, OMNIVOICE_HOST="127.0.0.1",
+               OMNIVOICE_MCP_BASE_PATH=str(saida_audio or Path.cwd()))
+    try:
+        subprocess.Popen([str(proj / ".venv" / "Scripts" / "python.exe"), "-u",
+                          str(proj / "backend" / "main.py")],
+                         cwd=str(proj / "backend"), env=amb,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except Exception as e:
+        return False, "Não consegui ligar o motor de voz: %s" % str(e)[:200]
+    return True, "Ligando o motor de voz. Leva uns 30 segundos na primeira vez."
+
+
+def licenca_de(nome):
+    """(selo, explicação) a partir do nome do motor/voz. Sem certeza, nunca diz 'pode'."""
+    n = re.sub(r"[^a-z0-9]", "", (nome or "").lower())
+    for chave, (selo, txt) in LICENCAS.items():
+        if chave in n:
+            return selo, txt
+    return "duvida", "Licença não conferida — não publique sem olhar o card do modelo"
+
+
+# ----------------------------------------------------------------- conversa com o MCP
+def _texto_do(res):
+    """Junta os pedaços de texto de uma resposta do MCP num string só."""
+    partes = []
+    for c in (res or {}).get("content") or []:
+        if isinstance(c, dict) and c.get("type") == "text" and c.get("text"):
+            partes.append(str(c["text"]))
+    return "\n".join(partes).strip()
+
+
+def _talvez_json(v):
+    """Ele devolve JSON DENTRO de texto, às vezes com duas camadas (medido em 30/10: o
+    check_health voltou como a string '{"status": "ok", ...}' dentro de structuredContent.result).
+    Desembrulha enquanto for string que parece JSON — no máximo 3 vezes, para não girar à toa."""
+    for _ in range(3):
+        if not isinstance(v, str):
+            break
+        t = v.strip()
+        if not t or t[0] not in "[{\"":
+            break
+        try:
+            v = json.loads(t)
+        except Exception:
+            break
+    return v
+
+
+def _json_do(res):
+    """O que vier estruturado; senão tenta ler o texto como JSON; senão devolve o texto cru."""
+    if isinstance(res, dict) and isinstance(res.get("structuredContent"), dict):
+        d = res["structuredContent"]
+        # alguns servidores embrulham tudo num "result"
+        return _talvez_json(d.get("result", d))
+    return _talvez_json(_texto_do(res)) or None
+
+
+def _audio_do(res):
+    """Acha os bytes do áudio na resposta, aceitando os três modos de saída dele.
+
+    `resources` (padrão) devolve o WAV em base64 embutido; `files` devolve um caminho no disco
+    e/ou uma URL. Aceitamos os três para não depender de como o aplicativo está configurado —
+    é exatamente o tipo de coisa que quebra na máquina de outra pessoa.
+    """
+    for c in (res or {}).get("content") or []:
+        if not isinstance(c, dict):
+            continue
+        if c.get("type") == "audio" and c.get("data"):
+            try:
+                return base64.b64decode(c["data"]), None
+            except (binascii.Error, ValueError):
+                pass
+        if c.get("type") == "resource":
+            r = c.get("resource") or {}
+            if r.get("blob"):
+                try:
+                    return base64.b64decode(r["blob"]), None
+                except (binascii.Error, ValueError):
+                    pass
+    d = _json_do(res)
+    if isinstance(d, dict):
+        for campo in ("wav_base64", "audio_base64", "data"):
+            if isinstance(d.get(campo), str) and len(d[campo]) > 256:
+                try:
+                    return base64.b64decode(d[campo]), None
+                except (binascii.Error, ValueError):
+                    pass
+        caminho = d.get("output_path") or d.get("path")
+        if caminho and Path(str(caminho)).is_file():
+            return Path(str(caminho)).read_bytes(), None
+        if d.get("audio_url"):
+            return None, str(d["audio_url"])
+    return None, None
+
+
+async def _ler(resp):
+    """A resposta pode vir JSON puro ou como fluxo SSE ('data: {...}'). Lê os dois."""
+    bruto = (await resp.read()).decode("utf-8", "replace").strip()
+    if not bruto:
+        return None
+    if "text/event-stream" in (resp.headers.get("Content-Type") or ""):
+        for linha in bruto.splitlines():
+            linha = linha.strip()
+            if linha.startswith("data:"):
+                try:
+                    d = json.loads(linha[5:].strip())
+                except Exception:
+                    continue
+                if isinstance(d, dict) and ("result" in d or "error" in d):
+                    return d
+        return None
+    try:
+        return json.loads(bruto)
+    except Exception:
+        return None
+
+
+async def _abrir(ses):
+    """Aperto de mão do MCP. Guarda o id da sessão por 10 min."""
+    if _sessao["id"] and time.time() < _sessao["ate"]:
+        return _sessao["id"]
+    corpo = {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+        "protocolVersion": PROTOCOLO, "capabilities": {},
+        "clientInfo": {"name": "estudio-local", "version": "1.0"}}}
+    cab = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
+    async with ses.post(MCP, json=corpo, headers=cab,
+                        timeout=aiohttp.ClientTimeout(total=TEMPO_RAPIDO)) as r:
+        d = await _ler(r)
+        sid = r.headers.get("mcp-session-id") or r.headers.get("Mcp-Session-Id")
+    if d and d.get("error"):
+        raise RuntimeError("O VoiceStudio recusou a conexão: %s" % str(d["error"])[:200])
+    _sessao.update(id=sid or "", ate=time.time() + 600)
+    cab2 = dict(cab)
+    if sid:
+        cab2["Mcp-Session-Id"] = sid
+    try:  # aviso de "pronto": alguns servidores exigem, outros ignoram
+        async with ses.post(MCP, json={"jsonrpc": "2.0", "method": "notifications/initialized"},
+                            headers=cab2, timeout=aiohttp.ClientTimeout(total=10)):
+            pass
+    except Exception:
+        pass
+    return _sessao["id"]
+
+
+async def chamar(ferramenta, argumentos=None, timeout=TEMPO_RAPIDO, _retentar=True):
+    """Chama uma ferramenta do VoiceStudio. Devolve o resultado cru do MCP."""
+    async with aiohttp.ClientSession() as ses:
+        sid = await _abrir(ses)
+        cab = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
+        if sid:
+            cab["Mcp-Session-Id"] = sid
+        corpo = {"jsonrpc": "2.0", "id": int(time.time() * 1000) % 100000, "method": "tools/call",
+                 "params": {"name": ferramenta, "arguments": argumentos or {}}}
+        async with ses.post(MCP, json=corpo, headers=cab,
+                            timeout=aiohttp.ClientTimeout(total=timeout)) as r:
+            if r.status in (400, 404) and _retentar:
+                # sessão velha/derrubada (ele reinicia sozinho depois de 15 min parado)
+                _sessao.update(id=None, ate=0.0)
+                return await chamar(ferramenta, argumentos, timeout, _retentar=False)
+            d = await _ler(r)
+    if not d:
+        raise RuntimeError("O VoiceStudio não respondeu direito. Ele está aberto?")
+    if d.get("error"):
+        raise RuntimeError(str(d["error"].get("message") or d["error"])[:300])
+    res = d.get("result") or {}
+    if res.get("isError"):
+        raise RuntimeError(_texto_do(res)[:300] or "O VoiceStudio recusou o pedido.")
+    return res
+
+
+# ----------------------------------------------------------------- o que a tela usa
+async def motor_ativo():
+    """Qual motor de voz está ligado agora — e a licença DELE.
+
+    Isto não vem pelo MCP: é uma rota HTTP comum do VoiceStudio (`/engines`). Importa porque
+    a lista de vozes não diz de qual motor cada voz é, e sem isso TODA voz apareceria como
+    "licença não conferida" — um alerta que grita sempre não avisa nada. Com o motor ativo em
+    mãos, a voz herda a licença dele.
+    """
+    try:
+        async with aiohttp.ClientSession() as ses:
+            async with ses.get(URL.rstrip("/") + "/engines",
+                               timeout=aiohttp.ClientTimeout(total=15)) as r:
+                d = await r.json()
+    except Exception:
+        return None
+    t = (d or {}).get("tts") or {}
+    ativo = t.get("active")
+    if not ativo:
+        return None
+    nome = ativo
+    for b in t.get("backends") or []:
+        if b.get("id") == ativo:
+            nome = b.get("display_name") or ativo
+            break
+    selo, txt = licenca_de(ativo)
+    return {"id": ativo, "nome": nome, "modelo": t.get("active_model"),
+            "licenca": selo, "licenca_txt": txt}
+
+
+async def estado():
+    """{no_ar, gpu, motor, detalhe} — nunca levanta erro: a tela precisa sempre de resposta."""
+    try:
+        res = await chamar("check_health", timeout=8)
+    except Exception as e:
+        return {"no_ar": False, "gpu": None, "motor": None, "detalhe": str(e)[:200]}
+    d = _json_do(res) or {}
+    gpu = None
+    if isinstance(d, dict):
+        gpu = d.get("device") or d.get("gpu") or d.get("active_device")
+    return {"no_ar": True, "gpu": gpu, "motor": await motor_ativo(),
+            "detalhe": d if isinstance(d, dict) else str(d)[:300]}
+
+
+def _normalizar_vozes(d):
+    """A lista vem em formatos diferentes conforme a versão. Aceita todos."""
+    if isinstance(d, dict):
+        d = d.get("voices") or d.get("profiles") or d.get("items") or []
+    if not isinstance(d, list):
+        return []
+    saida = []
+    for v in d:
+        if isinstance(v, str):
+            v = {"id": v, "name": v}
+        if not isinstance(v, dict):
+            continue
+        vid = v.get("profile_id") or v.get("id") or v.get("voice_id") or v.get("name")
+        if not vid:
+            continue
+        nome = v.get("name") or v.get("label") or str(vid)
+        motor = v.get("engine") or v.get("model") or v.get("backend") or ""
+        selo, txt = licenca_de(motor or nome)
+        saida.append({"id": str(vid), "nome": str(nome), "motor": str(motor),
+                      "tipo": v.get("type") or v.get("kind") or "",
+                      "licenca": selo, "licenca_txt": txt})
+    saida.sort(key=lambda v: ({"ok": 0, "limite": 1, "duvida": 2, "proibido": 3}[v["licenca"]], v["nome"].lower()))
+    return saida
+
+
+async def vozes(forcar=False):
+    """[{id, nome, motor, licenca, licenca_txt}] — em cache por 2 min."""
+    if not forcar and _cache["vozes"] is not None and time.time() < _cache["ate"]:
+        return _cache["vozes"]
+    try:
+        lista = _normalizar_vozes(_json_do(await chamar("list_voices", timeout=20)))
+    except Exception:
+        return _cache["vozes"] or []
+    # a voz não diz de qual motor é: herda a licença do motor LIGADO AGORA
+    m = await motor_ativo()
+    if m:
+        for v in lista:
+            if not v["motor"]:
+                v.update(motor=m["nome"], licenca=m["licenca"], licenca_txt=m["licenca_txt"])
+        lista.sort(key=lambda v: ({"ok": 0, "limite": 1, "duvida": 2, "proibido": 3}[v["licenca"]],
+                                  v["nome"].lower()))
+    # NÃO guardar lista vazia: durante os ~30 s de aquecimento ele responde sem as vozes, e
+    # guardar isso deixava a tela dizendo "nenhuma voz" por 2 minutos depois de já estar
+    # pronta. Resposta de quem ainda está acordando não é resposta.
+    if lista:
+        _cache.update(vozes=lista, ate=time.time() + 120)
+    return lista
+
+
+async def idiomas():
+    if _cache["idiomas"] is not None and time.time() < _cache["idiomas_ate"]:
+        return _cache["idiomas"]
+    try:
+        d = _json_do(await chamar("list_languages", timeout=20))
+    except Exception:
+        return _cache["idiomas"] or []
+    # Ele devolve {"total": 646, "popular": ["en","es",...], "note": ...} — a lista inteira não
+    # vem, e nem precisa: o que interessa é português. A nota dele diz, com todas as letras,
+    # que **"pt" significa pt-BR** e que pt-PT é o de Portugal. Por isso pt-BR entra à mão em
+    # primeiro lugar: deixar "automático" escolher foi o que fez a voz sair embaralhada por aí.
+    if isinstance(d, dict):
+        d = d.get("languages") or d.get("popular") or d.get("items") or []
+    lista = [{"codigo": "pt", "nome": "Português do Brasil"},
+             {"codigo": "pt-PT", "nome": "Português de Portugal"}]
+    vistos = {"pt", "pt-pt"}
+    for x in d if isinstance(d, list) else []:
+        c = x if isinstance(x, str) else (x.get("code") or x.get("id") or x.get("language")) if isinstance(x, dict) else None
+        if not c or str(c).lower() in vistos:
+            continue
+        vistos.add(str(c).lower())
+        nome = NOMES_IDIOMA.get(str(c).lower(), x.get("name") if isinstance(x, dict) else None) or str(c)
+        lista.append({"codigo": str(c), "nome": str(nome)})
+    # mesma coisa: só guarda se veio algo ALÉM dos dois portugueses que a gente põe à mão,
+    # senão uma falha de aquecimento congelava a lista curta por 10 minutos.
+    if len(lista) > 2:
+        _cache.update(idiomas=lista, idiomas_ate=time.time() + 600)
+    return lista
+
+
+async def descrever(descricao):
+    """O que ele entendeu da descrição — e, principalmente, o que NÃO entendeu.
+
+    É isto que deixa a tela avisar "não entendi 'acolhedora'" ENQUANTO ele escreve, em vez de
+    ele descobrir depois de esperar a geração.
+    """
+    d = _json_do(await chamar("describe_voice", {"description": descricao}, timeout=25))
+    if not isinstance(d, dict):
+        return {"entendeu": {}, "ignorou": [], "cru": d}
+    ignorou = d.get("unmapped") or d.get("unmapped_words") or d.get("ignored") or []
+    entendeu = {k: v for k, v in d.items()
+                if k in ("gender", "age", "pitch", "style", "accent", "speed", "tone") and v}
+    return {"entendeu": entendeu, "ignorou": list(ignorou) if isinstance(ignorou, list) else [], "cru": d}
+
+
+async def desenhar(descricao, nome=None, idioma="pt", entrega=None):
+    """Cria uma voz a partir de uma descrição escrita. Devolve o profile_id.
+
+    `name` é OBRIGATÓRIO no design_voice (conferido na lista de ferramentas dele em 30/10):
+    sem nome ele recusa. Então, se a pessoa não deu nome, a gente inventa um em vez de
+    deixar o pedido quebrar na cara dela.
+    """
+    args = {"description": descricao, "name": (nome or "").strip() or "Voz nova", "language": idioma}
+    if entrega:
+        args["instruct"] = entrega   # a entrega mora na voz; o generate_speech não a aceita
+    d = _json_do(await chamar("design_voice", args, timeout=180))
+    pid = (d or {}).get("profile_id") if isinstance(d, dict) else None
+    if not pid:
+        raise RuntimeError("Ele não devolveu uma voz. Tente uma descrição mais concreta "
+                           "(tipo: 'homem idoso, voz grave e calma, sotaque brasileiro').")
+    _cache.update(vozes=None, ate=0.0)
+    return str(pid)
+
+
+# ----------------------------------------------------------------- a referência do clone
+# A ficha do `clone_voice` (lida em 31/10) pede **5 a 30 segundos** de fala limpa. Mandar o
+# arquivo inteiro não melhora nada e QUEBRA: um mp3 de 4 MB vira 5,5 MB em base64 e o
+# VoiceStudio responde `413 Request body too large` — que na tela aparecia como "o VoiceStudio
+# não respondeu direito", mandando procurar no lugar errado.
+#
+# Então: cortamos para 25 s e preferimos mandar o CAMINHO (`ref_audio_path`), que é a via que a
+# própria ficha recomenda — o áudio não viaja dentro do pedido. Se a pasta base do MCP não
+# estiver configurada, cai no base64 do trecho curto, que agora cabe.
+REF_SEGUNDOS = 25
+
+
+def _ffmpeg():
+    """O ffmpeg do projeto, o do PATH, ou None."""
+    perto = Path(__file__).resolve().parent.parent / "_ferramentas" / "ffmpeg" / "bin" / "ffmpeg.exe"
+    if perto.is_file():
+        return str(perto)
+    return shutil.which("ffmpeg")
+
+
+def _recortar_referencia(origem, pasta):
+    """Primeiros REF_SEGUNDOS em WAV mono 24 kHz dentro de `pasta`.
+
+    Sem ffmpeg, devolve o original — melhor tentar com o arquivo inteiro do que não tentar.
+    """
+    ff = _ffmpeg()
+    if not ff:
+        return Path(origem)
+    pasta = Path(pasta)
+    try:
+        pasta.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        return Path(origem)
+    limpo = re.sub(r"[^A-Za-z0-9_-]+", "_", Path(origem).stem)[:40] or "ref"
+    destino = pasta / (limpo + "_25s.wav")
+    cmd = [ff, "-y", "-v", "error", "-i", str(origem), "-t", str(REF_SEGUNDOS),
+           "-ac", "1", "-ar", "24000", "-c:a", "pcm_s16le", str(destino)]
+    try:
+        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except Exception:
+        return Path(origem)
+    return destino if destino.is_file() and destino.stat().st_size > 1024 else Path(origem)
+
+
+async def clonar(caminho_audio, nome=None, transcricao=None, idioma="pt", entrega=None,
+                 base_mcp=None):
+    """Clona a voz de um áudio de referência. Devolve o profile_id.
+
+    A transcrição NO IDIOMA CERTO é o que separa clone bom de voz embaralhada: foi assim que
+    os dois vídeos de 18 e 19/10 produziram áudio ininteligível — a referência estava marcada
+    como inglês. Por isso aqui ela é pedida, não opcional de verdade.
+
+    `base_mcp` é a pasta que o VoiceStudio recebeu em OMNIVOICE_MCP_BASE_PATH. Com ela, o
+    áudio vai por caminho e não por dentro do pedido (ver o comentário do REF_SEGUNDOS).
+    """
+    p = Path(caminho_audio)
+    if not p.is_file():
+        raise RuntimeError("Não achei o áudio de referência: %s" % p)
+
+    pasta_ref = (Path(base_mcp) / "refs") if base_mcp else p.parent
+    curto = await asyncio.to_thread(_recortar_referencia, p, pasta_ref)
+
+    # Os nomes dos campos vêm da lista de ferramentas dele (30/10): é `ref_text`, não
+    # "transcript", e `name` é obrigatório.
+    base = {"name": (nome or "").strip() or "Voz clonada", "language": idioma}
+    if transcricao:
+        base["ref_text"] = transcricao
+    if entrega:
+        base["instruct"] = entrega
+
+    vias = []
+    if base_mcp:
+        try:
+            rel = curto.resolve().relative_to(Path(base_mcp).resolve())
+            vias.append(("caminho", {"ref_audio_path": str(rel).replace("\\", "/")}))
+        except ValueError:
+            pass  # o recorte não ficou dentro da pasta base: só resta o base64
+    vias.append(("base64", {"ref_audio_base64": base64.b64encode(curto.read_bytes()).decode()}))
+
+    ultimo = None
+    for _via, extra in vias:
+        try:
+            d = _json_do(await chamar("clone_voice", {**base, **extra}, timeout=300))
+        except Exception as e:
+            ultimo = str(e)
+            continue
+        if isinstance(d, dict) and d.get("error"):
+            ultimo = str(d["error"])[:200]
+            continue
+        pid = (d or {}).get("profile_id") if isinstance(d, dict) else None
+        if pid:
+            _cache.update(vozes=None, ate=0.0)
+            return str(pid)
+        ultimo = "ele respondeu sem a voz"
+
+    raise RuntimeError("Não consegui clonar: %s. O áudio precisa ser limpo, sem música e sem "
+                       "outra pessoa falando junto." % (ultimo or "sem resposta"))
+
+
+AJUSTES_REAIS = ("speed", "steps")
+# MEDIDO em 30/10, um por um, contra o motor rodando:
+#   speed    ok   — velocidade da fala
+#   steps    ok   — capricho (mais passos, mais tempo de placa)
+#   instruct NÃO  — a lista de ferramentas ANUNCIA o campo, mas o generate_speech devolve
+#                   400 com ele, mesmo com uma voz escolhida. Ele vale no clone_voice e no
+#                   design_voice: a ENTREGA entra na VOZ, não em cada fala.
+#   temperature / cfg / top_p — não existem (eu tinha chutado).
+# Anunciado não é o mesmo que aceito: o que vale é o que respondeu OK no teste.
+
+
+async def falar(texto, saida, voz_id=None, idioma="pt", formato="wav", ajustes=None):
+    """Gera a fala e salva em `saida`. Devolve {segundos, caminho, demorou}.
+
+    Se a versão instalada recusar algum ajuste por campo desconhecido, repetimos sem eles —
+    o estúdio tem de funcionar igual em versões diferentes do VoiceStudio, na máquina de
+    quem baixar, em vez de quebrar.
+    """
+    texto = (texto or "").strip()
+    if not texto:
+        raise RuntimeError("Sem texto para falar.")
+    base = {"text": texto, "format": formato}
+    if voz_id:
+        base["profile_id"] = voz_id
+    if idioma:
+        base["language"] = idioma
+    extras = {k: v for k, v in (ajustes or {}).items()
+              if k in AJUSTES_REAIS and v not in (None, "")}
+
+    async with _vez:  # uma geração por vez
+        t0 = time.time()
+        try:
+            res = await chamar("generate_speech", {**base, **extras}, timeout=TEMPO_FALA)
+        except RuntimeError as e:
+            # Ele recusa campo desconhecido com um "400 Bad Request" seco, sem dizer qual.
+            # Por isso a repetição vale para QUALQUER recusa quando havia extras: a narração
+            # sair sem o ajuste fino é melhor do que não sair.
+            if not extras:
+                raise
+            res = await chamar("generate_speech", base, timeout=TEMPO_FALA)
+        demorou = time.time() - t0
+
+    dados, url = _audio_do(res)
+    if dados is None and url:
+        endereco = url if url.startswith("http") else URL.rstrip("/") + "/" + url.lstrip("/")
+        async with aiohttp.ClientSession() as ses:
+            async with ses.get(endereco, timeout=aiohttp.ClientTimeout(total=120)) as r:
+                dados = await r.read()
+    if not dados:
+        raise RuntimeError("Ele respondeu, mas sem áudio. Veja a janela do VoiceStudio.")
+    p = Path(saida)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_bytes(dados)
+    return {"caminho": str(p), "bytes": len(dados), "demorou": round(demorou, 1),
+            "segundos": _duracao_wav(dados)}
+
+
+async def transcrever(caminho_audio, idioma="pt"):
+    """Ouve um áudio e devolve o texto. É com isto que a gente confere a própria voz.
+
+    Manda o áudio em base64 e NÃO pelo caminho: por caminho ele exige uma pasta configurada
+    no servidor (`OMNIVOICE_MCP_BASE_PATH`) e, sem ela, responde um ERRO que parece
+    transcrição vazia. Foi assim que a primeira prova acusou "1 de 68 palavras" num áudio
+    que estava perfeito — verificador que mente é pior que verificador nenhum.
+    """
+    p = Path(caminho_audio)
+    if not p.is_file():
+        raise RuntimeError("Não achei o áudio: %s" % p)
+    d = _json_do(await chamar("transcribe", {
+        "audio_base64": base64.b64encode(p.read_bytes()).decode(),
+        "language": idioma}, timeout=300))
+    if isinstance(d, dict):
+        if d.get("error"):
+            raise RuntimeError(str(d["error"])[:300])
+        return str(d.get("text") or d.get("transcript") or d.get("result") or "").strip()
+    return str(d or "").strip()
+
+
+def _duracao_wav(dados):
+    """Duração do WAV lendo o cabeçalho — sem ffmpeg, sem biblioteca.
+
+    É este número que importa para a narração: a conta de "13,2 letras por segundo" é
+    estimativa, e só o áudio gerado confirma onde cada fala cai de verdade.
+    """
+    try:
+        if dados[:4] != b"RIFF" or dados[8:12] != b"WAVE":
+            return None
+        i, taxa, bloco = 12, None, None
+        while i + 8 <= len(dados):
+            pedaco, tam = dados[i:i + 4], int.from_bytes(dados[i + 4:i + 8], "little")
+            corpo = dados[i + 8:i + 8 + tam]
+            if pedaco == b"fmt " and len(corpo) >= 16:
+                taxa = int.from_bytes(corpo[4:8], "little")
+                bloco = int.from_bytes(corpo[12:14], "little")
+            elif pedaco == b"data" and taxa and bloco:
+                return round(tam / (taxa * bloco), 2)
+            i += 8 + tam + (tam % 2)
+    except Exception:
+        pass
+    return None

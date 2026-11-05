@@ -1,0 +1,8 @@
+# Dependencias do Estudio Local (fora as que ja vem na ComfyUI portatil).
+# Medido em 30/10/2026; o cryptography entrou em 03/11/2026, com a conta.
+aiohttp>=3.9
+cryptography>=43.0   # confere a assinatura da licenca (estudio/licenca.py)
+pillow>=10.0
+numpy>=1.26
+soundfile>=0.12
+faster-whisper>=1.0
