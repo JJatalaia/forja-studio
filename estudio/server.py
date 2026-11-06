@@ -59,6 +59,7 @@ from aiohttp import web
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # python_embeded não inclui a pasta do script
 import cofre  # noqa: E402  (os presets e workflows fechados: ver cofre.py)
+import ias  # noqa: E402  (instalar cada IA depois, pela tela: ver ias.py)
 import enquadrar  # noqa: E402
 import licenca  # noqa: E402  (conta e licenca: ver licenca.py)
 import atualizacao  # noqa: E402  (configuracao nova vinda do servidor)
@@ -3773,6 +3774,55 @@ def recarregar_presets():
     PRESETS = cofre.ler_json("presets.json")
 
 
+async def api_ias(req):
+    """Que IAs estao instaladas, quanto falta baixar de cada uma e se da para baixar.
+
+    06/11/2026. Antes, o Forja so servia para quem baixasse 235,7 GB ANTES de ver a
+    primeira tela. Agora instala-se a plataforma (~5,6 GB), entra-se na conta, e cada IA
+    vem depois, pelo botao da propria tela. Ver estudio/ias.py.
+    """
+    nomes = []
+    for aba, lista in (PRESETS or {}).items():
+        if isinstance(lista, list):
+            nomes += [p.get("nome") for p in lista if p.get("nome") and not p.get("desligado")]
+    cat = ias.catalogo()
+    fora = {}
+    for aba, lista in (PRESETS or {}).items():
+        if not isinstance(lista, list):
+            continue
+        for p in lista:
+            if p.get("desligado") or not p.get("nome"):
+                continue
+            fora[p["id"]] = dict(ias.estado_de(p["nome"], cat), nome=p["nome"])
+    return web.json_response({"ok": True, "tem_catalogo": bool(cat), "ias": fora,
+                              "progresso": ias.progresso()})
+
+
+async def api_ias_instalar(req):
+    b = await req.json()
+    pid = (b.get("id") or "").strip()
+    nome = None
+    for lista in (PRESETS or {}).values():
+        if isinstance(lista, list):
+            for p in lista:
+                if p.get("id") == pid:
+                    nome = p.get("nome")
+    if not nome:
+        return web.json_response({"erro": "Não achei essa IA no painel."}, status=404)
+    entrou, recado = ias.instalar(nome)
+    return web.json_response({"ok": entrou, "mensagem": recado}, status=200 if entrou else 409)
+
+
+async def api_ias_progresso(req):
+    return web.json_response(ias.progresso())
+
+
+async def api_ias_parar(req):
+    ias.parar()
+    return web.json_response({"ok": True, "mensagem": "Parei. O que já baixou fica; "
+                                                      "da próxima vez continua de onde parou."})
+
+
 async def api_atualizacao_estado(req):
     return web.json_response(await atualizacao.estado())
 
@@ -4193,6 +4243,9 @@ async def ciclo(app):
 app = web.Application(client_max_size=1024 ** 3, middlewares=[portao, cors_painel])
 app.cleanup_ctx.append(ciclo)
 app.add_routes([
+    web.get("/api/ias", api_ias), web.post("/api/ias/instalar", api_ias_instalar),
+    web.get("/api/ias/progresso", api_ias_progresso),
+    web.post("/api/ias/parar", api_ias_parar),
     web.get("/api/presets", api_presets), web.get("/api/fichas", api_fichas),
     web.get("/api/conta/estado", api_conta_estado),
     web.get("/api/atualizacao/estado", api_atualizacao_estado),

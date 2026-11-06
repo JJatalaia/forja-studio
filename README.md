@@ -36,6 +36,36 @@ pagar por geração.
 - [LOTE-DE-VIDEOS.md](LOTE-DE-VIDEOS.md) — **fazer muitos vídeos de uma vez**: como arrumar as
   pastas, o que escrever, e a conta de tempo antes de começar
 
+## 🟢 Para começar: 5,6 GB, não 275
+
+A ordem é esta, e **nenhum modelo precisa ser baixado antes de você ver o programa**:
+
+```
+1.  a PLATAFORMA   →  ~5,6 GB   abre em minutos, já dá para entrar e navegar
+2.  as IAs         →  depois, uma por uma, pelo BOTÃO dentro da tela
+```
+
+Lá dentro, cada IA mostra o próprio estado:
+
+```
+Z-Image Turbo        Falta instalar — 19,3 GB     ← clica e baixa
+Qwen-Image 2512      instalada
+```
+
+Você baixa **só as que quiser**, quando quiser, e só as que a sua máquina aguentar. O
+download roda em segundo plano, dá para usar o estúdio enquanto isso, e **se parar no
+meio continua de onde parou**.
+
+| para | reserve |
+|---|---|
+| só experimentar (plataforma + 1 IA leve) | **50 GB** |
+| imagem bem servido | ~90 GB |
+| tudo | 270 GB |
+
+Quem só quer fazer imagem baixa **19,3 GB** e acabou.
+
+---
+
 ## O que você precisa
 
 > **Antes de baixar, leia [REQUISITOS.md](REQUISITOS.md).** Lá está quanto de disco
@@ -49,7 +79,7 @@ pagar por geração.
 |---|---|---|
 | **Placa (VRAM)** | **12 GB** — só imagem | **16 GB** — o painel inteiro |
 | **Memória (RAM)** | **16 GB** — só imagem | **32 GB**; com 64 GB nunca falta |
-| **Disco** | 47 GB (só imagem) | **165 GB** (as 8 IAs) + 22 GB da voz |
+| **Disco** | **50 GB** para começar (plataforma + 1 IA) | **270 GB** com tudo |
 | **Sistema** | Windows 10 ou 11 | |
 
 Por que a placa de 12 GB roda um modelo de 20 GB: a ComfyUI **empurra para a RAM** o que não
@@ -70,7 +100,8 @@ O que cada IA carrega (medido nesta instalação):
 > tempo fez uma cena de 1,5 minuto levar **58 minutos** — a máquina passou o tempo todo
 > empurrando modelo entre a placa e o disco. Uma geração por vez, sempre.
 
-> ⚠️ **Fale a verdade para si mesmo sobre o disco.** São 165 GB de download. Numa internet de
+> ⚠️ **Fale a verdade para si mesmo sobre o disco.** São 275 GB se você quiser tudo —
+> mas você NÃO precisa de tudo para começar. Numa internet de
 > 100 Mb isso é um dia inteiro. O instalador deixa você escolher trilhas menores.
 
 ## A máquina em que isto foi medido

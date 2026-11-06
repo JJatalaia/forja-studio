@@ -35,7 +35,7 @@
     "ae.safetensors": {
       "pasta": "vae",
       "bytes": 335304388,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Comfy-Org/Z-Image-Turbo/resolve/main/split_files/vae/ae.safetensors",
       "usado_por": [
         "Z-Image Turbo"
       ]
@@ -102,7 +102,7 @@
     "ltx-2.3-22b-dev-fp8.safetensors": {
       "pasta": "checkpoints",
       "bytes": 29145431166,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Lightricks/LTX-2.3-fp8/resolve/main/ltx-2.3-22b-dev-fp8.safetensors",
       "usado_por": [
         "LTX 2.3 (anterior, mantido)"
       ]
@@ -110,7 +110,7 @@
     "ltx-2.3-spatial-upscaler-x2-1.1.safetensors": {
       "pasta": "latent_upscale_models",
       "bytes": 995743560,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Lightricks/LTX-2.3/resolve/main/ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
       "usado_por": [
         "LTX 2.3 (anterior, mantido)"
       ]
@@ -154,7 +154,7 @@
     "ltx_2.3_22b_distilled_1.1_lora_dynamic_fro09_avg_rank_111_bf16.safetensors": {
       "pasta": "loras",
       "bytes": 2741024390,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Comfy-Org/ltx-2.3/resolve/main/split_files/loras/ltx_2.3_22b_distilled_1.1_lora_dynamic_fro09_avg_rank_111_bf16.safetensors",
       "usado_por": [
         "LTX 2.3 (anterior, mantido)"
       ]
@@ -222,7 +222,7 @@
     "qwen_3_4b.safetensors": {
       "pasta": "text_encoders",
       "bytes": 8044982048,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Comfy-Org/Z-Image-Turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors",
       "usado_por": [
         "Z-Image Turbo"
       ]
@@ -265,7 +265,7 @@
     "wan2.2_ti2v_5B_fp16.safetensors": {
       "pasta": "diffusion_models",
       "bytes": 9999658848,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors",
       "usado_por": [
         "Wan 2.2 5B"
       ]
@@ -273,7 +273,7 @@
     "wan2.2_vae.safetensors": {
       "pasta": "vae",
       "bytes": 1409400960,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan2.2_vae.safetensors",
       "usado_por": [
         "Wan 2.2 5B"
       ]
@@ -289,7 +289,7 @@
     "z_image_turbo_bf16.safetensors": {
       "pasta": "diffusion_models",
       "bytes": 12309866400,
-      "fonte": "",
+      "fonte": "https://huggingface.co/Comfy-Org/Z-Image-Turbo/resolve/main/split_files/diffusion_models/z_image_turbo_bf16.safetensors",
       "usado_por": [
         "Z-Image Turbo"
       ]

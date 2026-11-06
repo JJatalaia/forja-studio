@@ -1,14 +1,54 @@
 # Instalar
 
-São **dois passos**, nesta ordem:
+## A ordem mudou, e para melhor (06/11/2026)
+
+Antes era preciso baixar **275 GB de modelos antes de ver a primeira tela**. Agora não:
 
 ```
-1.  baixar os modelos        →  165 GB (ou menos, se escolher uma trilha menor)
-2.  aplicar a configuração   →  1 MB
+1.  a PLATAFORMA   →  ~5,6 GB   abre em minutos, e já funciona
+2.  as IAs         →  depois, uma por uma, pelo botão da própria tela
 ```
 
-O passo 1 é longo e chato — é internet. O passo 2 é instantâneo, e é ele que transforma uma
-ComfyUI crua no painel que você viu.
+**Você instala o programa, abre, cria sua conta, navega — tudo com 5,6 GB.** As IAs
+aparecem na tela escritas **"Falta instalar — 19,3 GB"**, com um botão ao lado. Você
+baixa só as que quiser, quando quiser, e só as que o seu computador aguentar.
+
+Quem só quer fazer imagem baixa **19,3 GB** e acabou. Não precisa dos 275.
+
+### O que cabe nesses 5,6 GB
+
+| | |
+|---|---|
+| a ComfyUI portátil e o Python | ~5,6 GB |
+| o Forja Studio (este pacote) | 1,6 MB |
+| **modelos de IA** | **zero — vêm depois** |
+
+Reserve **50 GB livres** para começar: os 5,6 da plataforma, a primeira IA (a mais leve é
+a Wan 2.2 5B, 16,9 GB) e a folga que o Windows precisa para respirar.
+
+### Como instalar uma IA, depois
+
+Dentro do estúdio, em Imagem ou Vídeo, cada IA mostra o próprio estado:
+
+```
+Z-Image Turbo          Falta instalar — 19,3 GB     [clique]
+Krea 2 Turbo           Falta instalar — 17,8 GB     [clique]
+Qwen-Image 2512        instalada
+```
+
+Clica, confirma, e ele baixa em segundo plano. **Dá para usar o estúdio enquanto baixa.**
+Se você fechar no meio, ou a internet cair, **continua de onde parou** — não recomeça.
+
+Uma de cada vez, de propósito: duas conexões grandes na mesma internet terminam as duas
+mais devagar.
+
+### Duas coisas que o botão não faz
+
+- **Não apaga IA.** Apagar modelo de 20 GB por engano é estrago grande; se um dia
+  existir, será com confirmação escrita.
+- **Não baixa o que não sabe de onde.** Dois arquivos do catálogo (os `gemma` do LTX 2.3)
+  não têm endereço conhecido. Essas IAs aparecem como **"baixar à mão"**, e o
+  `IAS-INSTALADAS.md` diz quais arquivos são.
 
 ---
 
@@ -55,7 +95,12 @@ A forma mais simples é pelo **ComfyUI Manager**, procurando cada um pelo nome.
 
 ---
 
-## Passo 1 — os modelos
+## Passo 1 — os modelos (OPCIONAL: dá para fazer tudo pelo botão da tela)
+
+> **Leia isto antes de baixar nada à mão.** Desde 06/11/2026 o estúdio baixa cada IA
+> sozinho, pelo botão "Falta instalar" que aparece no cartão dela. Esta seção continua
+> aqui para quem prefere baixar por fora — internet melhor noutra máquina, modelo que
+> já tem no disco, ou os dois arquivos que o painel não sabe de onde buscar.
 
 A lista está em [IAS-INSTALADAS.md](IAS-INSTALADAS.md): cada arquivo, **o tamanho** e, o mais
 importante, **a pasta em que ele tem que cair** dentro de `ComfyUI/models/`.

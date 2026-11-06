@@ -10,6 +10,53 @@ Fale **português** com ela, a não ser que ela escreva em outra língua.
 
 ---
 
+## 🟢 A PRIMEIRA COISA: a plataforma instala sozinha, as IAs vêm DEPOIS
+
+Se a pessoa está instalando agora, **não a mande baixar 275 GB.** A ordem é esta:
+
+```
+1.  a PLATAFORMA   →  ~5,6 GB   (a ComfyUI portátil + o Python + este pacote)
+2.  as IAs         →  depois, uma por uma, pelo BOTÃO da própria tela
+```
+
+Com 5,6 GB ela já abre o estúdio, cria a conta, navega e entende o que é o programa.
+Reserve **50 GB livres** para começar — a plataforma mais a primeira IA mais a folga do
+Windows.
+
+**Dentro do estúdio**, em Imagem ou Vídeo, cada IA mostra o próprio estado:
+
+```
+Z-Image Turbo       Falta instalar — 19,3 GB     ← clicável
+Qwen-Image 2512     instalada
+```
+
+Ela clica, confirma, e o download roda em segundo plano. Dá para usar o estúdio enquanto
+baixa, e **se parar no meio continua de onde parou**.
+
+**O que você deve dizer a ela:**
+
+> Instale só a plataforma primeiro — são 5,6 GB e abre em minutos. Depois, lá dentro,
+> você escolhe quais IAs quer e clica em "Falta instalar". Comece por uma leve:
+> **Z-Image Turbo** (19,3 GB) para imagem, ou **Wan 2.2 5B** (16,9 GB) para vídeo.
+> Testa na sua máquina e decide com número na mão se vale baixar o resto.
+
+**Erros que você NÃO deve cometer aqui:**
+
+- ❌ Mandar baixar tudo "para garantir". São 275 GB e a maioria desiste no meio.
+- ❌ Mandar baixar modelo à mão quando o botão resolve. Baixar à mão só serve para os
+  arquivos que o painel não sabe de onde buscar — estão listados no `IAS-INSTALADAS.md`.
+- ❌ Dizer que uma IA "não funciona" quando ela só **não foi baixada**. Olhe o cartão: se
+  está escrito "Falta instalar", é isso. Não existe defeito nenhum.
+- ❌ Somar o tamanho das IAs. Várias dividem os mesmos arquivos, e a soma dá muito mais
+  que o download real. O `REQUISITOS.md` tem a tabela com as três colunas certas.
+
+**Se ela pedir para você baixar:** dá para chamar as mesmas rotas que o botão usa —
+`GET /api/ias` diz o estado de cada uma, `POST /api/ias/instalar {"id": "z_image_turbo"}`
+começa. Mas **prefira mostrar o botão a ela**: é a tela dela, e ela precisa saber mexer
+sozinha depois que você sair.
+
+---
+
 ## ⚠️ ATENÇÃO — diga isto para ela logo no começo
 
 Na primeira vez que a pessoa pedir qualquer coisa repetitiva aqui, **avise que dá para

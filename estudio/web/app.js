@@ -1377,6 +1377,70 @@ function chips(el, valores, atual, aoEscolher, rotulo = rot) {
   if (foco != null) { const b = [...el.children].find((x) => x.dataset.v === foco); if (b) b.focus(); }
 }
 
+// -------------------------------------------------- IA instalada ou "falta instalar"
+// 06/11/2026. A plataforma passou a instalar sozinha (~5,6 GB) e as IAs vem DEPOIS, uma
+// por uma. Entao cada cartao de IA precisa dizer se ela esta no disco - e, se nao estiver,
+// quanto pesa e um botao para baixar. Sem isso a pessoa escolhe uma IA que nao existe na
+// maquina dela e leva um erro no meio do trabalho, sem entender por que.
+function faixaInstalar(id) {
+  const e = (G.ias || {})[id];
+  if (!e || !e.conhecida || e.instalada) return '';
+  const pr = (G.iasProgresso || {}).baixando;
+  if (pr && pr.ia === e.nome) {
+    const pc = pr.total ? Math.floor((pr.baixados / pr.total) * 100) : 0;
+    return `<div class="ia-baixando"><div class="ia-barra"><i style="width:${pc}%"></i></div>
+      <span>Baixando… ${pc}% <b>${esc(gbCurto(pr.baixados))}</b> de ${esc(gbCurto(pr.total))}</span></div>`;
+  }
+  if (!e.da_para_baixar) {
+    return `<span class="ia-falta sem-link" title="Faltam ${e.sem_link.length} arquivo(s) sem endereço de download conhecido. Veja IAS-INSTALADAS.md.">
+      ${ic('alerta')}<span>Falta instalar — ${e.gb_falta} GB, baixar à mão</span></span>`;
+  }
+  return `<button type="button" class="ia-falta" data-instalar="${esc(id)}"
+    aria-label="${esc(e.nome)} ainda não está instalada. ${e.gb_falta} GB. Clique para baixar.">
+    ${ic('baixar')}<span>Falta instalar — <b>${e.gb_falta} GB</b></span></button>`;
+}
+function gbCurto(b) {
+  if (!b) return '0';
+  const gb = b / 1024 / 1024 / 1024;
+  return gb >= 1 ? gb.toFixed(1) + ' GB' : Math.round(b / 1024 / 1024) + ' MB';
+}
+async function instalarIA(id) {
+  const e = (G.ias || {})[id];
+  if (!e) return;
+  // Confirmar porque e um download de dezenas de GB: clicar sem querer nao pode custar
+  // 40 GB de internet de alguem.
+  if (!confirm(`Baixar "${e.nome}"?
+
+São ${e.gb_falta} GB. Dá para usar o estúdio `
+             + `enquanto baixa, e se parar no meio continua de onde parou.`)) return;
+  try {
+    const r = await fetch('/api/ias/instalar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    const d = await r.json().catch(() => ({}));
+    aviso(d.mensagem || (r.ok ? 'Começando a baixar.' : 'Não deu para começar.'), r.ok ? 'ok' : 'erro');
+    lerIAs();
+  } catch (err) {
+    aviso('Não consegui falar com o estúdio.', 'erro');
+  }
+}
+
+async function lerIAs() {
+  try {
+    const r = await fetch('/api/ias');
+    if (!r.ok) return;
+    const d = await r.json();
+    G.ias = d.ias || {};
+    G.iasProgresso = d.progresso || {};
+    if (G.iasProgresso.baixando) {
+      clearTimeout(G.iasTimer);
+      G.iasTimer = setTimeout(lerIAs, 1500);   // só fica perguntando enquanto baixa
+    }
+    renderIAs();
+  } catch (e) { /* sem rota: servidor antigo. A tela funciona, só sem o aviso. */ }
+}
+
 // ---------------------------------------------------------------- seletor de IA em cards
 function badgeCarregada(p) {
   return G.sistema && G.sistema.ultimo_preset === p.id
@@ -1393,6 +1457,7 @@ function htmlIAAtual(p) {
       ${notas ? `<span class="ia-meta">${notas}</span>` : ''}
       ${tempo ? `<span class="ia-tempo">${ic('relogio')}<span>${esc(tempo)}</span></span>` : ''}
     </div>
+    ${faixaInstalar(p.id)}
     <div class="ia-rodape"><span class="tags">${tagsDe(f)}</span>
       <button type="button" class="ia-saiba" data-saiba="${esc(p.id)}" aria-label="Saiba mais sobre ${esc(nomeCurto(f.nome || p.nome))}">${ic('info')}Saiba mais</button></div>
   </div>`;
@@ -1406,6 +1471,7 @@ function htmlCardIA(p, f) {
       ${notas ? `<span class="ia-meta">${notas}</span>` : ''}
       ${tempo ? `<span class="ia-tempo">${ic('relogio')}<span>${esc(tempo)}</span></span>` : ''}
     </button>
+    ${faixaInstalar(p.id)}
     <div class="ia-rodape"><span class="tags">${tagsDe(f, 3)}</span>
       <button type="button" class="ia-saiba" data-saiba="${esc(p.id)}" aria-label="Saiba mais sobre ${esc(nome)}">${ic('info')}Saiba mais</button></div>
   </div>`;
@@ -2609,6 +2675,8 @@ function prepararEventos() {
   // seletor de IA
   $('#secIA').addEventListener('click', (e) => {
     const esc_ = e.target.closest('[data-escolher]'), saiba = e.target.closest('[data-saiba]'), troca = e.target.closest('#btTrocarIA');
+    const inst = e.target.closest('[data-instalar]');
+    if (inst) { instalarIA(inst.dataset.instalar); return; }
     if (esc_) escolherIA(esc_.dataset.escolher);
     else if (saiba) abrirFicha(fichaOuPreset(acharPreset(saiba.dataset.saiba)));
     else if (troca) {
@@ -2753,6 +2821,7 @@ function esconderAbasSemIA() {
   G.presets = p;
   esconderAbasSemIA();
   await Promise.all([carregarFichas(), carregarVozes(), carregarNovidades()]);
+  lerIAs();   // quais IAs estao no disco e quanto falta baixar (nao segura a tela)
   // (o cabeçalho continua "verificando…" até o 1º pulso completo: sem a fila do estúdio ele poderia dizer "Livre" à toa)
   try { G.sistema = await api('/api/sistema', { timeout: 9000 }); } catch (e) { /* o pulso tenta de novo */ }
   if (G.rota === 'inicio' && rotaDoHash() === 'inicio' && !G.irDepois) {
