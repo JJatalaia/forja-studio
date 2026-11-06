@@ -8,6 +8,17 @@ projeto entrega é a configuração** — quais IAs valem a pena, ajustadas como
 numa tela só. Foi montado num computador de verdade, fazendo vídeo de verdade: em 40 dias,
 **2.253 gerações, 98,7% concluídas**.
 
+> ### 📦 Para instalar: **5 GB**
+>
+> A plataforma inteira — o painel, a tela de conta, tudo — cabe em **~5 GB**. Nenhum
+> modelo de IA precisa ser baixado antes. Você instala, abre e já está usando.
+>
+> **As IAs vêm depois**, uma por uma, pelo botão **"Falta instalar"** que aparece no
+> cartão de cada uma, dentro do programa. Você baixa só as que quiser, quando quiser, e
+> só as que o seu computador aguentar — a mais leve são 16,9 GB.
+>
+> Reserve **50 GB livres** para começar com folga (plataforma + a primeira IA).
+
 ## Em que pé está
 
 **Este painel está em desenvolvimento e é usado todo dia por quem o escreveu.** Não é um

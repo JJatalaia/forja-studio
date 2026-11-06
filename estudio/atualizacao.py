@@ -76,7 +76,11 @@ async def _buscar_manifesto():
     # Manda o token quando existe: e o que faz a conta PAGA receber a configuracao paga.
     # Sem token (ou com conta gratis) o servidor responde a trilha publica - de proposito,
     # para quem nunca criou conta nao ficar com o painel velho para sempre.
-    token = ler().get("token")
+    # licenca.ler(), nao ler(): a funcao mora no licenca.py. Sem o prefixo isto
+    # levantava NameError e a rota /api/atualizacao/estado devolvia 500 - ou seja,
+    # a atualizacao empurrada NUNCA chegou a funcionar. Achado em 06/11/2026 olhando
+    # o console do navegador, nao o log: a tela engolia o erro e tentava de novo.
+    token = licenca.ler().get("token")
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             async with s.post(licenca.SERVIDOR + "/api/atualizacao",
@@ -132,7 +136,7 @@ async def aplicar():
             trilha = dados.get("trilha") or "gratis"
             url = f"{licenca.SERVIDOR}/api/atualizacao/{versao}/{nome}?trilha={trilha}"
             if trilha == "pago":
-                url += "&token=" + (ler().get("token") or "")
+                url += "&token=" + (licenca.ler().get("token") or "")
             try:
                 async with s.get(url) as r:
                     if r.status != 200:
