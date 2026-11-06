@@ -2,10 +2,34 @@
   "_sobre": "As notícias que aparecem na página inicial do Forja Studio. Uma por bloco, a mais nova em cima. Campos: id (nunca repetir), data (AAAA-MM-DD), etiqueta (novidade | ias | dica | aviso), titulo, texto. O 'destaque' deixa a primeira em evidência. Quando o servidor de contas entrar no ar, este arquivo passa a vir de lá — e todo mundo recebe a mesma notícia sem baixar nada de novo.",
   "novidades": [
     {
+      "id": "2026-11-06-instalar-5gb",
+      "data": "2026-11-06",
+      "etiqueta": "novidade",
+      "destaque": true,
+      "titulo": "Agora instala com 5 GB — as IAs você baixa depois",
+      "texto": "Antes era preciso baixar 275 GB de modelos antes de ver a primeira tela. Agora não: a plataforma inteira cabe em ~5 GB, abre em minutos, e cada IA aparece no cartão dela escrita “Falta instalar — 19,3 GB”, com botão. Você baixa só as que quiser, quando quiser. Dá para usar o estúdio enquanto baixa, e se parar no meio continua de onde parou."
+    },
+    {
+      "id": "2026-11-06-conta-email",
+      "data": "2026-11-06",
+      "etiqueta": "novidade",
+      "destaque": false,
+      "titulo": "Esqueci minha senha, e confirmação de e-mail",
+      "texto": "Quem esquecia a senha não tinha saída a não ser procurar o suporte. Agora tem “Esqueci minha senha” na tela de entrada: chega um link por e-mail e a troca acontece numa página que abre até no celular. Quem cria conta também recebe o e-mail de confirmação."
+    },
+    {
+      "id": "2026-11-06-consertos",
+      "data": "2026-11-06",
+      "etiqueta": "ias",
+      "destaque": false,
+      "titulo": "Três consertos que ninguém via",
+      "texto": "O Apresentador quebrava na máquina de quem instalava: faltava um arquivo de 9 KB no pacote, justo no modo mais usado. O aviso de atualização nunca funcionou — dava erro em toda carga da tela, calado. E o manual pedia 6 complementos da ComfyUI quando só 2 são necessários."
+    },
+    {
       "id": "2026-11-02-forja",
       "data": "2026-11-02",
       "etiqueta": "novidade",
-      "destaque": true,
+      "destaque": false,
       "titulo": "O estúdio agora se chama JerS · Forja Studio",
       "texto": "Tela inicial nova, menu em barra lateral (sobra a largura toda para o trabalho) e os botões de ligar e desligar as IAs aqui em cima, à mão. Nada do que você já criou mudou de lugar."
     },
@@ -14,35 +38,40 @@
       "data": "2026-11-02",
       "etiqueta": "ias",
       "titulo": "10 IAs liberadas — e 163 GB a menos para baixar",
-      "texto": "Ficaram as que são usadas de verdade: Krea 2 Turbo, Qwen-Image 2512, Krea 2 Transformar e Z-Image Turbo na imagem; MiniMax H3 Referências, MiniMax H3 Fast, LTX 2.5 (texto e imagem) e Wan 2.2 5B no vídeo; mais o Apresentador e o Plano-sequência. Saíram sete que quase não eram usadas — e com elas 163 GB de download."
+      "texto": "Ficaram as que são usadas de verdade: Krea 2 Turbo, Qwen-Image 2512, Krea 2 Transformar e Z-Image Turbo na imagem; MiniMax H3 Referências, MiniMax H3 Fast, LTX 2.5 (texto e imagem) e Wan 2.2 5B no vídeo; mais o Apresentador e o Plano-sequência. Saíram sete que quase não eram usadas — e com elas 163 GB de download.",
+      "destaque": false
     },
     {
       "id": "2026-11-02-oque-da",
       "data": "2026-11-02",
       "etiqueta": "ias",
       "titulo": "O que dá para fazer aqui hoje",
-      "texto": "Imagem a partir de texto ou de outra imagem; vídeo com som, de texto ou de uma foto; uma pessoa falando a partir de uma foto de frente; uma tomada contínua de até 32 segundos sem corte; narração com voz local de graça; e música com letra, instrumental ou cover. Tudo na sua placa de vídeo, sem mensalidade."
+      "texto": "Imagem a partir de texto ou de outra imagem; vídeo com som, de texto ou de uma foto; uma pessoa falando a partir de uma foto de frente; uma tomada contínua de até 32 segundos sem corte; narração com voz local de graça; e música com letra, instrumental ou cover. Tudo na sua placa de vídeo, sem mensalidade.",
+      "destaque": false
     },
     {
       "id": "2026-11-02-minhas-criacoes",
       "data": "2026-11-02",
       "etiqueta": "novidade",
       "titulo": "Minhas criações: tudo num lugar só",
-      "texto": "Antes, para achar o que você fez, era preciso abrir quatro abas. Agora tem uma aba que junta imagem, vídeo, pessoa falando e plano-sequência na mesma lista, com filtro por tipo e busca pelo que você escreveu."
+      "texto": "Antes, para achar o que você fez, era preciso abrir quatro abas. Agora tem uma aba que junta imagem, vídeo, pessoa falando e plano-sequência na mesma lista, com filtro por tipo e busca pelo que você escreveu.",
+      "destaque": false
     },
     {
       "id": "2026-11-02-bat",
       "data": "2026-11-02",
       "etiqueta": "dica",
       "titulo": "Peça a uma IA de código um atalho que faz o trabalho repetido",
-      "texto": "O estúdio é um servidor na sua própria máquina. Uma IA de código (Claude Code, Codex, Gemini CLI) sabe conversar com ele e escrever um .bat que você clica. Você paga a conversa uma vez; o atalho roda para sempre, de graça. O bloco com as instruções prontas está logo abaixo, nesta mesma página."
+      "texto": "O estúdio é um servidor na sua própria máquina. Uma IA de código (Claude Code, Codex, Gemini CLI) sabe conversar com ele e escrever um .bat que você clica. Você paga a conversa uma vez; o atalho roda para sempre, de graça. O bloco com as instruções prontas está logo abaixo, nesta mesma página.",
+      "destaque": false
     },
     {
       "id": "2026-11-02-plano",
       "data": "2026-11-02",
       "etiqueta": "novidade",
       "titulo": "Plano-sequência agora mostra as tomadas na própria tela",
-      "texto": "Antes você mandava gerar ali e tinha de procurar o resultado na aba Vídeo. Agora as tomadas aparecem ao lado do formulário, com Ver e Baixar em cada uma."
+      "texto": "Antes você mandava gerar ali e tinha de procurar o resultado na aba Vídeo. Agora as tomadas aparecem ao lado do formulário, com Ver e Baixar em cada uma.",
+      "destaque": false
     }
   ]
 }

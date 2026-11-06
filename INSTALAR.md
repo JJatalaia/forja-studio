@@ -81,17 +81,22 @@ meu-estudio/
 > Se você já tem a ComfyUI em outro lugar, não precisa mover: aponte com a variável de
 > ambiente `ESTUDIO_COMFY_DIR`.
 
-Depois instale os **6 complementos** que os workflows usam. Sem eles as IAs aparecem na tela
-mas não rodam:
+Depois instale **2 complementos**. Sem eles as IAs aparecem na tela mas não rodam:
 
 | complemento | para que |
 |---|---|
-| [`ComfyUI-Easy-Media`](https://github.com/yolain/ComfyUI-Easy-Media) | juntar vídeo e áudio, as faixas de som |
+| [`ComfyUI-Easy-Media`](https://github.com/yolain/ComfyUI-Easy-Media) | o MiniMax H3, o carregador de modelo e as faixas de som |
 | [`ComfyUI-GGUF`](https://github.com/city96/ComfyUI-GGUF) | o LTX 2.5, que vem em formato GGUF |
-| [`ComfyUI-KJNodes`](https://github.com/kijai/ComfyUI-KJNodes) | utilidades usadas em quase todos os workflows |
-| [`ComfyUI_Fill-ChatterBox`](https://github.com/filliptm/ComfyUI_Fill-ChatterBox) | a voz dentro da ComfyUI |
 
 A forma mais simples é pelo **ComfyUI Manager**, procurando cada um pelo nome.
+
+> **Este número já esteve errado, e vale contar por quê.** O manual dizia "6
+> complementos" e listava 4 — quem instalasse ia procurar dois que não estavam escritos.
+> Em 06/11/2026 eu abri os 11 workflows que viajam no pacote, peguei os **78 tipos de nó**
+> que eles usam e procurei cada um dentro do código de cada complemento. Resultado: **73
+> nós são da ComfyUI de fábrica** e só estes 2 complementos são necessários. Os outros
+> quatro que existem na máquina de origem (KJNodes, segment-anything-2, controlnet_aux,
+> Fill-ChatterBox) **nenhum workflow deste pacote usa** — são de outros trabalhos.
 
 ---
 
