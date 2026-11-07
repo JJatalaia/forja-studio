@@ -53,7 +53,7 @@
       "melhor_para": "Transformar foto em ilustração, 3D ou cartoon, trocar o estilo de uma arte e fazer variações de uma imagem que você já tem.",
       "evite_para": "Deixar uma imagem mais realista: o fluxo tem um texto negativo fixo contra fotografia ('photograph, realistic pores...'), que empurra para longe de foto. Também não serve para trocar só um detalhe (não tem pincel ou máscara: mexe na imagem inteira) nem para imagens muito grandes (ele não reduz o tamanho).",
       "tempo_tipico": "Sem medida ainda: não há nenhuma geração dele no tempos.json nem no histórico. Os ~25 s (já carregado) e ~170 s (1ª vez) do catálogo são uma estimativa copiada do Krea 2 normal (mesmo modelo, 8 passos).",
-      "limites": "Precisa de 1 imagem. A saída tem o mesmo tamanho da imagem enviada, sem escolha de formato. Sem máscara. O efeito de estilo vem fixo em 0,3 e o texto negativo anti-foto também é fixo: o estúdio não deixa mudar. Não tem a IA que melhora o prompt, que o Krea 2 normal tem.",
+      "limites": "Precisa de 1 imagem. A saída tem o mesmo tamanho da imagem enviada, sem escolha de formato. Sem máscara. O efeito de estilo vem fixo em 0,3 e o texto negativo anti-foto também é fixo: o estúdio não deixa mudar. O ✨ Melhorar prompt funciona aqui, como em todas as IAs de imagem.",
       "dica_prompt": "Descreva como quer o resultado final (ex.: 'personagem de animação 3D, olhos grandes, luz suave') e comece com força 0,5–0,6. Se ficou igual à original, suba; se perdeu o rosto ou a composição, desça.",
       "tags": [
         "Referência",
