@@ -119,8 +119,40 @@ try:
     PRESETS = cofre.ler_json("presets.json")
 except cofre.CofreFechado:
     PRESETS = {}
-JOBS = json.loads(HIST.read_text(encoding="utf-8")) if HIST.exists() else []
-STATS = json.loads(TEMPOS.read_text(encoding="utf-8")) if TEMPOS.exists() else {}
+
+
+def _ler_json_ou_avisar(arq, vazio):
+    """Le um arquivo de estado SEM deixar que ele impeca o painel de subir.
+
+    07/11/2026: a maquina reiniciou no tranco e o Windows deixou o historico.json com o
+    tamanho certo (4,2 MB) e TODOS os bytes zerados - dano classico de NTFS quando o
+    arquivo nao chegou a ser gravado de verdade. O painel morria aqui, na linha 122, antes
+    de abrir a porta: a pagina ficava girando "Abrindo o estudio" para sempre e so o
+    estudio_stderr.log sabia o motivo. Mesmo principio do cofre, logo acima: carregar
+    estado NAO pode derrubar o painel.
+
+    Arquivo ilegivel vai para o lado com a data no nome (nunca apagado: pode haver resto
+    recuperavel) e o painel sobe com o estado vazio, gritando no log o que aconteceu.
+    """
+    if not arq.exists():
+        return vazio
+    try:
+        return json.loads(arq.read_text(encoding="utf-8"))
+    except Exception as e:
+        destino = arq.with_name(arq.name + ".quebrado_" + time.strftime("%Y-%m-%d_%H%M%S"))
+        try:
+            arq.rename(destino)
+            onde = destino.name
+        except Exception:
+            onde = "nao consegui mover o arquivo"
+        print("[estudio] ATENCAO: %s estava ilegivel (%s). Guardei como %s e comecei do zero. "
+              "Se havia copia de seguranca, da para repor o arquivo e reiniciar." % (arq.name, e, onde),
+              flush=True)
+        return vazio
+
+
+JOBS = _ler_json_ou_avisar(HIST, [])
+STATS = _ler_json_ou_avisar(TEMPOS, {})
 ULTIMO_PRESET = {"id": next((j["preset"] for j in reversed(JOBS) if j.get("estado") == "concluido"), None)}
 
 # Estado só da memória (não vai para o historico.json)
