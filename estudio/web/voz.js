@@ -46,6 +46,9 @@
   async function abrir() {
     montarUmaVez();
     await checar();
+    // a lista das narracoes salvas nao depende do motor estar ligado: sao arquivos no disco.
+    // Por isso vem DEPOIS do checar(), sem await no meio dele, e sem derrubar a aba se falhar.
+    carregarGuardadas();
   }
 
   async function checar() {
@@ -199,6 +202,15 @@
       pegarArquivo(ev.dataTransfer.files[0]);
     });
     $('#vozClonar').addEventListener('click', clonar);
+
+    // --- apagar voz (07/11/2026)
+    $('#vozApagar').addEventListener('click', pedirApagar);
+    $('#vozApagarNao').addEventListener('click', () => {
+      $('#vozApagarConfirma').hidden = true;
+      $('#vozApagarStatus').textContent = '';
+    });
+    $('#vozApagarSim').addEventListener('click', apagarMesmo);
+    $('#vozVoz').addEventListener('change', () => { $('#vozApagarConfirma').hidden = true; });
   }
 
   function trocarPagina(nome) {
@@ -258,6 +270,7 @@
     a.load();
     $('#vozBaixar').href = r.url;
     $('#vozBaixar').setAttribute('download', r.arquivo || 'narracao.wav');
+    carregarGuardadas();   // a que acabou de nascer ja entra na lista
     const real = r.segundos;
     const partes = [];
     if (real != null) partes.push('<b>' + String(real).replace('.', ',') + ' s</b> de verdade');
@@ -381,6 +394,131 @@
       st.textContent = String(e.message || e).slice(0, 300);
     } finally {
       bt.disabled = false;
+    }
+  }
+
+  // ------------------------------------------------------------------ apagar voz
+  // 07/11/2026. Ele pediu: "poder gerenciar as vozes criadas, poder apagar". A confirmacao
+  // MOSTRA O NOME em vez de perguntar "tem certeza?": o que protege e ver o que vai sumir,
+  // nao clicar duas vezes. E o pedido leva o nome junto, para o servidor recusar se a lista
+  // tiver mudado entre o clique e o envio.
+  function vozEscolhida() {
+    const id = $('#vozVoz').value;
+    return (E.vozes || []).find((v) => String(v.id) === String(id)) || null;
+  }
+
+  function pedirApagar() {
+    const v = vozEscolhida();
+    const st = $('#vozApagarStatus');
+    st.className = 'nota';
+    if (!v) { st.textContent = 'Escolha uma voz primeiro.'; return; }
+    $('#vozApagarNome').textContent = v.nome;
+    $('#vozApagarConfirma').hidden = false;
+    st.textContent = '';
+  }
+
+  async function apagarMesmo() {
+    const v = vozEscolhida();
+    if (!v) return;
+    const st = $('#vozApagarStatus'), bt = $('#vozApagarSim');
+    bt.disabled = true;
+    st.className = 'nota';
+    st.textContent = 'Apagando…';
+    try {
+      const r = await pedir('/api/voz/apagar', { id: v.id, nome: v.nome });
+      E.vozes = r.vozes || [];
+      encherVozes();
+      $('#vozApagarConfirma').hidden = true;
+      st.className = 'nota laudo-ok';
+      st.textContent = '✅ "' + r.nome + '" foi apagada.';
+    } catch (e) {
+      st.className = 'nota laudo-ruim';
+      st.textContent = String(e.message || e).slice(0, 300);
+    } finally {
+      bt.disabled = false;
+    }
+  }
+
+  // ------------------------------------------------------- narracoes salvas (07/11/2026)
+  // Ele pediu: "as narracoes ficar salvas nas narracoes mesmo". Elas SEMPRE foram gravadas
+  // no disco - o que faltava era a tela mostrar. Le a pasta a cada vez que a aba abre e
+  // depois de cada narracao nova; nao guarda estado proprio, para nunca mostrar uma lista
+  // que nao existe mais no disco.
+  function quando(seg) {
+    const d = new Date(seg * 1000), hoje = new Date();
+    const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const mesmoDia = d.toDateString() === hoje.toDateString();
+    if (mesmoDia) return 'hoje ' + hm;
+    return String(d.getDate()).padStart(2, '0') + '/' +
+           String(d.getMonth() + 1).padStart(2, '0') + ' ' + hm;
+  }
+
+  async function carregarGuardadas() {
+    const caixa = $('#vozGuardadas'), lista = $('#vozGuardadasLista');
+    if (!caixa) return;
+    let r;
+    try {
+      r = await pedir('/api/voz/gravadas');
+    } catch (e) {
+      caixa.hidden = true;
+      return;
+    }
+    const itens = r.narracoes || [];
+    caixa.hidden = itens.length === 0;
+    $('#vozGuardadasN').textContent = itens.length ? '(' + itens.length + ')' : '';
+    lista.innerHTML = '';
+    itens.forEach((n) => {
+      const li = document.createElement('div');
+      li.className = 'voz-guardada';
+      const txt = n.texto ? n.texto : '(gerada antes desta lista existir)';
+      li.innerHTML =
+        '<div class="voz-guardada-cab">' +
+          '<span class="voz-guardada-quando">' + quando(n.quando) + '</span>' +
+          '<span class="voz-guardada-kb">' + n.kb + ' KB' +
+            (n.segundos ? ' · ' + n.segundos + ' s' : '') + '</span>' +
+        '</div>' +
+        '<p class="voz-guardada-txt' + (n.texto ? '' : ' vazio') + '"></p>' +
+        '<audio controls preload="none" src="' + n.url + '"></audio>' +
+        '<div class="voz-guardada-bts">' +
+          '<a class="voz-gerir-bt" download href="' + n.url + '">' +
+            '<span data-ic="baixar"></span>Baixar</a>' +
+          '<button type="button" class="voz-gerir-bt perigo" data-apagar="' + n.arquivo + '">Apagar</button>' +
+        '</div>';
+      // o texto entra por textContent, nunca por innerHTML: ele veio do que a pessoa digitou
+      li.querySelector('.voz-guardada-txt').textContent = txt;
+      li.querySelector('[data-apagar]').addEventListener('click', (ev) =>
+        apagarGuardada(ev.currentTarget));
+      lista.append(li);
+    });
+    if (window.ICONES && window.ICONES.pintar) window.ICONES.pintar(lista);
+  }
+
+  async function apagarGuardada(bt) {
+    // Duas etapas no proprio botao: o primeiro clique vira "Apagar mesmo?" e volta sozinho
+    // em 4 s. Narracao se refaz em segundos, entao nao merece a janela de confirmar - mas
+    // merece nao sumir com um clique torto.
+    if (bt.dataset.certeza !== '1') {
+      bt.dataset.certeza = '1';
+      bt.textContent = 'Apagar mesmo?';
+      setTimeout(() => {
+        if (bt.isConnected && bt.dataset.certeza === '1') {
+          bt.dataset.certeza = '0';
+          bt.textContent = 'Apagar';
+        }
+      }, 4000);
+      return;
+    }
+    const st = $('#vozGuardadasStatus');
+    bt.disabled = true;
+    try {
+      await pedir('/api/voz/gravadas/apagar', { arquivo: bt.dataset.apagar });
+      st.className = 'nota';
+      st.textContent = '';
+      await carregarGuardadas();
+    } catch (e) {
+      bt.disabled = false;
+      st.className = 'nota laudo-ruim';
+      st.textContent = String(e.message || e).slice(0, 200);
     }
   }
 

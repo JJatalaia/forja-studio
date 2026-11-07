@@ -4060,6 +4060,84 @@ async def api_voz_desenhar(req):
     return web.json_response({"id": pid, "vozes": await voz_studio.vozes(True)})
 
 
+async def api_voz_gravadas(req):
+    """As narracoes ja geradas, da mais nova para a mais velha.
+
+    Le a pasta, nao um banco: o que vale e o arquivo. Narracao sem ficha (gerada antes de
+    07/11/2026) aparece assim mesmo, com o texto vazio - some da lista seria pior.
+    """
+    VOZ_SAIDA.mkdir(parents=True, exist_ok=True)
+    itens = []
+    for arq in VOZ_SAIDA.glob("voz_*.wav"):
+        try:
+            st = arq.stat()
+        except OSError:
+            continue
+        ficha = {}
+        f = arq.with_suffix(".json")
+        if f.is_file():
+            try:
+                ficha = json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                ficha = {}
+        itens.append({"arquivo": arq.name, "url": "/api/voz/audio/" + arq.name,
+                      "quando": int(ficha.get("quando") or st.st_mtime),
+                      "kb": round(st.st_size / 1024),
+                      "texto": (ficha.get("texto") or "")[:300],
+                      "voz": ficha.get("voz") or "", "segundos": ficha.get("segundos")})
+    itens.sort(key=lambda i: i["quando"], reverse=True)
+    return web.json_response({"narracoes": itens})
+
+
+async def api_voz_gravada_apagar(req):
+    """Apaga UMA narracao gravada (o wav e a ficha). So dentro da pasta de saida."""
+    b = await req.json()
+    nome = Path(str(b.get("arquivo") or "")).name
+    alvo = VOZ_SAIDA / nome
+    if not nome.startswith("voz_") or not nome.endswith(".wav") or not _dentro(alvo, VOZ_SAIDA):
+        raise web.HTTPBadRequest(text="Nome de arquivo invalido.")
+    if not alvo.is_file():
+        raise web.HTTPNotFound(text="Essa narracao ja nao existe.")
+    alvo.unlink()
+    alvo.with_suffix(".json").unlink(missing_ok=True)
+    print("[estudio] narracao apagada: %s" % nome, flush=True)
+    return web.json_response({"apagada": nome})
+
+
+async def api_voz_apagar(req):
+    """Apaga uma voz do VoiceStudio. Pede o NOME junto, de proposito.
+
+    07/11/2026: apagar e irreversivel e vale para tudo que usa o VoiceStudio nesta maquina,
+    nao so para este painel. Por isso o pedido traz `id` E `nome`, e so segue se o nome bater
+    com o da voz que tem aquele id. Um clique errado na lista nao apaga a voz de baixo.
+    """
+    b = await req.json()
+    pid = str(b.get("id") or "").strip()
+    nome_dito = str(b.get("nome") or "").strip()
+    if not pid:
+        raise web.HTTPBadRequest(text="Diga qual voz apagar.")
+
+    lista = await voz_studio.vozes(True)
+    alvo = next((v for v in lista if str(v.get("id")) == pid), None)
+    if alvo is None:
+        raise web.HTTPNotFound(text="Essa voz ja nao existe.")
+    if nome_dito and nome_dito != str(alvo.get("nome") or ""):
+        raise web.HTTPConflict(
+            text="A lista mudou: esse lugar agora e da voz \"%s\". Confira e tente de novo."
+                 % (alvo.get("nome") or "?"))
+
+    try:
+        sumiu = await voz_studio.apagar_voz(pid)
+    except Exception as e:
+        raise web.HTTPBadGateway(text=str(e)[:300])
+    if not sumiu:
+        raise web.HTTPBadGateway(text="O VoiceStudio respondeu ok, mas a voz continua na "
+                                      "lista. Nao apaguei nada.")
+    print("[estudio] voz apagada: %s (%s)" % (alvo.get("nome"), pid), flush=True)
+    return web.json_response({"apagada": pid, "nome": alvo.get("nome"),
+                              "vozes": await voz_studio.vozes(True)})
+
+
 async def api_voz_conferir_ref(req):
     """Olha o áudio de referência e devolve o laudo, SEM clonar.
 
@@ -4129,6 +4207,19 @@ async def api_voz_falar(req):
         raise web.HTTPBadGateway(text=str(e)[:300])
     r["url"] = "/api/voz/audio/" + nome
     r["arquivo"] = nome
+    # 07/11/2026: a narracao sempre foi gravada em disco, mas a tela nao mostrava as de antes
+    # - voce gerava, ouvia, saia da aba e ela sumia (27 arquivos orfaos quando ele reclamou).
+    # Agora cada uma leva uma FICHA ao lado, com o texto falado e a voz: sem o texto a lista
+    # seria 27 linhas de "voz_20261106_191753", que nao diz nada a ninguem.
+    try:
+        ficha = {"texto": texto_falar[:2000], "voz": b.get("voz") or "",
+                 "idioma": b.get("idioma") or "pt", "segundos": r.get("segundos"),
+                 "quando": int(time.time())}
+        (VOZ_SAIDA / (Path(nome).stem + ".json")).write_text(
+            json.dumps(ficha, ensure_ascii=False), encoding="utf-8")
+    except Exception as e:
+        # a ficha e conforto, nao a narracao: se falhar, o audio ja esta salvo e vale mais
+        print("[estudio] nao gravei a ficha da narracao: %s" % e, flush=True)
     # A conta de "13,2 letras por segundo" é estimativa; o áudio é quem confirma. Devolvemos as
     # duas para a tela mostrar o erro da estimativa — é o que serve para encaixar os @segundo.
     r["letras"] = len(texto_falar)
@@ -4300,7 +4391,10 @@ app.add_routes([
     web.get("/api/voz/estado", api_voz_estado), web.post("/api/voz/falar", api_voz_falar),
     web.post("/api/voz/descrever", api_voz_descrever), web.post("/api/voz/desenhar", api_voz_desenhar),
     web.post("/api/voz/clonar", api_voz_clonar),
-    web.post("/api/voz/conferir-ref", api_voz_conferir_ref), web.get("/api/voz/audio/{nome}", api_voz_audio),
+    web.post("/api/voz/conferir-ref", api_voz_conferir_ref),
+    web.post("/api/voz/apagar", api_voz_apagar),
+    web.get("/api/voz/gravadas", api_voz_gravadas),
+    web.post("/api/voz/gravadas/apagar", api_voz_gravada_apagar), web.get("/api/voz/audio/{nome}", api_voz_audio),
     web.post("/api/voz/ligar", api_voz_ligar),
     web.get("/api/canal/listar", api_canal_listar), web.post("/api/canal/criar", api_canal_criar),
     web.post("/api/canal/cenas/sugerir", api_canal_cenas_sugerir),

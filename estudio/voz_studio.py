@@ -347,6 +347,38 @@ def _normalizar_vozes(d):
     return saida
 
 
+# ----------------------------------------------------------------- apagar uma voz
+# 07/11/2026. O MCP do VoiceStudio NAO tem ferramenta de apagar: list_voices, clone_voice e
+# design_voice criam e listam, e mais nada. Quem apaga e a API REST dele (DELETE /profiles/
+# <id>), que o proprio aplicativo publica em http://127.0.0.1:3900/docs.
+#
+# Continua valendo "chamar, nunca copiar": falamos pela rede com o aplicativo dele, como ja
+# fazemos no MCP. Nenhum arquivo do VoiceStudio e tocado por nos - apagar mexendo na pasta de
+# dados dele seria entrar por tras do aplicativo e quebrar na primeira versao nova.
+async def apagar_voz(pid):
+    """Apaga um perfil de voz no VoiceStudio. Devolve True se sumiu.
+
+    Apagar e irreversivel e do lado dele: a voz some para tudo que usa o VoiceStudio nesta
+    maquina, nao so para o nosso painel. Quem pergunta antes e a tela.
+    """
+    pid = str(pid or "").strip()
+    if not pid:
+        raise RuntimeError("Diga qual voz apagar.")
+    alvo = URL.rstrip("/") + "/profiles/" + pid
+    async with aiohttp.ClientSession() as ses:
+        async with ses.delete(alvo, timeout=aiohttp.ClientTimeout(total=60)) as r:
+            corpo = (await r.text())[:200]
+            if r.status == 404:
+                raise RuntimeError("Essa voz ja nao existe no VoiceStudio.")
+            if r.status >= 400:
+                raise RuntimeError("O VoiceStudio recusou apagar (HTTP %d): %s" % (r.status, corpo))
+    _cache.update(vozes=None, ate=0.0)
+    # Nao confiamos no 200: conferimos que ela sumiu MESMO da lista. Foi assim que
+    # descobrimos, em outras partes deste projeto, resposta de sucesso sem efeito nenhum.
+    restantes = await vozes(True)
+    return not any(str(v.get("id")) == pid for v in restantes)
+
+
 async def vozes(forcar=False):
     """[{id, nome, motor, licenca, licenca_txt}] — em cache por 2 min."""
     if not forcar and _cache["vozes"] is not None and time.time() < _cache["ate"]:

@@ -181,3 +181,38 @@
 #vozRefLaudo.laudo-ok    { color: var(--ok); }
 #vozRefLaudo.laudo-alerta{ color: var(--aviso); }
 #vozRefLaudo.laudo-ruim  { color: var(--erro); font-weight: 600; }
+
+/* ------------------------------------------------------------- gerir a voz (07/11/2026)
+   Ele pediu para poder apagar voz criada. Fica colado no seletor de voz, discreto: apagar
+   nao e acao de todo dia, entao nao compete com Gerar narracao. O "Sim, apagar" e o unico
+   botao vermelho da tela, e so aparece depois do clique no primeiro. */
+.voz-gerir { margin-top: 10px; }
+.voz-gerir-bt {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
+  font-size: 12.5px; color: var(--fraco); background: transparent;
+  border: 1px solid var(--borda); border-radius: 8px; cursor: pointer;
+}
+.voz-gerir-bt:hover { color: var(--texto); border-color: var(--fraco); }
+.voz-gerir-bt .ic { width: 14px; height: 14px; }
+.voz-gerir-bt.perigo { color: var(--erro); border-color: var(--erro); }
+.voz-gerir-bt.perigo:hover { background: var(--erro); color: #10100c; }
+.voz-gerir-bt[disabled] { opacity: .5; cursor: default; }
+.voz-confirma { margin-top: 8px; padding: 10px; border: 1px solid var(--erro); border-radius: 8px; }
+.voz-confirma-bts { display: flex; gap: 8px; margin-top: 8px; }
+
+/* --------------------------------------------------- narracoes salvas (07/11/2026)
+   Elas ja existiam no disco; faltava a tela. Cada uma mostra o texto falado, porque
+   "voz_20261106_191753.wav" nao diz nada a ninguem. */
+.voz-guardadas { margin-top: 22px; border-top: 1px solid var(--borda); padding-top: 16px; }
+.voz-guardadas-tit { font-size: 13px; font-weight: 600; color: var(--fraco);
+  text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
+.voz-guardadas-n { color: var(--acento); margin-left: 4px; }
+.voz-guardadas-lista { display: grid; gap: 10px; }
+.voz-guardada { padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; }
+.voz-guardada-cab { display: flex; justify-content: space-between; gap: 10px;
+  font-size: 12px; color: var(--fraco); }
+.voz-guardada-txt { margin: 6px 0 8px; font-size: 13px; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.voz-guardada-txt.vazio { color: var(--fraco); font-style: italic; }
+.voz-guardada audio { width: 100%; height: 34px; }
+.voz-guardada-bts { display: flex; gap: 8px; margin-top: 8px; }

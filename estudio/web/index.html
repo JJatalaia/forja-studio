@@ -707,6 +707,16 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             <div class="voz-saida-info" id="vozSaidaInfo"></div>
             <a class="bt-sec" id="vozBaixar" download><span data-ic="baixar"></span>Baixar o .wav</a>
           </div>
+
+          <!-- 07/11/2026: as narracoes sempre foram gravadas em disco, mas a tela nao mostrava
+               as de antes - 27 arquivos orfaos na pasta quando ele pediu "as narracoes ficarem
+               salvas nas narracoes mesmo". Agora ficam aqui, com o texto que foi falado. -->
+          <section class="voz-guardadas" id="vozGuardadas" hidden>
+            <h3 class="voz-guardadas-tit">Narrações salvas
+              <span class="voz-guardadas-n" id="vozGuardadasN"></span></h3>
+            <div class="voz-guardadas-lista" id="vozGuardadasLista"></div>
+            <p class="nota" id="vozGuardadasStatus" aria-live="polite"></p>
+          </section>
         </div>
 
         <!-- TELA 2: criar uma voz pela descrição -->
@@ -754,6 +764,22 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           <label class="voz-rot" for="vozVoz">Voz</label>
           <select id="vozVoz" class="voz-select"></select>
           <p class="voz-licenca" id="vozLicenca"></p>
+          <!-- 07/11/2026: ele pediu para poder APAGAR voz criada ("quero apagar a YAMI e
+               fazer de novo"). Fica aqui, colado na voz escolhida, em vez de numa tela nova:
+               e aqui que ele ja olha quando a voz esta ruim. -->
+          <div class="voz-gerir">
+            <button type="button" class="voz-gerir-bt" id="vozApagar">
+              <span data-ic="lixo"></span><span>Apagar esta voz</span></button>
+            <div class="voz-confirma" id="vozApagarConfirma" hidden>
+              <p class="nota">Apagar <b id="vozApagarNome"></b>? Some do VoiceStudio inteiro,
+                não só daqui, e <b>não dá para desfazer</b>.</p>
+              <div class="voz-confirma-bts">
+                <button type="button" class="voz-gerir-bt perigo" id="vozApagarSim">Sim, apagar</button>
+                <button type="button" class="voz-gerir-bt" id="vozApagarNao">Deixa</button>
+              </div>
+            </div>
+            <p class="nota" id="vozApagarStatus" aria-live="polite"></p>
+          </div>
         </div>
 
         <div class="voz-grupo">
