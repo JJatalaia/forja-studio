@@ -83,7 +83,7 @@ MODELOS = {
 TAREFAS = ("melhorar_prompt", "letra", "roteiro", "traduzir", "descrever_imagem", "livre")
 PAPEL_PADRAO = {"melhorar_prompt": "rapido", "letra": "principal", "roteiro": "principal", "traduzir": "rapido",
                 "descrever_imagem": "rapido", "livre": "principal"}
-MAX_TOKENS = {"melhorar_prompt": 500, "letra": 1400, "roteiro": 1800, "traduzir": 2500, "descrever_imagem": 500,
+MAX_TOKENS = {"melhorar_prompt": 220,   # 70 palavras cabem em ~140; 220 e a rede de seguranca "letra": 1400, "roteiro": 1800, "traduzir": 2500, "descrever_imagem": 500,
               "livre": 1200}
 ENTRADA_MAX = 12000  # caracteres
 
@@ -336,7 +336,12 @@ def sistema_melhorar(ficha, contexto):
         partes.append(f"O estúdio já aplica o estilo “{est}” sozinho: NÃO repita o nome do estilo, descreva só a cena.")
     if contexto.get("modo") == "referencia" and pid not in ("minimax_h3_r2v",):
         partes.append("O usuário também enviou uma imagem de referência/inicial: não contradiga essa imagem.")
-    partes.append("O prompt final é em INGLÊS, num único parágrafo. " + REGRA_SO_TEXTO)
+    # 07/11/2026: sem teto, ele as vezes escrevia 600 tokens. Na placa isso e 10 s; no
+    # PROCESSADOR (quando a placa esta cheia com o modelo de imagem, que e justamente
+    # quando se mexe no prompt) sao ~11 tok/s: um pedido do dono levou 58,7 s assim.
+    # O teto corta o pior caso E melhora o resultado: prompt longo demais dilui a
+    # atencao do modelo de imagem, que nao le 600 tokens de qualquer jeito.
+    partes.append("O prompt final é em INGLÊS, num único parágrafo de NO MÁXIMO 70 PALAVRAS. Corte o que for enfeite e fique com o que se vê na imagem. " + REGRA_SO_TEXTO)
     return "\n".join(partes)
 
 
