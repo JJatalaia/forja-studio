@@ -323,7 +323,37 @@
   function pegarArquivo(f) {
     if (!f) return;
     E.arquivoRef = f;
+    E.laudoRef = null;
     $('.up-txt', $('#vozUp')).textContent = f.name + ' · ' + Math.round(f.size / 1024) + ' KB';
+    conferirRef(f);
+  }
+
+  // 07/11/2026: a conferência acontece ao ESCOLHER o arquivo, não ao clicar em Clonar. O clone
+  // leva minutos; dizer "esse áudio tem música tocando o tempo todo" depois disso não serve de
+  // nada. Foi o que aconteceu com a referência da YAMI em 06/11.
+  async function conferirRef(f) {
+    const st = $('#vozRefLaudo');
+    if (!st) return;
+    st.className = 'nota';
+    st.textContent = 'Conferindo o áudio…';
+    const fd = new FormData();
+    fd.append('arquivo', f);
+    try {
+      const r = await pedir('/api/voz/conferir-ref', fd, true);
+      E.laudoRef = r;
+      const selo = { ok: '✅', alerta: '⚠️', ruim: '⛔' }[r.veredito] || '';
+      st.className = 'nota laudo-' + (r.veredito || 'ok');
+      st.textContent = selo + ' ' + (r.motivos || []).join(' ');
+      $('#vozClonar').disabled = r.veredito === 'ruim';
+    } catch (e) {
+      // Falhar a conferência NÃO trava o clone: sem ffmpeg não há medida, e tentar é melhor
+      // do que impedir. Só avisa que não deu para olhar.
+      E.laudoRef = null;
+      st.className = 'nota';
+      st.textContent = 'Não deu para conferir o áudio (' + String(e.message || e).slice(0, 120) +
+        '). Pode clonar, mas se sair embaralhado o problema está na referência.';
+      $('#vozClonar').disabled = false;
+    }
   }
 
   async function clonar() {

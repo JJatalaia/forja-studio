@@ -4060,6 +4060,33 @@ async def api_voz_desenhar(req):
     return web.json_response({"id": pid, "vozes": await voz_studio.vozes(True)})
 
 
+async def api_voz_conferir_ref(req):
+    """Olha o áudio de referência e devolve o laudo, SEM clonar.
+
+    07/11/2026: existe porque o clone da YAMI saiu lixo e a tela não disse nada. O painel
+    cortava os primeiros 25 s do arquivo sem olhar o que havia lá — e na YAMI havia música
+    tocando nos 252 s inteiros, sem uma pausa. Agora a pessoa vê o problema ANTES de esperar
+    minutos por uma voz embaralhada. O arquivo é guardado num temporário e apagado na hora.
+    """
+    dados = await req.post()
+    arq = dados.get("arquivo")
+    if arq is None or not getattr(arq, "filename", ""):
+        raise web.HTTPBadRequest(text="Envie um áudio de referência.")
+    VOZES_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = VOZES_DIR / ("conferindo_" + uuid.uuid4().hex[:8] + Path(arq.filename).suffix.lower())
+    try:
+        tmp.write_bytes(arq.file.read())
+        laudo = await asyncio.to_thread(voz_studio.conferir_referencia, tmp)
+    except Exception as e:
+        raise web.HTTPBadGateway(text=str(e)[:300])
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:
+            pass
+    return web.json_response(laudo)
+
+
 async def api_voz_clonar(req):
     """O áudio de referência chega como upload; guardamos junto das outras vozes do estúdio."""
     dados = await req.post()
@@ -4272,7 +4299,8 @@ app.add_routes([
     web.get("/api/preferencias", api_preferencias), web.post("/api/preferencias", api_preferencias),
     web.get("/api/voz/estado", api_voz_estado), web.post("/api/voz/falar", api_voz_falar),
     web.post("/api/voz/descrever", api_voz_descrever), web.post("/api/voz/desenhar", api_voz_desenhar),
-    web.post("/api/voz/clonar", api_voz_clonar), web.get("/api/voz/audio/{nome}", api_voz_audio),
+    web.post("/api/voz/clonar", api_voz_clonar),
+    web.post("/api/voz/conferir-ref", api_voz_conferir_ref), web.get("/api/voz/audio/{nome}", api_voz_audio),
     web.post("/api/voz/ligar", api_voz_ligar),
     web.get("/api/canal/listar", api_canal_listar), web.post("/api/canal/criar", api_canal_criar),
     web.post("/api/canal/cenas/sugerir", api_canal_cenas_sugerir),

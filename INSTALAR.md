@@ -65,6 +65,22 @@ você vai passar raiva. Com 12 GB dá para usar só a parte de imagem.
 
 Confira o espaço livre. **165 GB** para a trilha completa.
 
+### O ffmpeg
+
+Instale o **ffmpeg** e deixe-o no PATH:
+
+```bash
+winget install Gyan.FFmpeg
+```
+
+Confira com `ffmpeg -version` numa janela NOVA do Prompt.
+
+Ele não vem no pacote de propósito — é binário de terceiro, e cada sistema tem a sua
+versão. Sem ele o painel ainda abre e gera imagem e vídeo, mas perde o que mexe com arquivo
+de mídia que **você** envia: converter áudio ou vídeo enviado responde *"O ffmpeg não foi
+encontrado neste computador"*, e a conferência do áudio de referência do clone de voz passa
+a dizer *"não consegui medir"* e libera o clone às cegas. Nada quebra calado: a tela avisa.
+
 ---
 
 ## Passo 0 — a ComfyUI

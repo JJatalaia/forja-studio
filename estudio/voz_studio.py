@@ -455,10 +455,152 @@ def _ffmpeg():
     return shutil.which("ffmpeg")
 
 
-def _recortar_referencia(origem, pasta):
-    """Primeiros REF_SEGUNDOS em WAV mono 24 kHz dentro de `pasta`.
+# ------------------------------------------------------------- conferir a referencia
+# 07/11/2026. Antes disso o painel cortava os PRIMEIROS 25 s do arquivo e mandava, sem olhar
+# o que tinha dentro. A referencia da YAMI tem musica tocando nos 252 s INTEIROS - zero
+# trecho de silencio abaixo de -30 dB em todo o arquivo - e um laco de ~21 s repetido. O
+# clone saiu lixo (0 de 4 falas certas, contra 4 de 4 na voz do Cris) e a tela nao disse
+# nada: so "Pronto. Ouca um trecho curto".
+#
+# A licao: nao era o motor, era a referencia. Trocar de motor nao conserta audio com musica.
+#
+# Agora: antes de clonar, MEDIMOS o arquivo e dizemos o que ha de errado em portugues. E em
+# vez de pegar os primeiros 25 s, escolhemos a melhor janela de 25 s do arquivo - a que tem
+# mais PAUSAS, porque pausa e o que separa fala de musica: gente respira, trilha nao.
+MIN_SEGUNDOS = 5.0          # menos que isso o motor nao tem o que copiar
+MAX_SEGUNDOS = 30.0         # a ficha do clone_voice pede 5 a 30; mais nao melhora e estoura o pedido
+PAUSAS_MINIMAS = 1          # uma referencia de 25 s de fala de verdade tem ao menos uma pausa
+
+
+def _ffprobe():
+    perto = Path(__file__).resolve().parent.parent / "_ferramentas" / "ffmpeg" / "bin" / "ffprobe.exe"
+    if perto.is_file():
+        return str(perto)
+    return shutil.which("ffprobe")
+
+
+def _duracao(caminho):
+    fp = _ffprobe()
+    if not fp:
+        return None
+    try:
+        saida = subprocess.run([fp, "-v", "error", "-show_entries", "format=duration",
+                                "-of", "csv=p=0", str(caminho)], capture_output=True, text=True,
+                               timeout=60,
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
+        return round(float(saida.strip().splitlines()[0]), 1)
+    except Exception:
+        return None
+
+
+def _pausas(caminho, inicio=None, duracao=None):
+    """Instantes (em segundos) onde comeca um silencio de 0,35 s abaixo de -30 dB.
+
+    E a medida que separa fala de musica. Fala tem pausa; trilha de fundo nao tem nenhuma.
+    """
+    ff = _ffmpeg()
+    if not ff:
+        return None
+    cmd = [ff, "-v", "info"]
+    if inicio is not None:
+        cmd += ["-ss", str(inicio)]
+    if duracao is not None:
+        cmd += ["-t", str(duracao)]
+    cmd += ["-i", str(caminho), "-af", "silencedetect=noise=-30dB:d=0.35", "-f", "null", "-"]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=300,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except Exception:
+        return None
+    achados = []
+    for linha in (r.stderr or "").splitlines():
+        m = re.search(r"silence_start:\s*(-?[\d.]+)", linha)
+        if m:
+            try:
+                achados.append(round(float(m.group(1)), 2))
+            except ValueError:
+                pass
+    return achados
+
+
+def melhor_janela(caminho, segundos=None):
+    """Onde comeca a melhor janela de `segundos` - a que tem mais pausas.
+
+    Devolve (inicio, pausas_na_janela, pausas_no_arquivo). Sem ffmpeg, devolve (0.0, None, None):
+    sem medida nao ha escolha, e tentar com o comeco e melhor que nao tentar.
+    """
+    segundos = segundos or REF_SEGUNDOS
+    dur = _duracao(caminho)
+    todas = _pausas(caminho)
+    if todas is None or dur is None or dur <= segundos:
+        return 0.0, (len(todas) if todas is not None else None), \
+               (len(todas) if todas is not None else None)
+    # desliza de 5 em 5 s e conta quantas pausas caem dentro; empate fica com a mais ao inicio,
+    # que costuma ser onde a pessoa fala com mais calma.
+    melhor, quantas = 0.0, -1
+    passo = 5.0
+    inicio = 0.0
+    while inicio + segundos <= dur:
+        n = sum(1 for t in todas if inicio < t < inicio + segundos)
+        if n > quantas:
+            melhor, quantas = inicio, n
+        inicio += passo
+    return melhor, max(quantas, 0), len(todas)
+
+
+def conferir_referencia(caminho):
+    """Olha o audio ANTES de clonar e diz o que ha de errado, em portugues.
+
+    Devolve dict com: segundos, pausas, trecho (inicio escolhido), veredito
+    ('ok' | 'alerta' | 'ruim') e `motivos` - as frases que a tela mostra.
+    """
+    p = Path(caminho)
+    dur = _duracao(p)
+    inicio, pausas_janela, pausas_total = melhor_janela(p)
+    motivos, veredito = [], "ok"
+
+    if dur is None:
+        return {"segundos": None, "pausas": None, "trecho": 0.0, "veredito": "alerta",
+                "motivos": ["Não consegui medir o áudio (ffmpeg não encontrado). "
+                            "Vou tentar com os primeiros %.0f s." % REF_SEGUNDOS]}
+
+    if dur < MIN_SEGUNDOS:
+        veredito = "ruim"
+        motivos.append("Áudio de %.1f s. O motor pede ao menos %.0f s de fala — "
+                       "com menos ele não tem o que copiar." % (dur, MIN_SEGUNDOS))
+    elif dur > MAX_SEGUNDOS:
+        motivos.append("O áudio tem %.0f s, e o motor usa no máximo %.0f s. Não há problema: "
+                       "eu recorto %.0f s daqui a pouco — mandar o arquivo inteiro não melhora "
+                       "o clone e estoura o pedido." % (dur, MAX_SEGUNDOS, REF_SEGUNDOS))
+
+    if pausas_total == 0:
+        veredito = "ruim"
+        motivos.append("Não há UMA pausa em %.0f s de áudio. Isso é música ou ruído tocando o "
+                       "tempo todo por cima da fala — foi o que estragou o clone da YAMI em "
+                       "06/11. Grave de novo sem trilha nenhuma." % dur)
+    elif pausas_janela is not None and pausas_janela < PAUSAS_MINIMAS:
+        veredito = "alerta" if veredito == "ok" else veredito
+        motivos.append("O melhor trecho que achei tem pouca pausa. Se o clone sair embolado, "
+                       "grave um pedaço falando mais devagar.")
+
+    if inicio > 0:
+        motivos.append("Vou usar os %.0f s a partir de %.0f s — é o trecho com mais pausas, "
+                       "não o começo do arquivo." % (REF_SEGUNDOS, inicio))
+
+    if veredito == "ok" and not motivos:
+        motivos.append("Áudio bom: %.0f s, %d pausas. Pode clonar." % (dur, pausas_total or 0))
+
+    return {"segundos": dur, "pausas": pausas_total, "pausas_no_trecho": pausas_janela,
+            "trecho": round(inicio, 1), "veredito": veredito, "motivos": motivos}
+
+
+def _recortar_referencia(origem, pasta, inicio=0.0):
+    """REF_SEGUNDOS em WAV mono 24 kHz dentro de `pasta`, a partir de `inicio`.
 
     Sem ffmpeg, devolve o original — melhor tentar com o arquivo inteiro do que não tentar.
+
+    `inicio` vem de `melhor_janela()`: até 07/11/2026 isto pegava sempre os primeiros 25 s,
+    e por isso a referência da YAMI (música tocando nos 252 s inteiros) passou direto.
     """
     ff = _ffmpeg()
     if not ff:
@@ -469,9 +611,12 @@ def _recortar_referencia(origem, pasta):
     except Exception:
         return Path(origem)
     limpo = re.sub(r"[^A-Za-z0-9_-]+", "_", Path(origem).stem)[:40] or "ref"
-    destino = pasta / (limpo + "_25s.wav")
-    cmd = [ff, "-y", "-v", "error", "-i", str(origem), "-t", str(REF_SEGUNDOS),
-           "-ac", "1", "-ar", "24000", "-c:a", "pcm_s16le", str(destino)]
+    destino = pasta / ("%s_%ds_de_%ds.wav" % (limpo, int(REF_SEGUNDOS), int(inicio)))
+    cmd = [ff, "-y", "-v", "error"]
+    if inicio and inicio > 0:
+        cmd += ["-ss", str(inicio)]
+    cmd += ["-i", str(origem), "-t", str(REF_SEGUNDOS),
+            "-ac", "1", "-ar", "24000", "-c:a", "pcm_s16le", str(destino)]
     try:
         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
@@ -495,8 +640,15 @@ async def clonar(caminho_audio, nome=None, transcricao=None, idioma="pt", entreg
     if not p.is_file():
         raise RuntimeError("Não achei o áudio de referência: %s" % p)
 
+    # 07/11/2026: conferimos o áudio ANTES de gastar minutos clonando. Áudio sem UMA pausa em
+    # todo o arquivo é música por cima da fala, e o clone sai lixo — não há trecho bom para
+    # escolher. Recusar aqui é mais honesto do que entregar uma voz embaralhada em silêncio.
+    laudo = await asyncio.to_thread(conferir_referencia, p)
+    if laudo.get("veredito") == "ruim":
+        raise RuntimeError(" ".join(laudo.get("motivos") or ["O áudio de referência não serve."]))
+
     pasta_ref = (Path(base_mcp) / "refs") if base_mcp else p.parent
-    curto = await asyncio.to_thread(_recortar_referencia, p, pasta_ref)
+    curto = await asyncio.to_thread(_recortar_referencia, p, pasta_ref, laudo.get("trecho") or 0.0)
 
     # Os nomes dos campos vêm da lista de ferramentas dele (30/10): é `ref_text`, não
     # "transcript", e `name` é obrigatório.

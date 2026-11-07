@@ -729,7 +729,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           <label class="upload" id="vozUp">
             <input type="file" accept="audio/*" class="sr-only">
             <span class="up-ic" data-ic="enviar"></span>
-            <span class="up-txt">Clique ou arraste um áudio limpo (10 a 60 s, uma pessoa só, sem música)</span>
+            <span class="up-txt">Clique ou arraste um áudio limpo — uma pessoa só, sem música. Mande 30 s a 1 min: eu escolho os melhores 25 s de dentro</span>
           </label>
           <h2 class="passo">O que está falado no áudio <span class="fraco">(pode deixar em branco)</span></h2>
           <textarea id="vozTransc" class="voz-texto curta" rows="4"
@@ -740,6 +740,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           <label class="voz-campo"><span>Nome desta voz</span>
             <input id="vozClonNome" type="text" maxlength="60" placeholder="Ex.: Minha voz"></label>
           <p class="aviso-linha">Clone apenas a sua própria voz ou a de quem autorizou você.</p>
+          <p class="nota" id="vozRefLaudo" aria-live="polite"></p>
           <button type="button" class="gerar" id="vozClonar"><span data-ic="microfone"></span><span>Clonar a voz</span></button>
           <p class="nota" id="vozClonarStatus" aria-live="polite"></p>
         </div>

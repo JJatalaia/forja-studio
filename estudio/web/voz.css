@@ -172,3 +172,12 @@
 .nuvem-msg.bom { background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.4); }
 .nuvem-pe { color: var(--fraco); font-size: 11px; opacity: .85; line-height: 1.45; }
 .nuvem-pe code { background: var(--fundo-2); padding: 1px 4px; border-radius: 4px; }
+
+/* ---------------------------------------------------------------- laudo da referência
+   07/11/2026. O clone da YAMI saiu lixo e a tela ficou calada: dizia só "Pronto. Ouça um
+   trecho curto". Agora o laudo aparece ao escolher o arquivo, com cor, e ⛔ desliga o botão.
+   Usa os tokens que já existem (--ok / --aviso / --erro), para não inventar paleta nova. */
+#vozRefLaudo { margin-top: 2px; }
+#vozRefLaudo.laudo-ok    { color: var(--ok); }
+#vozRefLaudo.laudo-alerta{ color: var(--aviso); }
+#vozRefLaudo.laudo-ruim  { color: var(--erro); font-weight: 600; }
