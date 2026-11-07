@@ -1,5 +1,13 @@
 {
   "comfyui": {
+    "Flux_2-Turbo-LoRA_comfyui.safetensors": {
+      "pasta": "loras",
+      "bytes": 2760814880,
+      "fonte": "",
+      "usado_por": [
+        "FLUX.2 dev"
+      ]
+    },
     "Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors": {
       "pasta": "loras",
       "bytes": 1698951104,
@@ -40,12 +48,44 @@
         "Z-Image Turbo"
       ]
     },
+    "byt5_small_glyphxl_fp16.safetensors": {
+      "pasta": "text_encoders",
+      "bytes": 438643184,
+      "fonte": "",
+      "usado_por": [
+        "HunyuanVideo 1.5 - Imagem para vídeo"
+      ]
+    },
     "fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors": {
       "pasta": "diffusion_models",
       "bytes": 22128378696,
       "fonte": "https://huggingface.co/FastVideo/FastVideo-FastH3-Comfy/resolve/main/diffusion_models/fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors",
       "usado_por": [
         "MiniMax H3 Fast (8 passos, com áudio)"
+      ]
+    },
+    "flux2-vae.safetensors": {
+      "pasta": "vae",
+      "bytes": 336213556,
+      "fonte": "",
+      "usado_por": [
+        "Ideogram 4"
+      ]
+    },
+    "flux2_dev_fp8mixed.safetensors": {
+      "pasta": "diffusion_models",
+      "bytes": 35455599592,
+      "fonte": "",
+      "usado_por": [
+        "FLUX.2 dev"
+      ]
+    },
+    "full_encoder_small_decoder.safetensors": {
+      "pasta": "vae",
+      "bytes": 249519092,
+      "fonte": "",
+      "usado_por": [
+        "FLUX.2 dev"
       ]
     },
     "gemma-3-12b-it-abliterated_lora_rank64_bf16.safetensors": {
@@ -65,12 +105,69 @@
         "LTX 2.5 - Texto para vídeo (rápido, com áudio)"
       ]
     },
+    "gemma4_e4b_it_fp8_scaled.safetensors": {
+      "pasta": "text_encoders",
+      "bytes": 9057782194,
+      "fonte": "",
+      "usado_por": [
+        "HiDream O1"
+      ]
+    },
     "gemma_3_12B_it_fp4_mixed.safetensors": {
       "pasta": "text_encoders",
       "bytes": 9447702218,
       "fonte": "",
       "usado_por": [
         "LTX 2.3 (anterior, mantido)"
+      ]
+    },
+    "h3-realism-people-t2v-i2v-r2v.safetensors": {
+      "pasta": "loras",
+      "bytes": 131229656,
+      "fonte": "",
+      "usado_por": [
+        "Imagem pelo H3 (referencias)",
+        "Senhor em outro lugar (ficha + cenário)"
+      ]
+    },
+    "hidream_o1_image_dev_fp8_scaled.safetensors": {
+      "pasta": "checkpoints",
+      "bytes": 8067535296,
+      "fonte": "",
+      "usado_por": [
+        "HiDream O1"
+      ]
+    },
+    "hunyuanvideo1.5_720p_i2v_fp16.safetensors": {
+      "pasta": "diffusion_models",
+      "bytes": 16653368128,
+      "fonte": "",
+      "usado_por": [
+        "HunyuanVideo 1.5 - Imagem para vídeo"
+      ]
+    },
+    "hunyuanvideo15_vae_fp16.safetensors": {
+      "pasta": "vae",
+      "bytes": 2521292758,
+      "fonte": "",
+      "usado_por": [
+        "HunyuanVideo 1.5 - Imagem para vídeo"
+      ]
+    },
+    "ideogram4_int8_convrot.safetensors": {
+      "pasta": "diffusion_models",
+      "bytes": 9583465712,
+      "fonte": "",
+      "usado_por": [
+        "Ideogram 4"
+      ]
+    },
+    "ideogram4_unconditional_int8_convrot.safetensors": {
+      "pasta": "diffusion_models",
+      "bytes": 9583465712,
+      "fonte": "",
+      "usado_por": [
+        "Ideogram 4"
       ]
     },
     "krea2_darkbrush.safetensors": {
@@ -165,7 +262,8 @@
       "fonte": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors",
       "usado_por": [
         "MiniMax H3 - Referências (com áudio)",
-        "MiniMax H3 Fast (8 passos, com áudio)"
+        "MiniMax H3 Fast (8 passos, com áudio)",
+        "Senhor em outro lugar (ficha + cenário)"
       ]
     },
     "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors": {
@@ -173,7 +271,8 @@
       "bytes": 1956193000,
       "fonte": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
       "usado_por": [
-        "MiniMax H3 - Referências (com áudio)"
+        "MiniMax H3 - Referências (com áudio)",
+        "Senhor em outro lugar (ficha + cenário)"
       ]
     },
     "minimax_h3_ref2va_pruned_int8_convrot.safetensors": {
@@ -181,7 +280,17 @@
       "bytes": 20970379616,
       "fonte": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors",
       "usado_por": [
-        "MiniMax H3 - Referências (com áudio)"
+        "Imagem pelo H3 (referencias)",
+        "MiniMax H3 - Referências (com áudio)",
+        "Senhor em outro lugar (ficha + cenário)"
+      ]
+    },
+    "minimax_h3_turbo_v4_step600_ema_noadaln.safetensors": {
+      "pasta": "loras",
+      "bytes": 620278400,
+      "fonte": "",
+      "usado_por": [
+        "Imagem pelo H3 (referencias)"
       ]
     },
     "minimax_h3_video_vae_fp16.safetensors": {
@@ -189,8 +298,18 @@
       "bytes": 5207808496,
       "fonte": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors",
       "usado_por": [
+        "Imagem pelo H3 (referencias)",
         "MiniMax H3 - Referências (com áudio)",
-        "MiniMax H3 Fast (8 passos, com áudio)"
+        "MiniMax H3 Fast (8 passos, com áudio)",
+        "Senhor em outro lugar (ficha + cenário)"
+      ]
+    },
+    "mistral_3_small_flux2_bf16.safetensors": {
+      "pasta": "text_encoders",
+      "bytes": 35584897447,
+      "fonte": "",
+      "usado_por": [
+        "FLUX.2 dev"
       ]
     },
     "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors": {
@@ -198,8 +317,10 @@
       "bytes": 15687142551,
       "fonte": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
       "usado_por": [
+        "Imagem pelo H3 (referencias)",
         "MiniMax H3 - Referências (com áudio)",
-        "MiniMax H3 Fast (8 passos, com áudio)"
+        "MiniMax H3 Fast (8 passos, com áudio)",
+        "Senhor em outro lugar (ficha + cenário)"
       ]
     },
     "qwen3vl_4b_fp8_scaled.safetensors": {
@@ -211,11 +332,20 @@
         "Krea 2 Turbo"
       ]
     },
+    "qwen3vl_8b_fp8_scaled.safetensors": {
+      "pasta": "text_encoders",
+      "bytes": 10588637512,
+      "fonte": "",
+      "usado_por": [
+        "Ideogram 4"
+      ]
+    },
     "qwen_2.5_vl_7b_fp8_scaled.safetensors": {
       "pasta": "text_encoders",
       "bytes": 9384670680,
       "fonte": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
       "usado_por": [
+        "HunyuanVideo 1.5 - Imagem para vídeo",
         "Qwen-Image 2512"
       ]
     },
@@ -243,6 +373,14 @@
         "Krea 2 - Transformar imagem",
         "Krea 2 Turbo",
         "Qwen-Image 2512"
+      ]
+    },
+    "sigclip_vision_patch14_384.safetensors": {
+      "pasta": "clip_vision",
+      "bytes": 856505640,
+      "fonte": "",
+      "usado_por": [
+        "HunyuanVideo 1.5 - Imagem para vídeo"
       ]
     },
     "umt5_xxl_fp8_e4m3fn_scaled.safetensors": {

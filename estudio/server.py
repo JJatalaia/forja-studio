@@ -1267,8 +1267,13 @@ def publico(j, esperas=None):
 # ---------------------------------------------------------------- rotas
 async def api_presets(req):
     dados = copy.deepcopy(PRESETS)
-    # IAs com "desligado": true nao aparecem no painel (corte de 02/11/2026 - so fica o que e usado).
-    # Para reativar uma delas basta tirar essa chave em presets.json: o modelo continua no disco.
+    # IAs com "desligado": true nao aparecem no painel. Para reativar uma basta tirar essa
+    # chave em presets.json: o modelo continua no disco.
+    # 02/11/2026 isto escondeu 7 IAs pouco usadas, para o painel parecer plataforma.
+    # 07/11/2026 o dono desfez: "Imagem e Video tem que ter no painel mesmo que demore".
+    # DEMORA NAO E MOTIVO PARA ESCONDER - cada cartao ja mostra a estimativa (o HunyuanVideo
+    # diz ~15 min), entao quem escolhe o tempo e a pessoa, nao nos. Hoje nenhuma esta
+    # desligada; antes de desligar alguma de novo, pergunte a ele.
     for aba in ("imagem", "video"):
         dados[aba] = [p for p in dados.get(aba, []) if not p.get("desligado")]
     ativos = [p for aba in ("imagem", "video") for p in dados.get(aba, [])]
