@@ -2681,6 +2681,10 @@ async def api_sistema(req):
     try:
         st = await comfy("GET", "/system_stats", timeout=3)
         nome, total, livre = _gpu(st)
+        # mesmo motivo do outro lugar: a placa conta todo programa, o torch so o dele
+        nv = await gpu_nvidia_smi()
+        if nv and nv[1] and nv[2] is not None:
+            nome, total, livre = nv[0] or nome, nv[1], nv[2]
         info.update(comfy=True, gpu=nome, vram_total=total, vram_livre=livre)
         q = await comfy("GET", "/queue", timeout=3)
         info["fila"] = len(q.get("queue_running", [])) + len(q.get("queue_pending", []))
@@ -3202,10 +3206,13 @@ async def montar_inicio():
     except Exception:
         pass
     gpu, vt, vl = _gpu(st)
-    if st is None:  # ComfyUI desligada: a placa aparece mesmo assim (nvidia-smi)
-        nv = await _seguro(gpu_nvidia_smi(), None, "nvidia-smi")
-        if nv:
-            gpu, vt, vl = nv
+    # 07/11/2026, MEDIDO: o numero da ComfyUI vem do torch e NAO conta o que os outros
+    # programas usam na placa (desktop, navegador) - estava 0,54 GB otimista. Quem manda e a
+    # PLACA. Antes isto so era consultado com a ComfyUI desligada; agora sempre, porque o
+    # cartao diz "AO VIVO" e a conta serve para decidir se um modelo cabe.
+    nv = await _seguro(gpu_nvidia_smi(), None, "nvidia-smi")
+    if nv and nv[1] and nv[2] is not None:
+        gpu, vt, vl = nv[0] or gpu, nv[1], nv[2]
     e_livre, e_total = _tente(lambda: disco(ROOT.anchor or "E:\\"), (None, None), "disco E:")
     c_livre, _ = _tente(lambda: disco("C:\\"), (None, None), "disco C:")
     gb = 1024 ** 3
