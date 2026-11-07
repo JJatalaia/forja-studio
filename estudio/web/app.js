@@ -489,7 +489,12 @@ function irPara() {
   if (r === 'plano' && window.PLANO) PLANO.abrir();
   $('#vTudo').hidden = r !== 'tudo';
   $('#vFila').hidden = r !== 'fila';
-  if (r === 'fila') FILA.abrir(); else FILA.fechar();
+  // 07/11/2026: ESTA linha nasceu sem o "window.X &&" que todas as vizinhas tem, e o
+  // fila.js carrega DEPOIS do app.js - entao ela estourava "FILA is not defined" em
+  // TODA abertura do painel, dentro de iniciar(), e matava o resto: os cartoes ficavam
+  // em "Carregando as IAs..." para sempre e o catalogo nascia vazio. Eu conferi por
+  // HTTP e nao pela TELA, e por isso nao vi. O dono viu.
+  if (window.FILA) { if (r === 'fila') FILA.abrir(); else FILA.fechar(); }
   if (r === 'tudo' && window.TUDO) TUDO.abrir();
   document.body.classList.toggle('rota-voz', r === 'voz');
   if (r === 'voz' && window.VOZ) VOZ.abrir();
