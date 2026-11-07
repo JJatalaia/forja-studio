@@ -109,7 +109,7 @@ const ROTAS = {
     criacoes: 'Pessoas falando', gerar: 'Gerar pessoa falando',
     vazio: 'Nenhum vídeo de pessoa falando ainda. Envie uma foto de frente, escreva o texto e clique em Gerar.' },
 };
-const TITULOS = { inicio: 'Início', imagem: 'Imagem', video: 'Vídeo', apresentador: 'Pessoa falando', voz: 'Narração', canal: 'Canal automático', plano: 'Plano-sequência', musica: 'Música', tudo: 'Minhas criações' };
+const TITULOS = { inicio: 'Início', imagem: 'Imagem', video: 'Vídeo', apresentador: 'Pessoa falando', voz: 'Narração', canal: 'Canal automático', plano: 'Plano-sequência', musica: 'Música', fila: 'Fila', tudo: 'Minhas criações' };
 // IA recomendada em cada seção (CATALOGO_IAS.md: "Quem usar em cada caso")
 // 02/11/2026: a recomendada passou a ser a que o historico mostra em uso de verdade
 // (Krea 2 Turbo: 696 geracoes; LTX 2.5 texto: a mais usada que funciona SO com texto).
@@ -455,14 +455,14 @@ function cabecalhoDaGaleria(lista) {
 // ================================================================ roteador
 function rotaDoHash() {
   const h = location.hash.replace(/^#\/?/, '').split(/[/?]/)[0];
-  return ['imagem', 'video', 'apresentador', 'musica', 'voz', 'canal', 'plano', 'tudo'].includes(h) ? h : 'inicio';
+  return ['imagem', 'video', 'apresentador', 'musica', 'voz', 'canal', 'plano', 'tudo', 'fila'].includes(h) ? h : 'inicio';
 }
 // "#conteudo" (link "Pular para o conteúdo") e outras âncoras não são rotas: não trocam a tela
 const hashEhRota = () => !location.hash || location.hash === '#' || location.hash.startsWith('#/');
 function focarTitulo(rolar = false) {
   const r = G.rota, h = r === 'inicio' ? $('#inicioTitulo') : r === 'musica' ? $('#musTitulo')
     : r === 'voz' ? $('#vozTitulo') : r === 'canal' ? $('#canalTitulo') : r === 'plano' ? $('#planoTitulo')
-    : r === 'tudo' ? $('#tudoTitulo') : $('#rotaTitulo');
+    : r === 'tudo' ? $('#tudoTitulo') : r === 'fila' ? $('#filaTitulo') : $('#rotaTitulo');
   if (h) h.focus({ preventScroll: !rolar });
 }
 function irPara() {
@@ -488,6 +488,8 @@ function irPara() {
   $('#vPlano').hidden = r !== 'plano';
   if (r === 'plano' && window.PLANO) PLANO.abrir();
   $('#vTudo').hidden = r !== 'tudo';
+  $('#vFila').hidden = r !== 'fila';
+  if (r === 'fila') FILA.abrir(); else FILA.fechar();
   if (r === 'tudo' && window.TUDO) TUDO.abrir();
   document.body.classList.toggle('rota-voz', r === 'voz');
   if (r === 'voz' && window.VOZ) VOZ.abrir();

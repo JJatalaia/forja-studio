@@ -138,6 +138,31 @@ Tem mais em `APRENDIZADOS.md`. Leia quando ela perguntar por que alguma coisa fi
 
 ---
 
+---
+
+## ⛔ REGRA: teste o MOTOR, não a sua máquina
+
+Quem instalou isto vai **usar os motores** — a ComfyUI, o VoiceStudio, cada modelo. É neles
+que o programa vive. Então, antes de dizer para ela que alguma coisa funciona:
+
+1. **Rode o motor de verdade.** Não conclua pela documentação, pela lista de ferramentas nem
+   por um HTTP 200. Chame e olhe o que voltou. Exemplo real deste projeto: o `transcribe` do
+   VoiceStudio **existe, aparece na lista de ferramentas e não funciona** — por dentro ele
+   chama `http://127.0.0.1/transcribe`, sem a porta, e responde 403.
+2. **Teste na máquina DELA, não na sua.** Se você está num computador onde tudo já está
+   instalado, você não está testando nada. Confira num Python limpo, sem as bibliotecas
+   extras, com o cofre trancado, com a pasta de modelos vazia.
+3. **Toda dependência que não vem no pacote tem que estar no `INSTALAR.md`** — com o
+   comando, o tamanho e o que deixa de funcionar sem ela.
+4. **Pode falhar; não pode falhar calado.** A mensagem diz o que falta e como resolver.
+5. **Conferência que você inventa AVISA, nunca impede.** Quem recusa é o motor, com o motivo
+   dele. Regra calibrada em dois ou três casos é palpite com cara de lei — e já reprovou
+   áudio bom aqui.
+
+Erros que este projeto já cometeu por pular isso: um botão que funcionava só na máquina de
+quem programou; uma conferência de áudio que reprovava fala boa; e o montador do pacote
+aceitando código que não compila.
+
 ## O que NÃO fazer
 
 - **Não gere nada sem avisar quanto tempo vai levar.** Um lote pode ser uma hora de máquina.

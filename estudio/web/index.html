@@ -77,6 +77,8 @@
     <a href="#/canal" data-rota="canal"><span data-ic="fila"></span><span>Canal</span></a>
     <a href="#/voz" data-rota="voz"><span data-ic="onda"></span><span>Narração</span></a>
     <a href="#/musica" data-rota="musica"><span data-ic="musica"></span><span>Música</span></a>
+    <a href="#/fila" data-rota="fila"><span data-ic="fila"></span><span>Fila</span>
+      <span class="nav-contador" id="navFilaN" hidden></span></a>
   </nav>
   <a class="maq-mini" id="maqMini" href="#/" title="Sua máquina (abre o Início)">
     <i class="ponto" id="maqPonto"></i><span id="maqTxt">verificando…</span>
@@ -412,6 +414,20 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
     </div>
     <p class="musica-faixa" id="musicaFaixa" role="status" hidden></p>
     <iframe id="musicaFrame" title="Painel de música" allow="clipboard-write; clipboard-read; autoplay" hidden></iframe>
+  </section>
+
+  <!-- ============================== FILA ==============================
+       07/11/2026: ele pediu "um local para ver o que esta sendo gerado, mesmo que seja o
+       Claude, o GPT ou qualquer fluxo". Mostra TUDO que a maquina esta gerando, venha de
+       onde vier - o que o painel mandou e o que veio de fora. -->
+  <section id="vFila" hidden>
+    <h1 class="sr-only" id="filaTitulo" tabindex="-1">Fila</h1>
+    <div class="fila-topo">
+      <h2 class="fila-tit">O que a máquina está gerando agora</h2>
+      <p class="nota" id="filaQuando"></p>
+    </div>
+    <div class="fila-lista" id="filaLista"></div>
+    <p class="nota" id="filaAviso"></p>
   </section>
 
   <!-- ============================== PLANO-SEQUÊNCIA ============================== -->
@@ -889,6 +905,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 <script src="atualizacao.js?v=20261103-atu"></script>
 <script src="app.js?v=20261102-brasa"></script>
 <script src="voz.js?v=20261103-nuvem"></script>
+<script src="fila.js?v=20261107"></script>
 <script src="canal.js?v=20261030-canal"></script>
 <script src="plano.js?v=20261102-molde2"></script>
 <script src="tudo.js?v=20261102-tudo2"></script>

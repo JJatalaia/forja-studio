@@ -4259,6 +4259,182 @@ def _prever_voz(letras):
     return round(taxa * max(letras, 1), 1), len(medidas), frio
 
 
+def _quem_mandou(extra):
+    """Quem mandou este trabalho para a ComfyUI, olhando o que veio carimbado nele.
+
+    07/11/2026. Ele pediu "um local para ver o que esta sendo gerado, mesmo que seja o
+    Claude, o GPT ou qualquer fluxo". Da para saber porque TODO prompt que o estudio manda
+    leva `extra_pnginfo.estudio_local` dentro (e assim que a ComfyUI grava a ficha no PNG).
+    O que nao tem esse carimbo veio de fora - e e justamente o que ele quer enxergar.
+    """
+    info = ((extra or {}).get("extra_pnginfo") or {})
+    nosso = info.get("estudio_local")
+    if isinstance(nosso, dict):
+        return {"de": "estudio", "nome": "Este painel",
+                "detalhe": nosso.get("ia") or nosso.get("preset") or ""}
+    # outras ferramentas tambem carimbam; mostramos o que der, sem inventar
+    for chave, valor in info.items():
+        if isinstance(valor, dict):
+            quem = valor.get("gerado_por") or valor.get("generated_by") or valor.get("client")
+            if quem:
+                return {"de": "fora", "nome": str(quem)[:60], "detalhe": str(chave)[:40]}
+    cliente = (extra or {}).get("client_id")
+    return {"de": "fora", "nome": "De fora do painel",
+            "detalhe": ("cliente " + str(cliente)[:12]) if cliente else ""}
+
+
+def _o_que_e(prompt):
+    """O que este trabalho parece estar gerando, lido do proprio grafo.
+
+    Nao ha campo dizendo "isto e um video": entao olhamos os modelos e os nos de saida, que
+    e o que da para afirmar. Na duvida devolve vazio - melhor nao dizer do que chutar.
+    """
+    if not isinstance(prompt, dict):
+        return {"modelos": [], "saida": ""}
+    modelos, saidas = [], []
+    for no in prompt.values():
+        if not isinstance(no, dict):
+            continue
+        classe = str(no.get("class_type") or "")
+        for v in (no.get("inputs") or {}).values():
+            if isinstance(v, str) and v.lower().endswith((".safetensors", ".gguf", ".ckpt", ".pt")):
+                modelos.append(Path(v).name)
+        if "SaveImage" in classe or "PreviewImage" in classe:
+            saidas.append("imagem")
+        elif "VideoCombine" in classe or "SaveVideo" in classe or "SaveWEBM" in classe:
+            saidas.append("video")
+        elif "SaveAudio" in classe:
+            saidas.append("audio")
+    vistos = list(dict.fromkeys(modelos))[:4]
+    return {"modelos": vistos, "saida": (saidas or [""])[0]}
+
+
+_CAT_MODELOS = {"quando": 0.0, "mapa": {}}
+
+
+def _ia_do_modelo(nome_arquivo):
+    """De que IA e este arquivo de modelo, pelo catalogo do proprio pacote.
+
+    07/11/2026: sem isto o titulo da fila saia "Imagem · qwen_3_4b" - que e o CODIFICADOR DE
+    TEXTO do Z-Image, nao a IA. O `modelos.json` ja diz `usado_por`, entao da para nomear
+    certo em vez de mostrar o primeiro arquivo que aparece no grafo.
+    """
+    agora = time.time()
+    if agora - _CAT_MODELOS["quando"] > 300:
+        mapa = {}
+        for cand in (ROOT / "modelos.json", AQUI / "modelos.json",
+                     ROOT / "_github" / "modelos.json"):
+            try:
+                if cand.is_file():
+                    # o catalogo e AGRUPADO ("comfyui", "texto", "voz") - ler como se fosse
+                    # plano nao achava nada e o titulo caia no nome do arquivo.
+                    bruto = json.loads(cand.read_text(encoding="utf-8"))
+                    for grupo in bruto.values():
+                        if not isinstance(grupo, dict):
+                            continue
+                        for arq, d in grupo.items():
+                            usado = (d or {}).get("usado_por") or []
+                            if usado:
+                                mapa[Path(str(arq)).name.lower()] = usado[0]
+                    break
+            except Exception:
+                continue
+        _CAT_MODELOS.update(mapa=mapa, quando=agora)
+    return _CAT_MODELOS["mapa"].get(str(nome_arquivo).lower())
+
+
+def _titulo_do_trabalho(meu, quem, oque):
+    """Um nome que diga alguma coisa a quem olha a fila.
+
+    "cliente 07143b39" nao diz nada. O que diz e o MODELO (z_image_turbo) e o tipo de saida
+    (imagem) - e isso da para ler do proprio grafo, sem inventar.
+    """
+    if meu and (meu.get("ia_nome") or meu.get("preset")):
+        return meu.get("ia_nome") or meu.get("preset")
+    principal = ""
+    # primeiro tenta pelo catalogo: ele sabe que z_image_turbo_bf16 e "Z-Image Turbo"
+    for m in oque.get("modelos") or []:
+        ia = _ia_do_modelo(m)
+        if ia:
+            principal = ia
+            break
+    if not principal:
+        for m in oque.get("modelos") or []:
+            nome = Path(str(m)).stem
+            # pula peca de apoio, que nao identifica o trabalho
+            if nome.lower() in ("ae", "vae", "clip_l", "t5xxl") or                nome.lower().startswith(("clip", "vae", "t5", "qwen_3", "umt5")):
+                continue
+            principal = nome
+            break
+    saida = (oque.get("saida") or "").capitalize()
+    if principal and saida:
+        return "%s · %s" % (saida, principal)
+    return principal or saida or quem.get("detalhe") or "trabalho"
+
+
+async def api_fila(req):
+    """TUDO que esta sendo gerado agora nesta maquina, venha de onde vier.
+
+    Tres fontes, porque sao tres motores diferentes e cada um tem a sua fila:
+      ComfyUI (imagem/video)  - inclusive o que o Claude, o GPT ou o Hermes mandaram
+      o painel de musica      - fila propria, outra ComfyUI
+      a narracao              - o VoiceStudio nao tem fila: ou esta gerando, ou nao
+    """
+    itens = []
+
+    # 1) ComfyUI
+    try:
+        q = await comfy("GET", "/queue", timeout=10)
+    except Exception as e:
+        itens.append({"fonte": "comfyui", "estado": "erro",
+                      "titulo": "Não consegui falar com a ComfyUI", "detalhe": str(e)[:120]})
+        q = {}
+    meus = {j.get("prompt_id"): j for j in JOBS if j.get("prompt_id")}
+    for estado, chave in (("rodando", "queue_running"), ("fila", "queue_pending")):
+        for linha in (q.get(chave) or []):
+            try:
+                numero, pid, prompt, extra = linha[0], linha[1], linha[2], (linha[3] if len(linha) > 3 else {})
+            except Exception:
+                continue
+            quem = _quem_mandou(extra)
+            oque = _o_que_e(prompt)
+            meu = meus.get(pid)
+            itens.append({
+                "fonte": "comfyui", "estado": estado, "id": pid, "numero": numero,
+                "de": quem["de"], "quem": quem["nome"],
+                "titulo": _titulo_do_trabalho(meu, quem, oque),
+                "saida": oque["saida"], "modelos": oque["modelos"],
+                "comecou": (meu or {}).get("inicio"),
+                "prompt": ((meu or {}).get("prompt") or "")[:160],
+            })
+
+    # 2) musica
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(MUSICA + "/api/jobs", timeout=aiohttp.ClientTimeout(total=8)) as r:
+                musicas = await r.json()
+    except Exception:
+        musicas = []
+    for j in (musicas if isinstance(musicas, list) else []):
+        if str(j.get("state") or "").lower() in ("done", "error", "cancelled", "canceled"):
+            continue
+        itens.append({"fonte": "musica", "estado": "rodando" if j.get("state") == "running" else "fila",
+                      "id": j.get("id"), "de": "musica", "quem": "Painel de música",
+                      "titulo": j.get("title") or "música", "saida": "música",
+                      "modelos": [j.get("motor_nome")] if j.get("motor_nome") else [],
+                      "comecou": j.get("started"), "prompt": ""})
+
+    # 3) narracao: o VoiceStudio nao tem fila para consultar; o que sabemos e se ESTE painel
+    #    esta gerando agora. Narracao mandada por fora nao aparece - e dizer isso e melhor do
+    #    que fingir que a lista esta completa.
+    return web.json_response({
+        "itens": itens,
+        "quando": int(time.time()),
+        "aviso_narracao": "A narração não tem fila para consultar: só aparece aqui o que este "
+                          "painel está gerando.",
+    })
+
+
 async def api_voz_previsao(req):
     """Quanto deve demorar, para a tela poder mostrar a barra e o tempo que falta."""
     try:
@@ -4485,6 +4661,7 @@ app.add_routes([
     web.get("/api/preferencias", api_preferencias), web.post("/api/preferencias", api_preferencias),
     web.get("/api/voz/estado", api_voz_estado), web.post("/api/voz/falar", api_voz_falar),
     web.get("/api/voz/previsao", api_voz_previsao),
+    web.get("/api/fila", api_fila),
     web.post("/api/voz/descrever", api_voz_descrever), web.post("/api/voz/desenhar", api_voz_desenhar),
     web.post("/api/voz/clonar", api_voz_clonar),
     web.post("/api/voz/conferir-ref", api_voz_conferir_ref),
