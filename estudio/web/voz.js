@@ -357,7 +357,10 @@
       const selo = { ok: '✅', alerta: '⚠️', ruim: '⛔' }[r.veredito] || '';
       st.className = 'nota laudo-' + (r.veredito || 'ok');
       st.textContent = selo + ' ' + (r.motivos || []).join(' ');
-      $('#vozClonar').disabled = r.veredito === 'ruim';
+      // O botao NUNCA e desligado pelo laudo (07/11/2026). Ele avisa; quem decide e quem
+      // esta com o audio. "Nem todo mundo vai saber disso" - e quem nao sabe nao pode ficar
+      // preso numa tela que diz nao sem explicar como sair.
+      $('#vozClonar').disabled = false;
     } catch (e) {
       // Falhar a conferência NÃO trava o clone: sem ffmpeg não há medida, e tentar é melhor
       // do que impedir. Só avisa que não deu para olhar.

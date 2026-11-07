@@ -525,10 +525,27 @@ def _duracao(caminho):
         return None
 
 
-def _pausas(caminho, inicio=None, duracao=None):
-    """Instantes (em segundos) onde comeca um silencio de 0,35 s abaixo de -30 dB.
+# 07/11/2026, MEDIDO: -30 dB / 0,35 s era apertado demais e REPROVOU audio bom. Ele mandou
+# uma fala do ElevenLabs de 34 s e deu "0 pausas" - as respiradas da fala sintetica sao mais
+# curtas e menos fundas que as de gravacao humana. Nos cinco arquivos que eu tinha:
+#
+#                                  -30 dB/0,35 s     -35 dB/0,20 s
+#   fala do ElevenLabs 33 s             0                14
+#   fala do ElevenLabs 10 s             -                 4
+#   voz do Cris 258 s                  10                 5
+#   voz do Cris, 34 s                   2                 3
+#   MUSICA (a YAMI velha) 252 s         0                 0      <- e 0 ate a -50 dB
+#
+# A -35 dB / 0,20 s a separacao e limpa: fala tem pausa, musica nao tem nenhuma em limiar
+# nenhum. A licao: eu calibrei a regra em DOIS arquivos e tratei o resultado como lei.
+SILENCIO_DB = -35
+SILENCIO_S = 0.20
 
-    E a medida que separa fala de musica. Fala tem pausa; trilha de fundo nao tem nenhuma.
+
+def _pausas(caminho, inicio=None, duracao=None):
+    """Instantes (em segundos) onde comeca uma pausa (SILENCIO_S abaixo de SILENCIO_DB).
+
+    E a medida que tenta separar fala de musica. Fala tem pausa; trilha de fundo nao tem.
     """
     ff = _ffmpeg()
     if not ff:
@@ -538,7 +555,9 @@ def _pausas(caminho, inicio=None, duracao=None):
         cmd += ["-ss", str(inicio)]
     if duracao is not None:
         cmd += ["-t", str(duracao)]
-    cmd += ["-i", str(caminho), "-af", "silencedetect=noise=-30dB:d=0.35", "-f", "null", "-"]
+    cmd += ["-i", str(caminho),
+            "-af", "silencedetect=noise=%ddB:d=%s" % (SILENCIO_DB, SILENCIO_S),
+            "-f", "null", "-"]
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=300,
                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
@@ -606,10 +625,14 @@ def conferir_referencia(caminho):
                        "o clone e estoura o pedido." % (dur, MAX_SEGUNDOS, REF_SEGUNDOS))
 
     if pausas_total == 0:
-        veredito = "ruim"
-        motivos.append("Não há UMA pausa em %.0f s de áudio. Isso é música ou ruído tocando o "
-                       "tempo todo por cima da fala — foi o que estragou o clone da YAMI em "
-                       "06/11. Grave de novo sem trilha nenhuma." % dur)
+        # 07/11/2026: isto JA FOI "ruim" e travava o botao. Reprovou um audio bom dele, e a
+        # conta era minha: regra calibrada em dois arquivos nao manda em quem tem ouvido.
+        # Agora avisa e deixa passar - quem decide e ele, olhando o proprio audio.
+        veredito = "alerta" if veredito == "ok" else veredito
+        motivos.append("Não achei nenhuma pausa em %.0f s. Em geral isso é música ou ruído "
+                       "tocando por cima da fala, que estraga o clone — mas se o áudio for "
+                       "só a voz, sem trilha, pode clonar: a medida erra em fala muito "
+                       "corrida." % dur)
     elif pausas_janela is not None and pausas_janela < PAUSAS_MINIMAS:
         veredito = "alerta" if veredito == "ok" else veredito
         motivos.append("O melhor trecho que achei tem pouca pausa. Se o clone sair embolado, "
@@ -672,12 +695,19 @@ async def clonar(caminho_audio, nome=None, transcricao=None, idioma="pt", entreg
     if not p.is_file():
         raise RuntimeError("Não achei o áudio de referência: %s" % p)
 
-    # 07/11/2026: conferimos o áudio ANTES de gastar minutos clonando. Áudio sem UMA pausa em
-    # todo o arquivo é música por cima da fala, e o clone sai lixo — não há trecho bom para
-    # escolher. Recusar aqui é mais honesto do que entregar uma voz embaralhada em silêncio.
+    # 07/11/2026: conferimos o áudio ANTES, para AVISAR — nunca para impedir.
+    #
+    # Isto já recusou: áudio sem pausa era "ruim" e o botão ficava desligado. Reprovou uma
+    # fala boa do ElevenLabs, e o dono cortou o assunto: "tem que deixar ele aceitando a
+    # clonagem de voz sem ajustar o áudio original, porque nem todo mundo vai saber disso".
+    # Está certo. Uma regra minha calibrada em dois arquivos não pode mandar em quem tem o
+    # áudio na mão e ouvido para julgar.
+    #
+    # Quem recusa é o MOTOR, com o motivo dele, que é verdade. Nós só mostramos o que medimos.
     laudo = await asyncio.to_thread(conferir_referencia, p)
     if laudo.get("veredito") == "ruim":
-        raise RuntimeError(" ".join(laudo.get("motivos") or ["O áudio de referência não serve."]))
+        print("[voz] clonando mesmo com aviso: %s" % " ".join(laudo.get("motivos") or []),
+              flush=True)
 
     pasta_ref = (Path(base_mcp) / "refs") if base_mcp else p.parent
     curto = await asyncio.to_thread(_recortar_referencia, p, pasta_ref, laudo.get("trecho") or 0.0)
