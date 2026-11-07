@@ -428,6 +428,28 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
     </div>
     <div class="fila-lista" id="filaLista"></div>
     <p class="nota" id="filaAviso"></p>
+
+    <!-- 07/11/2026: "deixa um historico do que foi gerado sempre e uma opcao de limpar".
+         O historico da ComfyUI rotaciona; este acumula, e inclui o que veio de fora. -->
+    <div class="fila-hist">
+      <div class="fila-hist-cab">
+        <h2 class="fila-tit">Já gerado <span class="fila-hist-n" id="filaHistN"></span></h2>
+        <div class="fila-hist-bts">
+          <button type="button" class="voz-gerir-bt" id="filaLimpar">
+            <span data-ic="lixo"></span><span>Limpar histórico</span></button>
+        </div>
+      </div>
+      <div class="voz-confirma" id="filaLimparConfirma" hidden>
+        <p class="nota">Apagar a <b>lista</b> de <b id="filaLimparN"></b>? As imagens e os
+          vídeos <b>continuam no disco</b> — some só o registro daqui, e não dá para desfazer.</p>
+        <div class="voz-confirma-bts">
+          <button type="button" class="voz-gerir-bt perigo" id="filaLimparSim">Sim, limpar</button>
+          <button type="button" class="voz-gerir-bt" id="filaLimparNao">Deixa</button>
+        </div>
+      </div>
+      <p class="nota" id="filaLimparStatus" aria-live="polite"></p>
+      <div class="fila-hist-lista" id="filaHistLista"></div>
+    </div>
   </section>
 
   <!-- ============================== PLANO-SEQUÊNCIA ============================== -->

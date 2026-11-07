@@ -50,6 +50,7 @@ import subprocess
 import sys
 import time
 import unicodedata
+import urllib.parse
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -4372,6 +4373,128 @@ def _titulo_do_trabalho(meu, quem, oque):
     return principal or saida or quem.get("detalhe") or "trabalho"
 
 
+HIST_FILA = DADOS / "fila_historico.json"
+TETO_HIST_FILA = 800
+
+
+def _hist_fila_ler():
+    """O historico proprio da Fila: {limpo_em, itens: {id: {...}}}.
+
+    07/11/2026. Existe porque o historico da ComfyUI ROTACIONA - ela guarda os ultimos e
+    joga o resto fora. Ele pediu "um historico do que foi gerado sempre", entao o nosso
+    arquivo acumula, independente do que a ComfyUI ainda lembra.
+
+    E separado do `historico.json` do painel de proposito: aquele e dos trabalhos DELE, com
+    prompt e preset; este inclui o que veio de FORA (Claude, GPT, Hermes), que o painel nunca
+    soube que existia.
+    """
+    if not HIST_FILA.is_file():
+        return {"limpo_em": 0, "itens": {}}
+    try:
+        d = json.loads(HIST_FILA.read_text(encoding="utf-8"))
+        if isinstance(d, dict) and isinstance(d.get("itens"), dict):
+            return d
+    except Exception as e:
+        print("[estudio] historico da fila ilegivel (%s) - comecando um novo" % e, flush=True)
+    return {"limpo_em": 0, "itens": {}}
+
+
+def _hist_fila_gravar(d):
+    itens = d.get("itens") or {}
+    if len(itens) > TETO_HIST_FILA:
+        # fica com os mais novos; sem teto o arquivo cresce para sempre e um dia trava a tela
+        ordenados = sorted(itens.items(), key=lambda kv: kv[1].get("quando") or 0, reverse=True)
+        d["itens"] = dict(ordenados[:TETO_HIST_FILA])
+    _gravar(HIST_FILA, d)
+
+
+async def _absorver_historico():
+    """Le o que a ComfyUI ja terminou e guarda no nosso historico. Devolve quantos entraram.
+
+    Roda a cada consulta da Fila. Um trabalho que comece E termine entre duas consultas nao
+    se perde: ele continua no historico da ComfyUI, e e de la que lemos.
+    """
+    d = _hist_fila_ler()
+    itens, limpo_em = d["itens"], d.get("limpo_em") or 0
+    try:
+        h = await comfy("GET", "/history?max_items=200", timeout=15)
+    except Exception:
+        return 0
+    novos = 0
+    meus = {j.get("prompt_id"): j for j in JOBS if j.get("prompt_id")}
+    for pid, it in (h or {}).items():
+        if pid in itens or not isinstance(it, dict):
+            continue
+        st = it.get("status") or {}
+        quando, fim = 0, 0
+        for nome, dados in (st.get("messages") or []):
+            ts = int((dados or {}).get("timestamp") or 0) // 1000
+            if nome == "execution_start":
+                quando = ts
+            elif nome in ("execution_success", "execution_error", "execution_interrupted"):
+                fim = ts
+        if limpo_em and quando and quando <= limpo_em:
+            continue            # limpou: o que e mais velho que a limpeza nao volta
+        linha = it.get("prompt") or []
+        grafo = linha[2] if len(linha) > 2 else {}
+        extra = linha[3] if len(linha) > 3 else {}
+        quem = _quem_mandou(extra)
+        oque = _o_que_e(grafo)
+        arquivos = []
+        for saida in (it.get("outputs") or {}).values():
+            for lista in (saida or {}).values():
+                if isinstance(lista, list):
+                    for a in lista:
+                        if isinstance(a, dict) and a.get("filename"):
+                            # o endereco da propria ComfyUI: o painel nao copia nem guarda
+                            # os arquivos de fora, so aponta para onde eles ja estao
+                            q = urllib.parse.urlencode({"filename": a["filename"],
+                                                        "subfolder": a.get("subfolder") or "",
+                                                        "type": a.get("type") or "output"})
+                            arquivos.append({"nome": a["filename"], "pasta": a.get("subfolder") or "",
+                                             "tipo": a.get("type") or "output",
+                                             "url": COMFY + "/view?" + q})
+        itens[pid] = {
+            "id": pid, "fonte": "comfyui", "quando": quando or fim or int(time.time()),
+            "fim": fim, "de": quem["de"], "quem": quem["nome"],
+            "titulo": _titulo_do_trabalho(meus.get(pid), quem, oque),
+            "saida": oque["saida"], "modelos": oque["modelos"],
+            "deu_certo": (st.get("status_str") == "success"),
+            "arquivos": arquivos[:4],
+            "prompt": ((meus.get(pid) or {}).get("prompt") or "")[:160],
+        }
+        novos += 1
+    if novos:
+        d["itens"] = itens
+        _hist_fila_gravar(d)
+    return novos
+
+
+async def api_fila_historico(req):
+    """O que ja foi gerado, do mais novo para o mais velho."""
+    await _absorver_historico()
+    d = _hist_fila_ler()
+    itens = sorted(d["itens"].values(), key=lambda i: i.get("quando") or 0, reverse=True)
+    try:
+        quantos = int(req.query.get("quantos") or 60)
+    except ValueError:
+        quantos = 60
+    return web.json_response({"itens": itens[:max(1, min(quantos, 400))],
+                              "total": len(itens), "limpo_em": d.get("limpo_em") or 0})
+
+
+async def api_fila_historico_limpar(req):
+    """Apaga o NOSSO historico da fila. Nao toca no da ComfyUI nem nas imagens no disco.
+
+    Guarda a hora da limpeza para o que ja foi apagado NAO voltar na proxima leitura - sem
+    isso o botao pareceria nao funcionar, que e pior do que nao ter botao.
+    """
+    antes = len(_hist_fila_ler().get("itens") or {})
+    _hist_fila_gravar({"limpo_em": int(time.time()), "itens": {}})
+    print("[estudio] historico da fila limpo (%d itens)" % antes, flush=True)
+    return web.json_response({"apagados": antes})
+
+
 async def api_fila(req):
     """TUDO que esta sendo gerado agora nesta maquina, venha de onde vier.
 
@@ -4381,6 +4504,12 @@ async def api_fila(req):
       a narracao              - o VoiceStudio nao tem fila: ou esta gerando, ou nao
     """
     itens = []
+    # guarda o que ja terminou ANTES de olhar a fila: assim o historico anda mesmo que
+    # ninguem abra a aba do historico
+    try:
+        await _absorver_historico()
+    except Exception as e:
+        print("[estudio] nao absorvi o historico da fila: %s" % e, flush=True)
 
     # 1) ComfyUI
     try:
@@ -4662,6 +4791,8 @@ app.add_routes([
     web.get("/api/voz/estado", api_voz_estado), web.post("/api/voz/falar", api_voz_falar),
     web.get("/api/voz/previsao", api_voz_previsao),
     web.get("/api/fila", api_fila),
+    web.get("/api/fila/historico", api_fila_historico),
+    web.post("/api/fila/historico/limpar", api_fila_historico_limpar),
     web.post("/api/voz/descrever", api_voz_descrever), web.post("/api/voz/desenhar", api_voz_desenhar),
     web.post("/api/voz/clonar", api_voz_clonar),
     web.post("/api/voz/conferir-ref", api_voz_conferir_ref),

@@ -74,9 +74,109 @@
     $('#filaAviso').textContent = d.aviso_narracao || '';
   }
 
+  // ------------------------------------------------------------ o historico
+  // "Deixa um historico do que foi gerado sempre e uma opcao de limpar o historico."
+  // O historico da ComfyUI rotaciona (ela guarda os ultimos e joga o resto fora); este
+  // acumula no nosso arquivo, e inclui o que veio de FORA, que o painel nunca registrou.
+  function quandoData(seg) {
+    if (!seg) return '';
+    const d = new Date(seg * 1000), hoje = new Date();
+    const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    if (d.toDateString() === hoje.toDateString()) return 'hoje ' + hm;
+    return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + ' ' + hm;
+  }
+
+  function cartaoHist(i) {
+    const el = document.createElement('div');
+    el.className = 'fila-hist-item' + (i.deu_certo ? '' : ' falhou');
+    const img = (i.arquivos || []).find((a) => /\.(png|jpe?g|webp|gif)$/i.test(a.nome || ''));
+    el.innerHTML =
+      (img ? '<img class="fila-hist-mini" loading="lazy" alt="">' : '<div class="fila-hist-mini vazia"></div>') +
+      '<div class="fila-hist-txt">' +
+        '<p class="fila-hist-titulo"></p>' +
+        '<p class="fila-hist-sub"></p>' +
+      '</div>' +
+      '<span class="fila-de' + (i.de === 'fora' ? ' fora' : '') + '"></span>';
+    if (img) el.querySelector('img').src = img.url;
+    el.querySelector('.fila-hist-titulo').textContent =
+      (i.deu_certo ? '' : '⚠️ ') + (i.titulo || 'trabalho');
+    el.querySelector('.fila-hist-sub').textContent =
+      [quandoData(i.quando), (i.arquivos || []).length ? (i.arquivos.length + ' arquivo' +
+        (i.arquivos.length === 1 ? '' : 's')) : '', i.prompt].filter(Boolean).join(' · ');
+    el.querySelector('.fila-de').textContent =
+      i.de === 'estudio' ? 'deste painel' : i.de === 'musica' ? 'música' : 'DE FORA';
+    return el;
+  }
+
+  async function puxarHist() {
+    let d;
+    try {
+      const r = await fetch('/api/fila/historico');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      d = await r.json();
+    } catch (e) {
+      $('#filaHistN').textContent = '';
+      return;
+    }
+    const lista = $('#filaHistLista'), itens = d.itens || [];
+    lista.innerHTML = '';
+    $('#filaHistN').textContent = d.total ? '(' + d.total + ')' : '';
+    if (!itens.length) {
+      const v = document.createElement('p');
+      v.className = 'fila-vazio';
+      v.textContent = d.limpo_em
+        ? 'Histórico limpo. O que for gerado daqui para a frente entra aqui.'
+        : 'Nada gerado ainda.';
+      lista.append(v);
+      return;
+    }
+    itens.forEach((i) => lista.append(cartaoHist(i)));
+  }
+
+  function pedirLimpar() {
+    const n = ($('#filaHistN').textContent || '').replace(/[()]/g, '') || '0';
+    $('#filaLimparN').textContent = n + (n === '1' ? ' trabalho' : ' trabalhos');
+    $('#filaLimparConfirma').hidden = false;
+    $('#filaLimparStatus').textContent = '';
+  }
+
+  async function limparMesmo() {
+    const st = $('#filaLimparStatus'), bt = $('#filaLimparSim');
+    bt.disabled = true;
+    st.className = 'nota';
+    st.textContent = 'Limpando…';
+    try {
+      const r = await fetch('/api/fila/historico/limpar', { method: 'POST' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      $('#filaLimparConfirma').hidden = true;
+      st.className = 'nota laudo-ok';
+      st.textContent = '✅ ' + d.apagados + ' da lista. Os arquivos continuam no disco.';
+      await puxarHist();
+    } catch (e) {
+      st.className = 'nota laudo-ruim';
+      st.textContent = String(e.message || e).slice(0, 200);
+    } finally {
+      bt.disabled = false;
+    }
+  }
+
+  function ligarBotoes() {
+    if (ligarBotoes.feito) return;
+    ligarBotoes.feito = true;
+    $('#filaLimpar').addEventListener('click', pedirLimpar);
+    $('#filaLimparNao').addEventListener('click', () => {
+      $('#filaLimparConfirma').hidden = true;
+      $('#filaLimparStatus').textContent = '';
+    });
+    $('#filaLimparSim').addEventListener('click', limparMesmo);
+  }
+
   function abrir() {
+    ligarBotoes();
     puxar();
-    if (!tic) tic = setInterval(puxar, 3000);
+    puxarHist();
+    if (!tic) tic = setInterval(() => { puxar(); puxarHist(); }, 3000);
   }
   function fechar() {
     if (tic) { clearInterval(tic); tic = null; }
@@ -85,5 +185,5 @@
   // o contador da barra lateral continua vivo com a tela fechada, mas devagar: e so um numero
   setInterval(() => { if (!tic) puxar(); }, 15000);
 
-  window.FILA = { abrir, fechar, puxar };
+  window.FILA = { abrir, fechar, puxar, puxarHist };
 })();
