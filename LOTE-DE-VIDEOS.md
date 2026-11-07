@@ -58,7 +58,9 @@ Abra o Claude Code (ou Gemini CLI) na pasta `meu-canal` e peça:
 
 > Lê o `01-primeiro-video/cenas.json`. Para cada cena:
 > 1. manda o estúdio local (`http://127.0.0.1:8194`) gerar a imagem no preset `krea2`,
->    formato 9:16, e salva em `01-primeiro-video/imagens/cena-01.png` e assim por diante;
+>    formato 9:16, **baixa o arquivo pronto** por `/api/midia/{id}/0` e salva em
+>    `01-primeiro-video/imagens/cena-01.png` e assim por diante — a imagem não cai sozinha
+>    nessa pasta, ela nasce na pasta de saída da ComfyUI;
 > 2. **espera terminar antes de mandar a próxima** — a placa só faz uma por vez;
 > 3. depois gera a narração de cada fala com a voz local e salva em `voz/`;
 > 4. no fim, monta tudo com ffmpeg em `pronto/video.mp4`, cada imagem durando o tempo da
@@ -94,6 +96,10 @@ descobre o buraco só quando assiste.
 | narração | rápido, poucos segundos |
 | **pessoa falando (lip sync)** | **~1 min de placa para cada 1 s de fala** |
 | montagem | ~30 s |
+
+**Música não entra nessa conta: o estúdio não gera trilha.** Não vem nenhuma música no pacote
+e não há motor de música aqui — para trilha, use um arquivo que você já tenha no disco e deixe
+o ffmpeg juntar. Voz, sim: a narração é feita aqui, de graça.
 
 Um vídeo de 20 cenas só com imagem e narração: **uns 15 minutos**.
 O mesmo vídeo com um apresentador falando 1 minuto: **mais uma hora**.

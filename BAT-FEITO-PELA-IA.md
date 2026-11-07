@@ -49,13 +49,49 @@ O Estúdio Local roda em http://127.0.0.1:8194 e tem estes endereços:
                                  "formato": "9:16", "qualidade": "Caprichado"}
                          devolve o id do trabalho
   GET  /api/trabalhos?aba=imagem&limite=60    o estado da fila (pronto / gerando / erro)
-  GET  /api/midia/{id}/{i}                    baixa o arquivo pronto
+  GET  /api/midia/{id}/{i}                    BAIXA o arquivo pronto
+  GET  /api/pastas       as pastas desta máquina (pergunte, não chute)
   POST /api/voz/falar    gera narração com a voz local (de graça)
   GET  /api/ocupado      diz se a placa está ocupada
+
+ONDE OS ARQUIVOS FICAM: eles NÃO caem na minha pasta de trabalho. A imagem e o vídeo ficam
+na pasta de saída da ComfyUI, e a narração em outra; pergunte em /api/pastas. Para usar um
+arquivo, BAIXE por /api/midia/{id}/{i} e salve você mesmo onde eu pedi. Não escreva caminho
+de pasta dentro do atalho: numa outra instalação ele quebra.
+
+NÃO VEM NADA PRONTO: não há vídeo, imagem nem música de exemplo aqui dentro. Tudo é gerado
+na hora, pela minha placa. Trilha sonora este estúdio não gera: use música que eu já tenha
+no disco.
 
 REGRA: uma geração por vez. Mande a próxima só depois que a anterior aparecer como pronta
 em /api/trabalhos. A placa não dá conta de duas ao mesmo tempo e as duas ficam lentas.
 ```
+
+## As três perguntas que todo mundo faz antes de começar
+
+**"As imagens ficam na pasta que eu vou usar?"** Não. Quem salva o arquivo é a ComfyUI, na
+pasta de saída **dela** — e a narração vai para uma terceira pasta. Peça `GET /api/pastas` e
+o estúdio diz onde é **nesta** máquina. Mas o jeito certo no atalho é outro: **baixe** o
+arquivo por `GET /api/midia/{id}/{i}` e salve você mesmo na pasta do seu projeto. Caminho de
+pasta escrito dentro do atalho quebra na máquina do vizinho — a pasta de saída existe para
+você **procurar arquivo órfão** quando o estúdio cai no meio, não para o atalho depender dela.
+
+**"Os vídeos já vêm, ou é para gerar?"** É para gerar. **Não vem nenhum vídeo, nenhuma imagem
+e nenhum áudio de exemplo** no pacote — ele tem 1,5 MB de código, e o que pesa são as IAs que
+você baixa depois, pelo botão. Tudo que sai daqui nasce na sua placa, na hora. Por isso a conta
+do tempo é obrigatória antes de prometer trabalho a alguém:
+
+| | |
+|---|---|
+| imagem (modelo já carregado) | ~25 s |
+| narração | poucos segundos |
+| montagem com ffmpeg | ~30 s |
+| **pessoa falando (lip sync)** | **~1 min de placa para cada 1 s de fala** |
+
+**"E música, já tem?"** Não tem — **e não há motor de música neste estúdio**. Ele instala IA de
+imagem e vídeo, IA de texto e IA de voz; a aba de música nem aparece na tela sem os projetos
+dela. Para trilha, use música que você já tenha no disco e mande o atalho juntar com o ffmpeg.
+A narração, essa sim é feita aqui, de graça, pela voz local.
 
 ## As três armadilhas (já custaram caro aqui)
 

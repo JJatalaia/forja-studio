@@ -4765,6 +4765,30 @@ async def ciclo(app):
     TEXTO.parar_tudo()  # os llama-server também fecham sozinhos (Job do Windows) se o estúdio cair
 
 
+async def api_pastas(req):
+    """[C] Onde as coisas ficam NESTA maquina - para a IA de codigo de quem instalou.
+
+    Nasceu em 07/11/2026 de uma pergunta do dono: "as imagens ficam no local que ele vai
+    usar?". Nao ficam. A ComfyUI salva na pasta DELA, e a narracao numa terceira. A IA de
+    fora nao tem como adivinhar isso, e o atalho .bat que ela escreve com o caminho chutado
+    quebra na maquina de quem instalou - foi exatamente a falha de portabilidade de 04/11,
+    quando o codigo levava o nome das pastas do dono dentro.
+
+    Por isso o caminho se PERGUNTA, nunca se escreve no atalho. Nao e CORS-liberado (so as
+    4 rotas da lista), entao pagina de terceiro no navegador nao le esta resposta.
+    """
+    return web.json_response({
+        "instalacao": str(ROOT),
+        "saida_imagens": str(COMFY_DIR / "output" / "estudio"),
+        "saida_comfyui": str(COMFY_DIR / "output"),
+        "saida_narracao": str(VOZ_SAIDA),
+        "aviso": "Nao escreva estes caminhos dentro do atalho: pergunte aqui cada vez que ele rodar. "
+                 "O jeito certo de pegar um arquivo pronto e baixar por GET /api/midia/{id}/{i}, "
+                 "que funciona em qualquer instalacao. A pasta so serve para procurar arquivo orfao "
+                 "quando o estudio cai no meio de um trabalho.",
+    })
+
+
 app = web.Application(client_max_size=1024 ** 3, middlewares=[portao, cors_painel])
 app.cleanup_ctx.append(ciclo)
 app.add_routes([
@@ -4789,6 +4813,7 @@ app.add_routes([
     web.post("/api/chave-nuvem", api_chave_nuvem),
     web.post("/api/vozes/remover/{id}", api_voz_remover),
     web.get("/api/sistema", api_sistema), web.get("/api/inicio", api_inicio), web.get("/api/ocupado", api_ocupado),
+    web.get("/api/pastas", api_pastas),
     web.post("/api/liberar-memoria", api_liberar_memoria), web.post("/api/musica/ligar", api_musica_ligar),
     web.post("/api/texto", api_texto), web.options("/api/texto", api_texto_opcoes),
     web.get("/api/texto/estado", api_texto_estado),
