@@ -747,6 +747,12 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           <p class="aviso-linha">⚠️ Só escreva aqui se for <b>exatamente o que se ouve</b>. Texto
             errado é pior que campo vazio: medido em 31/10, uma transcrição trocada fez a fala
             sair <b>cortada pela metade</b>. Em branco, o motor se vira sozinho.</p>
+          <!-- 07/11/2026: ele perguntou "e quando eu nao sei?". Nao precisa saber: o motor
+               transcreve. E transcreve o MESMO trecho de 25 s que vai ser clonado, para o
+               texto nunca descrever audio que o motor nao ouve. -->
+          <button type="button" class="voz-gerir-bt" id="vozDescobrir">
+            <span data-ic="onda"></span><span>Não sei — descobre pelo áudio</span></button>
+          <p class="nota" id="vozDescobrirStatus" aria-live="polite"></p>
           <label class="voz-campo"><span>Nome desta voz</span>
             <input id="vozClonNome" type="text" maxlength="60" placeholder="Ex.: Minha voz"></label>
           <p class="aviso-linha">Clone apenas a sua própria voz ou a de quem autorizou você.</p>

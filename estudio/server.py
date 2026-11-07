@@ -4165,6 +4165,33 @@ async def api_voz_conferir_ref(req):
     return web.json_response(laudo)
 
 
+async def api_voz_transcrever_ref(req):
+    """Descobre o que esta falado no audio de referencia e devolve o texto.
+
+    07/11/2026: ele perguntou "e quando eu nao sei?". O campo pode ficar em branco, mas texto
+    CERTO ajuda - e quem sabe transcrever e o motor, nao a pessoa. O arquivo vai para um
+    temporario e e apagado no fim.
+    """
+    dados = await req.post()
+    arq = dados.get("arquivo")
+    if arq is None or not getattr(arq, "filename", ""):
+        raise web.HTTPBadRequest(text="Envie o audio de referencia.")
+    VOZES_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = VOZES_DIR / ("transcrevendo_" + uuid.uuid4().hex[:8] + Path(arq.filename).suffix.lower())
+    try:
+        tmp.write_bytes(arq.file.read())
+        r = await voz_studio.transcrever_referencia(
+            tmp, str(dados.get("idioma") or "pt"), base_mcp=VOZ_SAIDA)
+    except Exception as e:
+        raise web.HTTPBadGateway(text=str(e)[:300])
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:
+            pass
+    return web.json_response(r)
+
+
 async def api_voz_clonar(req):
     """O áudio de referência chega como upload; guardamos junto das outras vozes do estúdio."""
     dados = await req.post()
@@ -4392,6 +4419,7 @@ app.add_routes([
     web.post("/api/voz/descrever", api_voz_descrever), web.post("/api/voz/desenhar", api_voz_desenhar),
     web.post("/api/voz/clonar", api_voz_clonar),
     web.post("/api/voz/conferir-ref", api_voz_conferir_ref),
+    web.post("/api/voz/transcrever-ref", api_voz_transcrever_ref),
     web.post("/api/voz/apagar", api_voz_apagar),
     web.get("/api/voz/gravadas", api_voz_gravadas),
     web.post("/api/voz/gravadas/apagar", api_voz_gravada_apagar), web.get("/api/voz/audio/{nome}", api_voz_audio),

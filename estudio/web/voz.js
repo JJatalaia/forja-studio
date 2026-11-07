@@ -202,6 +202,7 @@
       pegarArquivo(ev.dataTransfer.files[0]);
     });
     $('#vozClonar').addEventListener('click', clonar);
+    $('#vozDescobrir').addEventListener('click', descobrirTexto);
 
     // --- apagar voz (07/11/2026)
     $('#vozApagar').addEventListener('click', pedirApagar);
@@ -374,8 +375,12 @@
 
   async function clonar() {
     if (!E.arquivoRef) { avisar('Envie o áudio de referência.', 'aviso'); return; }
+    // 07/11/2026: AQUI havia "Escreva o que esta falado no audio - sem isso a voz sai
+    // embaralhada", e o botao nao seguia. Contradizia o proprio rotulo do campo ("pode
+    // deixar em branco") E o que foi medido em 31/10: com transcricao ERRADA a frase saiu
+    // cortada em 2,6 s; SEM transcricao nenhuma saiu inteira em 6,2 s. Em branco o motor se
+    // vira sozinho. Exigir o campo so empurrava a pessoa a inventar - que e o caso ruim.
     const tr = $('#vozTransc').value.trim();
-    if (!tr) { avisar('Escreva o que está falado no áudio — sem isso a voz sai embaralhada.', 'aviso'); return; }
     const bt = $('#vozClonar'), st = $('#vozClonarStatus');
     const fd = new FormData();
     fd.append('arquivo', E.arquivoRef);
@@ -522,6 +527,40 @@
       bt.disabled = false;
       st.className = 'nota laudo-ruim';
       st.textContent = String(e.message || e).slice(0, 200);
+    }
+  }
+
+  // --------------------------------------------------- descobrir o texto (07/11/2026)
+  // "E quando eu nao sei?" - nao precisa saber. O motor transcreve, e transcreve o MESMO
+  // trecho que vai ser clonado. O texto cai no campo para ele CONFERIR antes de clonar:
+  // transcricao automatica tambem erra, e texto errado e pior que campo vazio.
+  async function descobrirTexto() {
+    if (!E.arquivoRef) {
+      const st0 = $('#vozDescobrirStatus');
+      st0.className = 'nota laudo-ruim';
+      st0.textContent = 'Envie o áudio primeiro.';
+      return;
+    }
+    const bt = $('#vozDescobrir'), st = $('#vozDescobrirStatus');
+    bt.disabled = true;
+    st.className = 'nota';
+    st.textContent = 'Ouvindo o áudio…';
+    const fd = new FormData();
+    fd.append('arquivo', E.arquivoRef);
+    fd.append('idioma', $('#vozIdioma').value || 'pt');
+    try {
+      const r = await pedir('/api/voz/transcrever-ref', fd, true);
+      $('#vozTransc').value = r.texto || '';
+      st.className = 'nota laudo-alerta';
+      st.textContent = '⚠️ Isto foi o que ele ouviu nos ' + (r.segundos || 25) + ' s que vão ' +
+        'ser clonados' + (r.trecho ? ' (a partir de ' + Math.round(r.trecho) + ' s)' : '') +
+        '. LEIA e corrija o que estiver errado — ou apague tudo, que em branco também funciona.';
+    } catch (e) {
+      st.className = 'nota laudo-ruim';
+      st.textContent = 'Não consegui transcrever (' + String(e.message || e).slice(0, 140) +
+        '). Deixe o campo em branco: o motor se vira.';
+    } finally {
+      bt.disabled = false;
     }
   }
 

@@ -680,6 +680,99 @@ def _recortar_referencia(origem, pasta, inicio=0.0):
     return destino if destino.is_file() and destino.stat().st_size > 1024 else Path(origem)
 
 
+async def transcrever_referencia(caminho_audio, idioma="pt", base_mcp=None):
+    """Descobre o que esta falado no audio de referencia. Devolve o texto, ou "".
+
+    07/11/2026. Ele perguntou: "e quando eu nao sei?" - o campo da transcricao pode ficar em
+    branco, mas texto CERTO ajuda o clone. O motor sabe transcrever (`transcribe`), entao a
+    pessoa nao precisa saber: o painel descobre.
+
+    ⚠️ Transcreve o MESMO trecho de REF_SEGUNDOS que vai ser clonado, nao o arquivo inteiro.
+    Se transcrevesse tudo, o texto descreveria audio que o motor nunca ouve - que e
+    exatamente a falha medida em 31/10: transcricao que nao bate com o audio fez a fala sair
+    CORTADA PELA METADE. Texto errado e pior que campo vazio, e "certo para outro pedaco" e
+    uma forma de errado.
+    """
+    p = Path(caminho_audio)
+    if not p.is_file():
+        raise RuntimeError("Nao achei o audio: %s" % p)
+
+    pasta_ref = (Path(base_mcp) / "refs") if base_mcp else p.parent
+    laudo = await asyncio.to_thread(conferir_referencia, p)
+    curto = await asyncio.to_thread(_recortar_referencia, p, pasta_ref, laudo.get("trecho") or 0.0)
+
+    base = {"language": idioma} if idioma else {}
+    vias = []
+    if base_mcp:
+        try:
+            rel = curto.resolve().relative_to(Path(base_mcp).resolve())
+            vias.append({"audio_path": str(rel).replace("\\", "/")})
+        except ValueError:
+            pass
+    vias.append({"audio_base64": base64.b64encode(curto.read_bytes()).decode()})
+
+    ultimo = None
+    for extra in vias:
+        try:
+            d = _json_do(await chamar("transcribe", {**base, **extra}, timeout=300))
+        except Exception as e:
+            ultimo = str(e)
+            continue
+        if isinstance(d, dict) and d.get("error"):
+            ultimo = str(d["error"])[:200]
+            continue
+        texto = ""
+        if isinstance(d, dict):
+            texto = str(d.get("text") or d.get("transcript") or d.get("transcription") or "")
+        elif isinstance(d, str):
+            texto = d
+        texto = texto.strip()
+        if texto:
+            return {"texto": texto, "trecho": laudo.get("trecho") or 0.0,
+                    "segundos": REF_SEGUNDOS, "por": "motor"}
+        ultimo = "ele respondeu sem texto"
+
+    # ⚠️ O `transcribe` do VoiceStudio QUEBRA quando ele roda sem janela: por dentro ele
+    # chama "http://127.0.0.1/transcribe" - SEM A PORTA - e leva 403. E defeito dele, ja
+    # anotado em `estudio/prova_voz.py`. Entao a segunda via e o faster-whisper que este
+    # projeto ja usa, no Python 3.12 (o `py` padrao virou 3.14 e nao tem a biblioteca).
+    try:
+        texto = await asyncio.to_thread(_ouvir_local, curto, idioma or "pt")
+    except Exception as e:
+        raise RuntimeError(
+            "Nao consegui transcrever. O motor respondeu: %s. E o whisper local tambem nao "
+            "foi: %s. Deixe o campo em branco - o motor se vira sozinho." % (ultimo or "?", e))
+    if not texto:
+        raise RuntimeError("Nao ouvi palavra nenhuma nesse trecho. Deixe o campo em branco.")
+    return {"texto": texto, "trecho": laudo.get("trecho") or 0.0,
+            "segundos": REF_SEGUNDOS, "por": "whisper"}
+
+
+_OUVIR = r"""
+import sys, json
+from faster_whisper import WhisperModel
+m = WhisperModel("small", device="cpu", compute_type="int8")
+segs, _ = m.transcribe(sys.argv[1], language=sys.argv[2], beam_size=5)
+print(json.dumps({"texto": " ".join(s.text.strip() for s in segs)}, ensure_ascii=False))
+"""
+
+
+def _ouvir_local(arquivo, idioma="pt"):
+    """Transcreve com o faster-whisper, no Python 3.12 que tem a biblioteca.
+
+    Numa instalacao nova isto PODE nao existir - e tudo bem: quem chama transforma a falha
+    em "deixe o campo em branco", que e uma resposta honesta e funciona.
+    """
+    r = subprocess.run(["py", "-3.12", "-c", _OUVIR, str(arquivo), idioma],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       timeout=600,
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    linhas = [l for l in (r.stdout or "").splitlines() if l.strip().startswith("{")]
+    if not linhas:
+        raise RuntimeError((r.stderr or "").strip()[-160:] or "o whisper nao devolveu nada")
+    return json.loads(linhas[-1]).get("texto", "").strip()
+
+
 async def clonar(caminho_audio, nome=None, transcricao=None, idioma="pt", entrega=None,
                  base_mcp=None):
     """Clona a voz de um áudio de referência. Devolve o profile_id.
