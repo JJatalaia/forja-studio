@@ -245,6 +245,7 @@
     E.ocupado = true;
     bt.disabled = true;
     $('span:last-child', bt).textContent = 'Gerando…';
+    const parar = await comecarBarra(texto.length);
     try {
       const r = await pedir('/api/voz/falar', {
         texto, voz: $('#vozVoz').value || null, idioma: $('#vozIdioma').value || 'pt',
@@ -258,10 +259,71 @@
     } catch (e) {
       avisar(String(e.message || e).slice(0, 300), 'erro');
     } finally {
+      parar();
       E.ocupado = false;
       bt.disabled = false;
       $('span:last-child', bt).textContent = 'Gerar narração';
     }
+  }
+
+  // ------------------------------------------------- a barra de progresso (07/11/2026)
+  // Ele clicou em Gerar e ficou sem saber quanto falta: "ficou so pensando e nao faco ideia
+  // de quando terminar".
+  //
+  // ⚠️ O motor NAO manda progresso - e uma chamada so, que volta quando acaba. Entao aqui
+  // nao existe porcentagem de verdade: o que existe e o CRONOMETRO (fato) e uma previsao
+  // feita com os tempos que ja medimos nesta maquina. A tela diz qual e qual:
+  //   - o tempo CORRIDO e sempre mostrado, porque e verdade;
+  //   - a barra so aparece quando ha medida para prever, e vem rotulada "estimativa";
+  //   - passando do previsto ela NAO fica presa em 99% fingindo: assume que errou e diz
+  //     que ainda esta gerando. Barra que mente em 99% e pior do que barra nenhuma.
+  function seg(n) {
+    n = Math.max(0, Math.round(n));
+    return n < 60 ? n + ' s' : Math.floor(n / 60) + ' min ' + String(n % 60).padStart(2, '0') + ' s';
+  }
+
+  async function comecarBarra(letras) {
+    const caixa = $('#vozProgresso'), barra = $('#vozProgressoBarra'),
+          txt = $('#vozProgressoTxt');
+    if (!caixa) return () => {};
+    let prev = null;
+    try {
+      const r = await pedir('/api/voz/previsao?letras=' + letras);
+      if (r && r.segundos) prev = r;
+    } catch (e) { /* sem previsao a barra some e fica so o cronometro */ }
+
+    const t0 = Date.now();
+    caixa.hidden = false;
+    barra.parentElement.hidden = !prev;
+    const tic = setInterval(() => {
+      const passou = (Date.now() - t0) / 1000;
+      if (!prev) {
+        txt.textContent = 'Gerando há ' + seg(passou) + '. (Ainda não medi quanto isto '
+          + 'costuma levar aqui — depois desta eu já consigo prever.)';
+        return;
+      }
+      const pct = Math.min(99, Math.round((passou / prev.segundos) * 100));
+      barra.style.width = pct + '%';
+      if (passou < prev.segundos) {
+        txt.textContent = pct + '% · faltam ~' + seg(prev.segundos - passou)
+          + ' (estimativa, de ' + prev.amostras + ' geraç' + (prev.amostras === 1 ? 'ão' : 'ões')
+          + ' medida' + (prev.amostras === 1 ? '' : 's') + ')'
+          + (prev.frio ? ' · motor frio, a primeira é sempre mais lenta' : '');
+      } else {
+        barra.classList.add('passou');
+        txt.textContent = 'Passou da estimativa (' + seg(prev.segundos) + ') e ainda está '
+          + 'gerando — já são ' + seg(passou) + '. Errei a previsão; o motor não avisa '
+          + 'quanto falta.';
+      }
+    }, 250);
+
+    return () => {
+      clearInterval(tic);
+      caixa.hidden = true;
+      barra.style.width = '0%';
+      barra.classList.remove('passou');
+      txt.textContent = '';
+    };
   }
 
   function mostrarAudio(r) {

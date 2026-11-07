@@ -4216,6 +4216,59 @@ async def api_voz_clonar(req):
     return web.json_response({"id": pid, "vozes": await voz_studio.vozes(True)})
 
 
+_voz_ultima = {"quando": 0.0}
+
+
+def _ultima_narracao():
+    """Quando foi a ultima narracao, em relogio de parede.
+
+    07/11/2026: isto vivia SO na memoria, e reiniciar o painel fazia a proxima geracao ser
+    contada como "motor frio" mesmo com o motor quente - sujando a medida que justamente
+    separa as duas. Agora o relogio vai gravado em cada medida, entao sobrevive ao reinicio.
+    """
+    if _voz_ultima["quando"]:
+        return _voz_ultima["quando"]
+    maior = 0
+    for chave in ("voz|quente", "voz|frio"):
+        for m in STATS.get(chave, []):
+            if isinstance(m, dict) and m.get("quando"):
+                maior = max(maior, m["quando"])
+    _voz_ultima["quando"] = maior
+    return maior
+
+
+def _prever_voz(letras):
+    """Quanto deve demorar gerar `letras` caracteres. So com o que foi MEDIDO aqui.
+
+    Devolve (segundos, amostras, frio). Sem medida nenhuma devolve (None, 0, frio) - e a
+    tela mostra so o cronometro subindo, que e verdade, em vez de uma porcentagem inventada.
+    """
+    frio = time.time() - _ultima_narracao() > 600
+    medidas = [m for m in STATS.get("voz|frio" if frio else "voz|quente", [])
+               if isinstance(m, dict) and m.get("total") and m.get("letras")]
+    if not medidas:
+        # sem medida do estado certo, tenta o outro: previsao torta e melhor que nenhuma,
+        # e a tela diz que e estimativa.
+        medidas = [m for m in STATS.get("voz|quente" if frio else "voz|frio", [])
+                   if isinstance(m, dict) and m.get("total") and m.get("letras")]
+        if not medidas:
+            return None, 0, frio
+    # segundos por letra, pela MEDIANA das ultimas - a media deixa um caso ruim mandar
+    taxas = sorted(m["total"] / max(m["letras"], 1) for m in medidas[-15:])
+    taxa = taxas[len(taxas) // 2]
+    return round(taxa * max(letras, 1), 1), len(medidas), frio
+
+
+async def api_voz_previsao(req):
+    """Quanto deve demorar, para a tela poder mostrar a barra e o tempo que falta."""
+    try:
+        letras = int(req.query.get("letras") or 0)
+    except ValueError:
+        letras = 0
+    seg, amostras, frio = _prever_voz(letras)
+    return web.json_response({"segundos": seg, "amostras": amostras, "frio": frio})
+
+
 async def api_voz_falar(req):
     b = await req.json()
     texto_falar = (b.get("texto") or "").strip()
@@ -4251,6 +4304,21 @@ async def api_voz_falar(req):
     # duas para a tela mostrar o erro da estimativa — é o que serve para encaixar os @segundo.
     r["letras"] = len(texto_falar)
     r["estimado"] = round(len(texto_falar) / 13.2, 1)
+    # 07/11/2026: ele clicou em Gerar e ficou sem saber quanto falta. Para prever e preciso
+    # ter medido antes - entao cada narracao entra no MESMO tempos.json que ja da o ETA das
+    # imagens e videos. Guardamos tambem se o motor estava FRIO, porque a primeira geracao
+    # depois de um tempo parado custou 272 s para 2,7 s de audio, e as seguintes, segundos:
+    # misturar as duas faria a previsao mentir nos dois sentidos.
+    try:
+        frio = time.time() - _ultima_narracao() > 600
+        STATS.setdefault("voz|frio" if frio else "voz|quente", []).append(
+            {"total": r.get("demorou"), "letras": len(texto_falar),
+             "audio_s": r.get("segundos"), "quando": int(time.time())})
+        STATS["voz|frio" if frio else "voz|quente"] =             STATS["voz|frio" if frio else "voz|quente"][-40:]
+        _voz_ultima["quando"] = time.time()
+        salvar()
+    except Exception as e:
+        print("[estudio] nao guardei o tempo da narracao: %s" % e, flush=True)
     return web.json_response(r)
 
 
@@ -4416,6 +4484,7 @@ app.add_routes([
     web.post("/api/servicos/ligar", api_servicos_ligar), web.post("/api/servicos/desligar", api_servicos_desligar),
     web.get("/api/preferencias", api_preferencias), web.post("/api/preferencias", api_preferencias),
     web.get("/api/voz/estado", api_voz_estado), web.post("/api/voz/falar", api_voz_falar),
+    web.get("/api/voz/previsao", api_voz_previsao),
     web.post("/api/voz/descrever", api_voz_descrever), web.post("/api/voz/desenhar", api_voz_desenhar),
     web.post("/api/voz/clonar", api_voz_clonar),
     web.post("/api/voz/conferir-ref", api_voz_conferir_ref),

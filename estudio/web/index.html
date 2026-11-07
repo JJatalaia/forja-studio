@@ -702,6 +702,13 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
               <button type="button" class="gerar" id="vozFalar"><span data-ic="play"></span><span>Gerar narração</span></button>
             </div>
           </div>
+          <!-- 07/11/2026: a barra. O motor nao manda progresso, entao o que e FATO aqui e o
+               cronometro; a barra e previsao feita com os tempos medidos nesta maquina, e
+               diz isso. Passando do previsto ela assume o erro em vez de travar em 99%. -->
+          <div class="voz-progresso" id="vozProgresso" hidden>
+            <div class="voz-progresso-trilho"><div class="voz-progresso-barra" id="vozProgressoBarra"></div></div>
+            <p class="nota" id="vozProgressoTxt" aria-live="polite"></p>
+          </div>
           <div class="voz-saida" id="vozSaida" hidden>
             <audio id="vozAudio" controls preload="none"></audio>
             <div class="voz-saida-info" id="vozSaidaInfo"></div>

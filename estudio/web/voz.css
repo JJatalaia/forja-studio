@@ -216,3 +216,22 @@
 .voz-guardada-txt.vazio { color: var(--fraco); font-style: italic; }
 .voz-guardada audio { width: 100%; height: 34px; }
 .voz-guardada-bts { display: flex; gap: 8px; margin-top: 8px; }
+
+/* ------------------------------------------------------ barra da narracao (07/11/2026)
+   "Cliquei em gera e ficou so pensando, nao faco ideia de quando terminar."
+   A barra e ESTIMATIVA (o motor nao manda progresso); por isso ela muda de cor quando
+   passa do previsto, em vez de fingir que esta quase la. */
+.voz-progresso { margin-top: 14px; }
+.voz-progresso-trilho {
+  height: 6px; border-radius: 99px; background: var(--borda); overflow: hidden;
+}
+.voz-progresso-barra {
+  height: 100%; width: 0; border-radius: 99px; background: var(--acento);
+  transition: width .25s linear;
+}
+.voz-progresso-barra.passou {
+  background: var(--aviso);
+  animation: voz-passou 1.2s ease-in-out infinite;
+}
+@keyframes voz-passou { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+.voz-progresso .nota { margin-top: 6px; }

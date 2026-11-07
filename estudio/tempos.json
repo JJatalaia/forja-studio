@@ -13581,5 +13581,39 @@
    "por_passo": 9.626591813975367,
    "pos": 37.147162437438965
   }
+ ],
+ "voz|frio": [
+  {
+   "total": 7.7,
+   "letras": 37,
+   "audio_s": 2.34,
+   "quando": 1794026714
+  }
+ ],
+ "voz|quente": [
+  {
+   "total": 15.3,
+   "letras": 105,
+   "audio_s": 4.96,
+   "quando": 1794026730
+  },
+  {
+   "total": 26.6,
+   "letras": 192,
+   "audio_s": 8.9,
+   "quando": 1794026756
+  },
+  {
+   "total": 102.3,
+   "letras": 619,
+   "audio_s": 33.68,
+   "quando": 1794026859
+  },
+  {
+   "total": 22.1,
+   "letras": 155,
+   "audio_s": 6.85,
+   "quando": 1794026881
+  }
  ]
 }
