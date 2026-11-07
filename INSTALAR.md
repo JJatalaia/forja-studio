@@ -191,6 +191,28 @@ Abra `http://127.0.0.1:8194` no navegador.
 
 ---
 
+### Descobrir o texto do áudio (opcional)
+
+Na aba **Clonar uma voz** há o botão *"Não sei — descobre pelo áudio"*, que escreve sozinho
+o que está falado na referência. Ele **não funciona de saída**: precisa de uma biblioteca
+que não vem no pacote.
+
+```bash
+pip install faster-whisper
+```
+
+Instale no **mesmo Python que roda o painel**. Na primeira vez que você usar o botão, ele
+baixa o modelo (**~464 MB**) e guarda; depois é só local.
+
+Sem isso o botão explica o que falta, e **nada mais deixa de funcionar**: clonar voz
+funciona com o campo do texto em branco — é inclusive o recomendado na dúvida, porque texto
+errado é pior que campo vazio.
+
+> O transcritor que vem dentro do VoiceStudio **não serve**: quando ele roda sem janela,
+> chama `http://127.0.0.1/transcribe` sem a porta e responde 403. É defeito dele.
+
+---
+
 ## Passo 3 — a voz (opcional, mas vale)
 
 A narração local é o que tira o último custo mensal do caminho. Instale o

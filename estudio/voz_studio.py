@@ -28,6 +28,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -739,9 +740,15 @@ async def transcrever_referencia(caminho_audio, idioma="pt", base_mcp=None):
     try:
         texto = await asyncio.to_thread(_ouvir_local, curto, idioma or "pt")
     except Exception as e:
+        print("[voz] transcricao falhou | motor: %s | local: %s"
+              % ((ultimo or "?")[:120], str(e)[:200]), flush=True)
+        # A mensagem ENSINA. Quem instalou o pacote hoje nao tem o faster-whisper, e um
+        # erro tecnico ("nenhum python com faster-whisper") nao diz a ninguem o que fazer.
         raise RuntimeError(
-            "Nao consegui transcrever. O motor respondeu: %s. E o whisper local tambem nao "
-            "foi: %s. Deixe o campo em branco - o motor se vira sozinho." % (ultimo or "?", e))
+            "Nao consegui descobrir o texto. Isto precisa do faster-whisper, que nao vem no "
+            "pacote. Para ligar, rode uma vez:  pip install faster-whisper  (no Python do "
+            "painel). Ele baixa ~464 MB na primeira transcricao. Sem isso, deixe o campo em "
+            "branco: o motor se vira sozinho, e esta e a opcao recomendada na duvida.")
     if not texto:
         raise RuntimeError("Nao ouvi palavra nenhuma nesse trecho. Deixe o campo em branco.")
     return {"texto": texto, "trecho": laudo.get("trecho") or 0.0,
@@ -757,20 +764,40 @@ print(json.dumps({"texto": " ".join(s.text.strip() for s in segs)}, ensure_ascii
 """
 
 
-def _ouvir_local(arquivo, idioma="pt"):
-    """Transcreve com o faster-whisper, no Python 3.12 que tem a biblioteca.
+def _pythons_com_whisper():
+    """Onde procurar o faster-whisper, na ordem.
 
-    Numa instalacao nova isto PODE nao existir - e tudo bem: quem chama transforma a falha
-    em "deixe o campo em branco", que e uma resposta honesta e funciona.
+    07/11/2026: isto comecou chamando `py -3.12` fixo, copiado do `prova_voz.py`. Errado
+    para quem INSTALA: `py -3.12` e uma particularidade desta maquina (veio do projeto dos
+    Poemas). O certo e tentar PRIMEIRO o python que esta rodando o painel - se a biblioteca
+    estiver nele, funciona em qualquer instalacao sem depender de mais nada.
     """
-    r = subprocess.run(["py", "-3.12", "-c", _OUVIR, str(arquivo), idioma],
-                       capture_output=True, text=True, encoding="utf-8", errors="replace",
-                       timeout=600,
-                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-    linhas = [l for l in (r.stdout or "").splitlines() if l.strip().startswith("{")]
-    if not linhas:
-        raise RuntimeError((r.stderr or "").strip()[-160:] or "o whisper nao devolveu nada")
-    return json.loads(linhas[-1]).get("texto", "").strip()
+    vias = [sys.executable]
+    vias += ["py -3.12", "py -3.11"]   # so para quem ja tinha, como esta maquina
+    return vias
+
+
+def _ouvir_local(arquivo, idioma="pt"):
+    """Transcreve com o faster-whisper. Devolve o texto.
+
+    Numa instalacao sem a biblioteca isto FALHA - e tudo bem: quem chama transforma a falha
+    em instrucao ("instale assim, ou deixe o campo em branco"), que e honesto e funciona.
+    """
+    erros = []
+    for via in _pythons_com_whisper():
+        cmd = (via.split() if " " in via else [via]) + ["-c", _OUVIR, str(arquivo), idioma]
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=900,
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except Exception as e:
+            erros.append("%s: %s" % (via, e))
+            continue
+        linhas = [l for l in (r.stdout or "").splitlines() if l.strip().startswith("{")]
+        if linhas:
+            return json.loads(linhas[-1]).get("texto", "").strip()
+        erros.append("%s: %s" % (via, (r.stderr or "").strip()[-120:] or "sem resposta"))
+    raise RuntimeError(" | ".join(erros[:2]) or "nenhum python com faster-whisper")
 
 
 async def clonar(caminho_audio, nome=None, transcricao=None, idioma="pt", entrega=None,
