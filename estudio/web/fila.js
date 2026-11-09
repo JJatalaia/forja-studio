@@ -102,7 +102,9 @@
     el.querySelector('.fila-hist-titulo').textContent =
       (i.deu_certo ? '' : '⚠️ ') + (i.titulo || 'trabalho');
     el.querySelector('.fila-hist-sub').textContent =
-      [quandoData(i.quando), (i.arquivos || []).length ? (i.arquivos.length + ' arquivo' +
+      // i.saida diz o QUE saiu ("imagem", "vídeo", "música · 3:10"); na música ela carrega a
+      // duração, que e o unico numero util quando nao ha arquivo para abrir.
+      [quandoData(i.quando), i.saida, (i.arquivos || []).length ? (i.arquivos.length + ' arquivo' +
         (i.arquivos.length === 1 ? '' : 's')) : '', i.prompt].filter(Boolean).join(' · ');
     el.querySelector('.fila-de').textContent =
       i.de === 'estudio' ? 'deste painel' : i.de === 'musica' ? 'música' : 'DE FORA';

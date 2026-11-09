@@ -4508,6 +4508,40 @@ async def _absorver_historico():
             "prompt": ((meus.get(pid) or {}).get("prompt") or "")[:160],
         }
         novos += 1
+
+    # 09/11/2026: a musica tambem entra. Ele pediu "um historico do que foi gerado SEMPRE", e
+    # depois de gerar seis musicas elas apareciam ao vivo na Fila e sumiam do "Ja gerado":
+    # o absorvedor so lia a ComfyUI. O painel de musica tem fila e historico proprios.
+    # Sem link do arquivo de proposito: o audio e servido pela ComfyUI de musica, que fica
+    # DESLIGADA quase sempre, e um endereco que eu nao consigo provar agora viraria um botao
+    # que nao abre. Titulo, motor, quando e quanto durou ja dizem o que aconteceu.
+    try:
+        async with aiohttp.ClientSession() as s_:
+            async with s_.get(MUSICA + "/api/jobs", timeout=aiohttp.ClientTimeout(total=8)) as r:
+                prontas = await r.json()
+    except Exception:
+        prontas = []
+    for j in (prontas if isinstance(prontas, list) else []):
+        estado = str(j.get("state") or "").lower()
+        if estado not in ("done", "error") or j.get("id") in itens:
+            continue
+        quando = int(j.get("started") or j.get("created") or 0)
+        if limpo_em and quando and quando <= limpo_em:
+            continue
+        dur = j.get("duracao_s")
+        itens[j["id"]] = {
+            "id": j["id"], "fonte": "musica", "quando": quando or int(time.time()),
+            "fim": int(quando + (j.get("elapsed") or 0)) if quando else 0,
+            "de": "musica", "quem": "Painel de música",
+            "titulo": j.get("title") or "música",
+            "saida": "música" + (" · %d:%02d" % (int(dur) // 60, int(dur) % 60) if dur else ""),
+            "modelos": [j.get("motor_nome")] if j.get("motor_nome") else [],
+            "deu_certo": estado == "done",
+            "arquivos": [],
+            "prompt": str(((j.get("settings") or {}).get("style") or ""))[:160],
+        }
+        novos += 1
+
     if novos:
         d["itens"] = itens
         _hist_fila_gravar(d)
