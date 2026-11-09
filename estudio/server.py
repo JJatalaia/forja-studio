@@ -4588,13 +4588,25 @@ async def api_fila(req):
                 musicas = await r.json()
     except Exception:
         musicas = []
-    for j in (musicas if isinstance(musicas, list) else []):
-        if str(j.get("state") or "").lower() in ("done", "error", "cancelled", "canceled"):
-            continue
-        itens.append({"fonte": "musica", "estado": "rodando" if j.get("state") == "running" else "fila",
+    # 09/11/2026: o painel de musica marca "running" em TUDO que ele aceitou - inclusive no
+    # que ainda espera a vez. Fiando-me so no "state", os tres apareciam aqui como "gerando"
+    # enquanto a tela dele dizia, certissima, "Gerando / Na fila 1o / Na fila 2o".
+    # Quem separa de verdade e o "started": so quem comecou tem hora de inicio. E o "created"
+    # da a ordem da fila. Numero errado na tela e pior do que numero nenhum.
+    vivos = [j for j in (musicas if isinstance(musicas, list) else [])
+             if str(j.get("state") or "").lower() not in ("done", "error", "cancelled", "canceled")]
+    vivos.sort(key=lambda j: (0 if j.get("started") else 1, j.get("created") or 0))
+    lugar = 0
+    for j in vivos:
+        rodando = bool(j.get("started"))
+        if not rodando:
+            lugar += 1
+        itens.append({"fonte": "musica", "estado": "rodando" if rodando else "fila",
                       "id": j.get("id"), "de": "musica", "quem": "Painel de música",
+                      "numero": None if rodando else lugar,
                       "titulo": j.get("title") or "música", "saida": "música",
-                      "modelos": [j.get("motor_nome")] if j.get("motor_nome") else [],
+                      "modelos": [j.get("motor_nome") or (j.get("settings") or {}).get("engine")]
+                                 if (j.get("motor_nome") or (j.get("settings") or {}).get("engine")) else [],
                       "comecou": j.get("started"), "prompt": ""})
 
     # 3) narracao: o VoiceStudio nao tem fila para consultar; o que sabemos e se ESTE painel

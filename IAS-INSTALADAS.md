@@ -6,8 +6,8 @@
 |---|---|---|
 | imagem e vídeo (ComfyUI) | 51 | **367.8 GB** |
 | texto (llama.cpp) | 3 | **18.7 GB** |
-| voz (VoiceStudio: 5 modelos + o aplicativo) | 5 | **22.0 GB** |
-| **tudo** | **59** | **408.5 GB** |
+| voz (VoiceStudio: 5 modelos + o aplicativo) | 5 | **26.6 GB** |
+| **tudo** | **59** | **413.1 GB** |
 
 ## Cada IA, e o que ela pesa
 
@@ -111,7 +111,7 @@ A coluna **pasta** é onde o arquivo tem que cair dentro de `ComfyUI/models/` �
 
 | repositório | peso |
 |---|---|
-| [openbmb/VoxCPM2](https://huggingface.co/openbmb/VoxCPM2) | 4.6 GB |
+| [openbmb/VoxCPM2](https://huggingface.co/openbmb/VoxCPM2) | 9.2 GB |
 | [k2-fsa/OmniVoice](https://huggingface.co/k2-fsa/OmniVoice) | 3.8 GB |
 | [deepdml/faster-whisper-large-v3-turbo-ct2](https://huggingface.co/deepdml/faster-whisper-large-v3-turbo-ct2) | 3.0 GB |
 | [csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8](https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8) | 1.2 GB |

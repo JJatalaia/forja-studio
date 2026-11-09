@@ -29,7 +29,8 @@
     const modelos = (i.modelos || []).filter(Boolean).join(' · ');
     el.innerHTML =
       '<div class="fila-item-cab">' +
-        '<span class="fila-estado">' + (i.estado === 'rodando' ? '● gerando' : '○ na fila') + '</span>' +
+        '<span class="fila-estado">' + (i.estado === 'rodando' ? '● gerando'
+          : '○ na fila' + (i.numero ? ' · ' + i.numero + 'º' : '')) + '</span>' +
         '<span class="fila-de' + (i.de === 'fora' ? ' fora' : '') + '">' + etiqueta + '</span>' +
       '</div>' +
       '<p class="fila-titulo"></p>' +
