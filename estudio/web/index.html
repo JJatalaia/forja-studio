@@ -340,6 +340,30 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             <button type="button" id="btSalvarVoz" class="bt-sec">Salvar na lista</button>
           </div>
           <p class="nota" id="vozStatus" aria-live="polite"></p>
+          <!-- 09/11/2026: a mesma caixa da tela de Narracao, agora AQUI tambem. A pessoa
+               escolhia a voz nesta tela e nao tinha como dizer que tem conta no ElevenLabs:
+               so via as vozes locais e nenhuma explicacao. A chave e DELA e fica na maquina
+               dela; nada de ElevenLabs viaja no pacote. -->
+          <details class="nuvem" id="nuvem11Bloco">
+            <summary><span data-ic="onda"></span> Vozes na nuvem <small>(opcional)</small>
+              <i class="nuvem-selo" id="nuvem11Selo"></i></summary>
+            <div class="nuvem-corpo">
+              <p class="nuvem-ex">As vozes da lista acima são <b>locais e de graça</b>, e é com
+                elas que o estúdio já funciona. Se você tiver conta no <b>ElevenLabs</b> e quiser
+                usar as vozes de lá, cole a <b>sua</b> chave: elas aparecem na lista com o
+                símbolo ☁ e gastam crédito da <b>sua</b> conta.</p>
+              <label class="nuvem-rot" for="nuvem11Chave">Chave do ElevenLabs</label>
+              <input type="password" id="nuvem11Chave" autocomplete="off" spellcheck="false"
+                     placeholder="cole a chave aqui" maxlength="300">
+              <div class="nuvem-bts">
+                <button type="button" class="gerar" id="nuvem11Salvar">Salvar</button>
+                <button type="button" class="bt-sec" id="nuvem11Tirar">Remover</button>
+              </div>
+              <p class="nuvem-msg" id="nuvem11Msg" role="status"></p>
+              <p class="nuvem-pe">Fica num arquivo de texto na sua máquina, na pasta
+                <code>API</code>. Nunca sai daqui e nunca vai para o GitHub.</p>
+            </div>
+          </details>
           <h3 class="sub" id="hAudio">Ou áudio pronto <small>(opcional · ele dubla esse áudio em vez do texto)</small></h3>
           <label class="upload baixo" id="upAudio">
             <input type="file" accept="audio/*,video/*" class="sr-only" aria-describedby="hAudio">
@@ -936,8 +960,8 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261103-conta2"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
-<script src="app.js?v=20261107-fila"></script>
-<script src="voz.js?v=20261103-nuvem"></script>
+<script src="app.js?v=20261109-nuvem11"></script>
+<script src="voz.js?v=20261109-selo"></script>
 <script src="fila.js?v=20261109-musica"></script>
 <script src="canal.js?v=20261030-canal"></script>
 <script src="plano.js?v=20261102-molde2"></script>

@@ -655,11 +655,16 @@
     m.className = 'nuvem-msg' + (tipo ? ' ' + tipo : '');
   }
 
-  function selo(tem) {
+  // 09/11/2026: o ponto verde acendia so por existir arquivo de chave, mesmo quando o
+  // ElevenLabs nao devolvia voz nenhuma. Agora "serve" manda: luz verde = funciona.
+  function selo(tem, serve) {
+    const bom = serve === undefined ? !!tem : !!serve;
     const s = $('#nuvemSelo');
     if (s) {
-      s.classList.toggle('on', !!tem);
-      s.title = tem ? 'Uma chave está guardada nesta máquina.' : 'Sem chave: só voz local.';
+      s.classList.toggle('on', bom);
+      s.title = bom ? 'Uma chave está guardada e funcionando.'
+        : tem ? 'Chave guardada, mas o ElevenLabs não devolveu nenhuma voz.'
+              : 'Sem chave: só voz local.';
     }
     const i = $('#nuvemChave');
     if (i) i.placeholder = tem ? 'uma chave já está guardada — cole outra para trocar'
@@ -667,9 +672,19 @@
   }
 
   async function olhar() {
+    // O GET diz se EXISTE chave, nunca se ela funciona. Quem responde isso e a lista de
+    // vozes: chave guardada + lista vazia = chave que nao serve.
     try {
       const d = await falar('/api/chave-nuvem');
-      selo(d && d.tem);
+      const tem = !!(d && d.tem);
+      let serve = false;
+      if (tem) {
+        try {
+          const v = await falar('/api/vozes11');
+          serve = Array.isArray(v && v.vozes) && v.vozes.length > 0;
+        } catch (_) { serve = false; }
+      }
+      selo(tem, serve);
     } catch (_) { /* estudio velho: o bloco so fica quieto */ }
   }
 
@@ -685,7 +700,7 @@
       try {
         const d = await falar('/api/chave-nuvem', { chave });
         campo.value = '';
-        selo(d.tem);
+        selo(d.tem, d.ok);
         recado(d.mensagem, d.ok ? 'bom' : 'ruim');
         if (d.ok && window.VOZ && window.VOZ.recarregarVozes) window.VOZ.recarregarVozes();
       } catch (e) {

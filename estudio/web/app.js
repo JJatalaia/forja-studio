@@ -1852,6 +1852,89 @@ function prepararUploads() {
   });
 }
 
+// ------------------------------------------------- chave do ElevenLabs de QUEM USA o estudio
+// 09/11/2026: a lista de vozes desta tela mostra as vozes da nuvem com "☁", mas nao havia
+// onde dizer que a pessoa TEM conta: sem chave ela so via as vozes locais e nenhuma explicacao.
+// Esta caixa pede a chave DELA, que vai para um arquivo na maquina dela (pasta API) - nada de
+// ElevenLabs viaja no pacote, e sem chave o estudio inteiro continua funcionando local.
+// Tudo com "se existe": se o HTML for de uma versao velha, a funcao sai calada em vez de
+// matar o iniciar() (foi o que o "FILA is not defined" fez em 07/11).
+function recadoNuvem11(texto, tipo) {
+  const m = $('#nuvem11Msg');
+  if (!m) return;
+  m.textContent = texto || '';
+  m.className = 'nuvem-msg' + (tipo ? ' ' + tipo : '');
+}
+// "tem" = existe chave guardada; "serve" = ela devolveu voz de verdade. O ponto verde so
+// acende quando SERVE: guardar uma chave errada e ver a luz verde foi o que me enganou no
+// teste de 09/11 - a mensagem dizia que nao veio voz nenhuma e a bolinha dizia que estava tudo bem.
+function seloNuvem11(tem, serve) {
+  const bom = serve === undefined ? !!tem : !!serve;
+  const s = $('#nuvem11Selo');
+  if (s) {
+    s.classList.toggle('on', bom);
+    s.title = bom ? 'Uma chave esta guardada e funcionando.'
+      : tem ? 'Chave guardada, mas o ElevenLabs nao devolveu nenhuma voz.'
+            : 'Sem chave: so voz local.';
+  }
+  const i = $('#nuvem11Chave');
+  if (i) i.placeholder = tem ? 'uma chave ja esta guardada — cole outra para trocar'
+                             : 'cole a chave aqui';
+}
+function seloDepoisDasVozes() {
+  if (G.temChave11 === undefined) return;   // ainda nao sei se ha chave
+  seloNuvem11(G.temChave11, (G.vozes11 || []).length > 0);
+}
+async function recarregarVozes11() {
+  await carregarVozes();
+  if (G.rota && !$('#secVoz').hidden) renderVozes();
+}
+function prepararNuvem11() {
+  const bloco = $('#nuvem11Bloco');
+  if (!bloco) return;
+  // O GET diz se EXISTE chave, nunca se ela funciona. Quem responde isso e a lista de
+  // vozes: chave guardada + lista vazia = chave que nao serve. Por isso o ponto verde
+  // espera a lista (seloDepoisDasVozes, chamado no fim de carregarVozes).
+  api('/api/chave-nuvem', { timeout: 8000 })
+    .then((d) => { G.temChave11 = !!(d && d.tem); seloDepoisDasVozes(); })
+    .catch(() => { /* estudio velho: a caixa so fica quieta */ });
+  const salvar = $('#nuvem11Salvar'), tirar = $('#nuvem11Tirar');
+  if (salvar) salvar.onclick = async () => {
+    const campo = $('#nuvem11Chave');
+    const chave = ((campo && campo.value) || '').trim();
+    if (!chave) { recadoNuvem11('Cole a chave antes de salvar.', 'ruim'); return; }
+    recadoNuvem11('Conferindo a chave com o ElevenLabs…');
+    try {
+      const d = await api('/api/chave-nuvem', { method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chave }), timeout: 30000 });
+      campo.value = '';
+      G.temChave11 = !!d.tem;
+      seloNuvem11(d.tem, d.ok);
+      recadoNuvem11(d.mensagem, d.ok ? 'bom' : 'ruim');
+      if (d.ok) await recarregarVozes11();
+    } catch (e) { recadoNuvem11(String((e && e.message) || e), 'ruim'); }
+  };
+  if (tirar) tirar.onclick = async () => {
+    const ok = await confirmar({ titulo: 'Remover a chave do ElevenLabs?',
+      texto: 'A chave sai desta maquina e as vozes da nuvem desaparecem da lista. A narracao '
+           + 'continua funcionando com as vozes locais, de graca.',
+      sim: 'Remover a chave', icone: 'lixo' });
+    if (!ok) return;
+    try {
+      const d = await api('/api/chave-nuvem', { method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chave: '' }), timeout: 15000 });
+      const campo = $('#nuvem11Chave');
+      if (campo) campo.value = '';
+      G.temChave11 = false;
+      seloNuvem11(false);
+      recadoNuvem11(d.mensagem, 'bom');
+      await recarregarVozes11();
+    } catch (e) { recadoNuvem11(String((e && e.message) || e), 'ruim'); }
+  };
+}
+
 // ---------------------------------------------------------------- vozes do Apresentador
 async function carregarVozes() {
   try { G.vozes = await api('/api/vozes', { timeout: 8000 }); } catch (e) { G.vozes = []; }
@@ -1862,6 +1945,7 @@ async function carregarVozes() {
     G.vozes11 = Array.isArray(r.vozes) ? r.vozes : [];
     G.creditos11 = r.creditos || null;
   } catch (e) { G.vozes11 = []; G.creditos11 = null; }
+  try { seloDepoisDasVozes(); } catch (e) { /* a bolinha nao pode derrubar as vozes */ }
 }
 function renderVozes() {
   // "Voz padrão" + cada voz já clonada; a voz recém-enviada entra como "Nova (ainda não salva)"
@@ -2818,6 +2902,7 @@ function esconderAbasSemIA() {
   prepararEventos();
   prepararUploads();
   prepararVozes();
+  try { prepararNuvem11(); } catch (e) { /* a caixa da nuvem nao pode derrubar a tela */ }
   prepararTexto();
   // o Início aparece NA HORA (cartões, máquina, últimas criações), mesmo com o servidor lento ou sem resposta:
   // a lista de IAs chega depois e completa os cartões (as outras seções esperam por ela)
