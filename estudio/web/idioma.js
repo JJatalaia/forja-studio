@@ -24,8 +24,18 @@
  *
  * ## Para quem for continuar (11/11/2026)
  *
+ * Idiomas: português (o HTML), inglês e espanhol. Para acrescentar um quarto, basta criar
+ * o dicionário, pôr a sigla em DICIONARIOS e em ETIQUETA, e um <option> no seletor - nada
+ * mais no resto do programa precisa saber que ele existe.
+ *
  * Isto cobre a CASCA (topo, menu) e a tela de Início. O resto da tela continua em
- * português mesmo com o inglês escolhido - e é assim que tem de ser até alguém traduzir.
+ * português mesmo com outro idioma escolhido - e é assim que tem de ser até alguém traduzir.
+ *
+ * ## NÃO marque texto que o JavaScript reescreve
+ *
+ * Marcar o title do chip da máquina foi erro meu: o app.js escreve ali o estado da
+ * máquina a cada pulso. Trocar de idioma apagava um aviso vivo, e o pulso seguinte
+ * apagava a tradução de volta. Só se marca aqui o que está PARADO no HTML.
  * As mensagens que nascem no server.py NÃO passam por aqui: são outro trabalho, e o
  * maior deles.
  */
@@ -51,13 +61,12 @@
     'nav.fila': 'Queue',
     'nav.secoes': 'Sections',
     'topo.marca': 'JerS Forja Studio — home',
-    'maq.dica': 'Your machine (opens Home)',
-    'maq.verificando': 'checking…',
 
     // ---- o seletor de idioma
     'idioma.rotulo': 'Language',
     'idioma.pt': 'Português',
     'idioma.en': 'English',
+    'idioma.es': 'Español',
 
     // ---- tela de Início
     'inicio.titulo': 'What are we <em>forging</em> today?',
@@ -65,13 +74,51 @@
       + 'graphics card. No monthly fee, no cloud, no waiting in anyone’s queue.'
   };
 
-  var DICIONARIOS = { en: EN };
+  // Espanhol (11/11/2026). Entrou pelos vizinhos: toda a América Latina menos o Brasil.
+  // É a língua mais barata de manter ao lado do português, porque as duas andam juntas.
+  var ES = {
+    // ---- topo e menu
+    'nav.inicio': 'Inicio',
+    'nav.tudo': 'Mis creaciones',
+    'nav.imagem': 'Imagen',
+    'nav.video': 'Vídeo',
+    'nav.apresentador': 'Persona hablando',
+    'nav.plano': 'Plano secuencia',
+    'nav.canal': 'Canal',
+    'nav.voz': 'Narración',
+    'nav.musica': 'Música',
+    'nav.fila': 'Cola',
+    'nav.secoes': 'Secciones',
+    'topo.marca': 'JerS Forja Studio — inicio',
+
+    // ---- o seletor de idioma
+    'idioma.rotulo': 'Idioma',
+    'idioma.pt': 'Português',
+    'idioma.en': 'English',
+    'idioma.es': 'Español',
+
+    // ---- tela de Início
+    'inicio.titulo': '¿Qué vamos a <em>forjar</em> hoy?',
+    'inicio.sub': 'Imágenes, vídeo, personas hablando, narración y música — forjados en tu '
+      + 'propia tarjeta gráfica. Sin mensualidad, sin nube, sin esperar en la cola de nadie.'
+  };
+
+  // O português NÃO entra aqui: ele é o que já está escrito no HTML.
+  var DICIONARIOS = { en: EN, es: ES };
+
+  // pt-BR porque é o português que está escrito no HTML; os outros vão como estão.
+  var ETIQUETA = { pt: 'pt-BR', en: 'en', es: 'es' };
 
   // ------------------------------------------------------------------ o estado
+  function conhecido(v) {
+    // O português é válido sem dicionário - ele é o HTML.
+    return v === 'pt' || Object.prototype.hasOwnProperty.call(DICIONARIOS, v);
+  }
+
   function guardado() {
     try {
       var v = localStorage.getItem(CHAVE);
-      return v === 'en' || v === 'pt' ? v : PADRAO;
+      return conhecido(v) ? v : PADRAO;
     } catch (e) {
       return PADRAO;   // navegador com armazenamento bloqueado: segue em português
     }
@@ -111,7 +158,7 @@
       el.innerHTML = (d && d[k]) || pt;
     });
 
-    // "placeholder:busca.dica" ou "title:maq.dica, aria-label:topo.marca"
+    // "placeholder:busca.dica" ou "title:botao.dica, aria-label:topo.marca"
     onde.querySelectorAll('[data-i18n-attr]').forEach(function (el) {
       el.getAttribute('data-i18n-attr').split(',').forEach(function (par) {
         var p = par.split(':');
@@ -124,15 +171,19 @@
       });
     });
 
-    document.documentElement.lang = atual === 'en' ? 'en' : 'pt-BR';
+    document.documentElement.lang = ETIQUETA[atual] || 'pt-BR';
   }
 
   function trocar(novo) {
-    if (novo !== 'en' && novo !== 'pt') return;
+    if (!conhecido(novo)) return;
     atual = novo;
     try {
       localStorage.setItem(CHAVE, novo);
     } catch (e) { /* sem armazenamento: vale só para esta aba */ }
+    // O seletor também é tela: se alguém trocar por fora (I18N.trocar), ele tem de
+    // mostrar o idioma de verdade, e não o de antes.
+    var sel = document.getElementById('idiomaSel');
+    if (sel && sel.value !== novo) sel.value = novo;
     aplicar();
     // Quem desenha conteúdo por JavaScript escuta isto para redesenhar. Hoje ninguém
     // escuta ainda - fica pronto para quando as outras telas forem traduzidas.
@@ -146,7 +197,8 @@
     canto.innerHTML =
       '<label class="sr-only" for="idiomaSel" data-i18n="idioma.rotulo">Idioma</label>'
       + '<select id="idiomaSel" class="idioma-sel" title="Idioma / Language">'
-      + '<option value="pt">PT</option><option value="en">EN</option></select>';
+      + '<option value="pt">PT</option><option value="en">EN</option>'
+      + '<option value="es">ES</option></select>';
     var sel = document.getElementById('idiomaSel');
     sel.value = atual;
     sel.addEventListener('change', function () { trocar(sel.value); });

@@ -81,12 +81,15 @@
     <a href="#/fila" data-rota="fila"><span data-ic="fila"></span><span data-i18n="nav.fila">Fila</span>
       <span class="nav-contador" id="navFilaN" hidden></span></a>
   </nav>
-  <a class="maq-mini" id="maqMini" href="#/" title="Sua máquina (abre o Início)"
-     data-i18n-attr="title:maq.dica">
+  <!-- O title daqui NÃO leva data-i18n-attr: o app.js reescreve ele a cada pulso com o
+       estado da máquina ("Nada gerando agora", "O estúdio não respondeu"). Marcar para
+       traduzir faria a troca de idioma apagar um aviso vivo - e o pulso seguinte apagaria
+       a tradução de volta. Texto que o servidor escreve se traduz no servidor. -->
+  <a class="maq-mini" id="maqMini" href="#/" title="Sua máquina (abre o Início)">
     <i class="ponto" id="maqPonto"></i><span id="maqTxt">verificando…</span>
   </a>
   <!-- 11/11/2026: português é o padrão e nunca se pergunta nada a quem já está em
-       português. Quem quiser inglês troca aqui, e a escolha fica no navegador. -->
+       português. Quem quiser inglês ou espanhol troca aqui, e a escolha fica no navegador. -->
   <div class="idioma-canto" id="idiomaCanto"></div>
   <div class="conta-canto" id="contaCanto"></div>
   <!-- fio de progresso: aparece em QUALQUER aba enquanto algo gera (02/11/2026) -->
@@ -964,7 +967,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
 <!-- idioma.js vem ANTES dos outros: ele troca o texto da casca assim que a tela existe,
      para a pessoa que escolheu inglês não ver o português piscar primeiro. -->
-<script src="idioma.js?v=20261111-i18n"></script>
+<script src="idioma.js?v=20261111-es"></script>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261103-conta2"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
