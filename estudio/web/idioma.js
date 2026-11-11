@@ -71,7 +71,33 @@
     // ---- tela de Início
     'inicio.titulo': 'What are we <em>forging</em> today?',
     'inicio.sub': 'Images, video, talking people, narration and music — forged on your own '
-      + 'graphics card. No monthly fee, no cloud, no waiting in anyone’s queue.'
+      + 'graphics card. No monthly fee, no cloud, no waiting in anyone’s queue.',
+
+    // ---- os cartões das IAs (o texto fixo; o nome e o resumo vêm do preset)
+    'ia.velocidade': 'Speed',
+    'ia.qualidade': 'Quality',
+    'ia.deCinco': '{n} out of 5',
+    'ia.carregada': 'already loaded',
+    'ia.carregadaDica': 'This was the last AI used: the model should still be in memory, so '
+      + 'the next one comes out faster.',
+    'ia.escolhida': 'Selected',
+    'ia.saiba': 'Learn more',
+    'ia.saibaSobre': 'Learn more about {q}',
+    'ia.nenhuma': 'No AI available in this section.',
+    'ia.quantasNaSecao': '{n} AIs in this section. Tap one to choose it.',
+    'ia.recolher': 'Collapse',
+    'ia.trocar': 'Switch AI · {n} options',
+    'ia.baixando': 'Downloading… {pc}%',
+    'ia.de': 'of',
+    'ia.faltaAntes': 'Not installed yet —',
+    'ia.faltaMao': 'Not installed yet — {gb} GB, download by hand',
+    'ia.faltaDica': '{q} is not installed yet. {gb} GB. Click to download.',
+    'ia.semLinkDica': '{n} file(s) have no known download address. See IAS-INSTALADAS.md.',
+    'ia.confirmaBaixar': 'Download "{q}"?\n\nThat is {gb} GB. You can keep using the studio '
+      + 'while it downloads, and if it stops halfway it resumes from where it stopped.',
+    'ia.comecando': 'Starting the download.',
+    'ia.naoComecou': 'Could not start.',
+    'ia.semEstudio': 'I could not reach the studio.'
   };
 
   // Espanhol (11/11/2026). Entrou pelos vizinhos: toda a América Latina menos o Brasil.
@@ -100,7 +126,34 @@
     // ---- tela de Início
     'inicio.titulo': '¿Qué vamos a <em>forjar</em> hoy?',
     'inicio.sub': 'Imágenes, vídeo, personas hablando, narración y música — forjados en tu '
-      + 'propia tarjeta gráfica. Sin mensualidad, sin nube, sin esperar en la cola de nadie.'
+      + 'propia tarjeta gráfica. Sin mensualidad, sin nube, sin esperar en la cola de nadie.',
+
+    // ---- os cartões das IAs (o texto fixo; o nome e o resumo vêm do preset)
+    'ia.velocidade': 'Velocidad',
+    'ia.qualidade': 'Calidad',
+    'ia.deCinco': '{n} de 5',
+    'ia.carregada': 'ya cargada',
+    'ia.carregadaDica': 'Fue la última IA usada: el modelo debería seguir en memoria, así '
+      + 'que la próxima sale más rápido.',
+    'ia.escolhida': 'Elegida',
+    'ia.saiba': 'Saber más',
+    'ia.saibaSobre': 'Saber más sobre {q}',
+    'ia.nenhuma': 'No hay ninguna IA disponible en esta sección.',
+    'ia.quantasNaSecao': '{n} IAs en esta sección. Toca una para elegirla.',
+    'ia.recolher': 'Plegar',
+    'ia.trocar': 'Cambiar de IA · {n} opciones',
+    'ia.baixando': 'Descargando… {pc}%',
+    'ia.de': 'de',
+    'ia.faltaAntes': 'Falta instalar —',
+    'ia.faltaMao': 'Falta instalar — {gb} GB, descargar a mano',
+    'ia.faltaDica': '{q} todavía no está instalada. {gb} GB. Pulsa para descargar.',
+    'ia.semLinkDica': 'Faltan {n} archivo(s) sin dirección de descarga conocida. Mira '
+      + 'IAS-INSTALADAS.md.',
+    'ia.confirmaBaixar': '¿Descargar "{q}"?\n\nSon {gb} GB. Puedes seguir usando el estudio '
+      + 'mientras descarga, y si se corta por la mitad sigue desde donde se quedó.',
+    'ia.comecando': 'Empezando a descargar.',
+    'ia.naoComecou': 'No se pudo empezar.',
+    'ia.semEstudio': 'No conseguí hablar con el estudio.'
   };
 
   // O português NÃO entra aqui: ele é o que já está escrito no HTML.

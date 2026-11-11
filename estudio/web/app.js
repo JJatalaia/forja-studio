@@ -54,6 +54,14 @@ const ACENTOS = [[/\bRapido\b/g, 'Rápido'], [/\brapido\b/g, 'rápido'], [/\bMax
   [/\bResolucao\b/g, 'Resolução'], [/\bresolucao\b/g, 'resolução'], [/\bIlustracao\b/g, 'Ilustração'], [/\bReferencia\b/g, 'Referência']];
 const rot = (s) => (s == null ? '' : ACENTOS.reduce((t, [r, v]) => t.replace(r, v), String(s)));
 const nomeCurto = (n) => rot(String(n || '').replace(/\s*\([^)]*\)/g, '').trim());
+// 11/11/2026 - a traducao da tela. A REGRA: o PORTUGUES fica escrito AQUI, no codigo, e
+// e ele que aparece se a traducao faltar. O outro idioma so troca por cima. O dicionario
+// mora em idioma.js. {n} vira o numero: T("ia.trocar", "Trocar IA - {n}", { n: 4 }).
+const T = (chave, pt, troca) => {
+  let s = window.I18N ? window.I18N.t(chave, pt) : pt;
+  if (troca) Object.keys(troca).forEach((k) => { s = s.split('{' + k + '}').join(troca[k]); });
+  return s;
+};
 function pintarIcones(raiz = document) {
   $$('[data-ic]', raiz).forEach((el) => { if (!el.firstElementChild) el.innerHTML = ic(el.dataset.ic); });
 }
@@ -167,8 +175,10 @@ function tempoCurto(f) {
 }
 function htmlNotas(f) {
   const barras = (n) => [1, 2, 3, 4, 5].map((i) => `<b${i <= n ? ' class="on"' : ''}></b>`).join('');
-  const um = (cls, rotulo, n) => (n ? `<span class="notas ${cls}" title="${rotulo}: ${n} de 5">${rotulo}<i aria-hidden="true">${barras(n)}</i><span class="sr-only">${n} de 5</span></span>` : '');
-  return um('v', 'Velocidade', +f.nota_velocidade || 0) + um('q', 'Qualidade', +f.nota_qualidade || 0);
+  const deCinco = (n) => T('ia.deCinco', '{n} de 5', { n });
+  const um = (cls, rotulo, n) => (n ? `<span class="notas ${cls}" title="${rotulo}: ${deCinco(n)}">${rotulo}<i aria-hidden="true">${barras(n)}</i><span class="sr-only">${deCinco(n)}</span></span>` : '');
+  return um('v', T('ia.velocidade', 'Velocidade'), +f.nota_velocidade || 0)
+       + um('q', T('ia.qualidade', 'Qualidade'), +f.nota_qualidade || 0);
 }
 const tipoDaFicha = (f) => (f.aba === 'musica' ? 't-musica' : f.aba === 'imagem' ? 't-imagem'
   : (f.id === 'apresentador' || f.categoria === 'Pessoa falando') ? 't-voz' : 't-video');
@@ -1396,15 +1406,15 @@ function faixaInstalar(id) {
   if (pr && pr.ia === e.nome) {
     const pc = pr.total ? Math.floor((pr.baixados / pr.total) * 100) : 0;
     return `<div class="ia-baixando"><div class="ia-barra"><i style="width:${pc}%"></i></div>
-      <span>Baixando… ${pc}% <b>${esc(gbCurto(pr.baixados))}</b> de ${esc(gbCurto(pr.total))}</span></div>`;
+      <span>${esc(T('ia.baixando', 'Baixando… {pc}%', { pc }))} <b>${esc(gbCurto(pr.baixados))}</b> ${esc(T('ia.de', 'de'))} ${esc(gbCurto(pr.total))}</span></div>`;
   }
   if (!e.da_para_baixar) {
-    return `<span class="ia-falta sem-link" title="Faltam ${e.sem_link.length} arquivo(s) sem endereço de download conhecido. Veja IAS-INSTALADAS.md.">
-      ${ic('alerta')}<span>Falta instalar — ${e.gb_falta} GB, baixar à mão</span></span>`;
+    return `<span class="ia-falta sem-link" title="${esc(T('ia.semLinkDica', 'Faltam {n} arquivo(s) sem endereço de download conhecido. Veja IAS-INSTALADAS.md.', { n: e.sem_link.length }))}">
+      ${ic('alerta')}<span>${esc(T('ia.faltaMao', 'Falta instalar — {gb} GB, baixar à mão', { gb: e.gb_falta }))}</span></span>`;
   }
   return `<button type="button" class="ia-falta" data-instalar="${esc(id)}"
-    aria-label="${esc(e.nome)} ainda não está instalada. ${e.gb_falta} GB. Clique para baixar.">
-    ${ic('baixar')}<span>Falta instalar — <b>${e.gb_falta} GB</b></span></button>`;
+    aria-label="${esc(T('ia.faltaDica', '{q} ainda não está instalada. {gb} GB. Clique para baixar.', { q: e.nome, gb: e.gb_falta }))}">
+    ${ic('baixar')}<span>${esc(T('ia.faltaAntes', 'Falta instalar —'))} <b>${e.gb_falta} GB</b></span></button>`;
 }
 function gbCurto(b) {
   if (!b) return '0';
@@ -1416,20 +1426,21 @@ async function instalarIA(id) {
   if (!e) return;
   // Confirmar porque e um download de dezenas de GB: clicar sem querer nao pode custar
   // 40 GB de internet de alguem.
-  if (!confirm(`Baixar "${e.nome}"?
-
-São ${e.gb_falta} GB. Dá para usar o estúdio `
-             + `enquanto baixa, e se parar no meio continua de onde parou.`)) return;
+  if (!confirm(T('ia.confirmaBaixar',
+      'Baixar "{q}"?\n\nSão {gb} GB. Dá para usar o estúdio enquanto baixa, e se parar no '
+      + 'meio continua de onde parou.', { q: e.nome, gb: e.gb_falta }))) return;
   try {
     const r = await fetch('/api/ias/instalar', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
     const d = await r.json().catch(() => ({}));
-    aviso(d.mensagem || (r.ok ? 'Começando a baixar.' : 'Não deu para começar.'), r.ok ? 'ok' : 'erro');
+    // d.mensagem vem do servidor: continua em portugues ate o server.py ser traduzido.
+    aviso(d.mensagem || (r.ok ? T('ia.comecando', 'Começando a baixar.')
+                              : T('ia.naoComecou', 'Não deu para começar.')), r.ok ? 'ok' : 'erro');
     lerIAs();
   } catch (err) {
-    aviso('Não consegui falar com o estúdio.', 'erro');
+    aviso(T('ia.semEstudio', 'Não consegui falar com o estúdio.'), 'erro');
   }
 }
 
@@ -1451,7 +1462,7 @@ async function lerIAs() {
 // ---------------------------------------------------------------- seletor de IA em cards
 function badgeCarregada(p) {
   return G.sistema && G.sistema.ultimo_preset === p.id
-    ? '<span class="carregada" title="Foi a última IA usada: o modelo deve estar na memória, então a próxima sai mais rápido.">já carregada</span>' : '';
+    ? `<span class="carregada" title="${esc(T('ia.carregadaDica', 'Foi a última IA usada: o modelo deve estar na memória, então a próxima sai mais rápido.'))}">${esc(T('ia.carregada', 'já carregada'))}</span>` : '';
 }
 function tagsDe(f, max = 4) { return (f.tags || []).slice(0, max).map((t) => `<span class="tag">${esc(rot(t))}</span>`).join(''); }
 function htmlIAAtual(p) {
@@ -1466,36 +1477,42 @@ function htmlIAAtual(p) {
     </div>
     ${faixaInstalar(p.id)}
     <div class="ia-rodape"><span class="tags">${tagsDe(f)}</span>
-      <button type="button" class="ia-saiba" data-saiba="${esc(p.id)}" aria-label="Saiba mais sobre ${esc(nomeCurto(f.nome || p.nome))}">${ic('info')}Saiba mais</button></div>
+      <button type="button" class="ia-saiba" data-saiba="${esc(p.id)}" aria-label="${esc(T('ia.saibaSobre', 'Saiba mais sobre {q}', { q: nomeCurto(f.nome || p.nome) }))}">${ic('info')}${esc(T('ia.saiba', 'Saiba mais'))}</button></div>
   </div>`;
 }
 function htmlCardIA(p, f) {
   const sel = p.id === E.sel, tempo = tempoCurto(f), notas = htmlNotas(f), nome = nomeCurto(f.nome || p.nome);
   return `<div class="ia-card${sel ? ' sel' : ''}">
     <button type="button" class="ia-escolher" data-escolher="${esc(p.id)}" aria-pressed="${sel}">
-      <span class="ia-topo"><span class="ia-nome">${esc(nome)}</span>${badgeCarregada(p)}${sel ? `<span class="ia-check" title="Escolhida">${ic('ok')}</span>` : ''}</span>
+      <span class="ia-topo"><span class="ia-nome">${esc(nome)}</span>${badgeCarregada(p)}${sel ? `<span class="ia-check" title="${esc(T('ia.escolhida', 'Escolhida'))}">${ic('ok')}</span>` : ''}</span>
       ${f.resumo_curto ? `<span class="ia-resumo">${esc(f.resumo_curto)}</span>` : ''}
       ${notas ? `<span class="ia-meta">${notas}</span>` : ''}
       ${tempo ? `<span class="ia-tempo">${ic('relogio')}<span>${esc(tempo)}</span></span>` : ''}
     </button>
     ${faixaInstalar(p.id)}
     <div class="ia-rodape"><span class="tags">${tagsDe(f, 3)}</span>
-      <button type="button" class="ia-saiba" data-saiba="${esc(p.id)}" aria-label="Saiba mais sobre ${esc(nome)}">${ic('info')}Saiba mais</button></div>
+      <button type="button" class="ia-saiba" data-saiba="${esc(p.id)}" aria-label="${esc(T('ia.saibaSobre', 'Saiba mais sobre {q}', { q: nome }))}">${ic('info')}${esc(T('ia.saiba', 'Saiba mais'))}</button></div>
   </div>`;
 }
+// 11/11/2026: trocou de idioma, os cartoes se desenham de novo. Sem isto a casca ficava
+// em espanhol e os cartoes so trocavam na proxima vez que a tela se redesenhasse sozinha -
+// o que, parado na mesma aba, podia nunca acontecer.
+document.addEventListener('idioma-mudou', () => {
+  try { renderIAs(); } catch (e) { /* tela que ainda nao tem cartao: nada a fazer */ }
+});
 function renderIAs() {
   const lista = presetsDa(G.rota), p = presetAtual();
   const varias = lista.length > 1, aberto = !!E.trocando && varias;
   $('#seletorIA').hidden = !aberto;
-  if (!p) { $('#iaAtual').innerHTML = '<p class="nota">Nenhuma IA disponível nesta seção.</p>'; return; }
+  if (!p) { $('#iaAtual').innerHTML = `<p class="nota">${esc(T('ia.nenhuma', 'Nenhuma IA disponível nesta seção.'))}</p>`; return; }
   const foco = document.activeElement && document.activeElement.id;
   if (aberto) {
-    $('#iaAtual').innerHTML = `<div class="ia-trocar"><span class="nota" style="flex:1;align-self:center">${lista.length} IAs nesta seção. Toque numa para escolher.</span>
-      <button type="button" class="bt-sec" id="btTrocarIA" aria-expanded="true" aria-controls="seletorIA" style="flex:none">${ic('baixo')}Recolher</button></div>`;
+    $('#iaAtual').innerHTML = `<div class="ia-trocar"><span class="nota" style="flex:1;align-self:center">${esc(T('ia.quantasNaSecao', '{n} IAs nesta seção. Toque numa para escolher.', { n: lista.length }))}</span>
+      <button type="button" class="bt-sec" id="btTrocarIA" aria-expanded="true" aria-controls="seletorIA" style="flex:none">${ic('baixo')}${esc(T('ia.recolher', 'Recolher'))}</button></div>`;
     renderListaIA();
   } else {
     $('#iaAtual').innerHTML = htmlIAAtual(p) + (varias
-      ? `<div class="ia-trocar"><button type="button" class="bt-sec" id="btTrocarIA" aria-expanded="false" aria-controls="seletorIA">${ic('reusar')}Trocar IA · ${lista.length} opções</button></div>` : '');
+      ? `<div class="ia-trocar"><button type="button" class="bt-sec" id="btTrocarIA" aria-expanded="false" aria-controls="seletorIA">${ic('reusar')}${esc(T('ia.trocar', 'Trocar IA · {n} opções', { n: lista.length }))}</button></div>` : '');
   }
   if (foco === 'btTrocarIA' && $('#btTrocarIA')) $('#btTrocarIA').focus();
   renderEmTeste();
