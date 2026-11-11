@@ -22,13 +22,13 @@
   <div class="porta-arte" aria-hidden="true"><span class="porta-brasa"></span></div>
   <section class="porta-cartao" role="dialog" aria-labelledby="portaTitulo" aria-modal="true">
     <p class="porta-marca"><span class="heroi-jers">JerS</span><i aria-hidden="true"></i>Forja Studio</p>
-    <h1 id="portaTitulo">Entre na sua conta</h1>
-    <p class="porta-sub" id="portaSub">As ferramentas daqui são de graça e geram na sua
+    <h1 id="portaTitulo" data-i18n="tela.entre-na-sua-conta">Entre na sua conta</h1>
+    <p class="porta-sub" id="portaSub" data-i18n="tela.as-ferramentas-daqui-sao-de">As ferramentas daqui são de graça e geram na sua
       própria placa de vídeo. A conta é só para a licença ficar no seu nome.</p>
 
     <div class="porta-abas" role="tablist">
-      <button type="button" id="abaEntrar" role="tab" aria-selected="true">Já tenho conta</button>
-      <button type="button" id="abaCriar" role="tab" aria-selected="false">Criar conta</button>
+      <button type="button" id="abaEntrar" role="tab" aria-selected="true" data-i18n="tela.ja-tenho-conta">Já tenho conta</button>
+      <button type="button" id="abaCriar" role="tab" aria-selected="false" data-i18n="tela.criar-conta">Criar conta</button>
     </div>
 
     <form class="porta-form" id="portaForm" autocomplete="on" novalidate>
@@ -52,10 +52,10 @@
         </span>
       </label>
       <p class="porta-erro" id="portaErro" role="alert" hidden></p>
-      <button type="submit" class="gerar porta-bt" id="portaBt">Entrar</button>
+      <button type="submit" class="gerar porta-bt" id="portaBt" data-i18n="tela.entrar">Entrar</button>
       <!-- 05/11/2026: antes disto, quem esquecia a senha nao tinha saida nenhuma a nao
            ser procurar o dono. So aparece no modo "entrar": no cadastro nao faz sentido. -->
-      <button type="button" class="porta-esqueci" id="portaEsqueci">Esqueci minha senha</button>
+      <button type="button" class="porta-esqueci" id="portaEsqueci" data-i18n="tela.esqueci-minha-senha">Esqueci minha senha</button>
     </form>
 
     <p class="porta-pe" id="portaPe"></p>
@@ -138,7 +138,7 @@
     <div class="inicio-grade">
       <section class="bloco-inicio" aria-labelledby="contTitulo">
         <div class="bloco-cab">
-          <h2 id="contTitulo">Continue de onde parou</h2>
+          <h2 id="contTitulo" data-i18n="tela.continue-de-onde-parou">Continue de onde parou</h2>
           <p class="fraco" id="contConta"></p>
         </div>
         <div class="recentes" id="recentes"><p class="fraco">Carregando…</p></div>
@@ -146,7 +146,7 @@
 
       <section class="bloco-inicio maquina" id="maquina" aria-labelledby="maqTitulo">
         <div class="bloco-cab">
-          <h2 id="maqTitulo">Sua máquina</h2>
+          <h2 id="maqTitulo" data-i18n="tela.sua-maquina">Sua máquina</h2>
           <span class="ao-vivo" id="maqAoVivo"><i></i>ao vivo</span>
         </div>
         <div id="maqCorpo"><p class="fraco">Verificando…</p></div>
@@ -157,7 +157,7 @@
     <section class="bloco-inicio atalho-ia" aria-labelledby="atalhoTitulo">
       <div class="bloco-cab">
         <h2 id="atalhoTitulo"><span data-ic="raio"></span> Peça para uma IA fazer o trabalho repetido</h2>
-        <p class="fraco">Sem programar. Você descreve, ela escreve o atalho, você clica.</p>
+        <p class="fraco" data-i18n="tela.sem-programar-voce-descreve-ela">Sem programar. Você descreve, ela escreve o atalho, você clica.</p>
       </div>
 
       <div class="atalho-corpo">
@@ -176,8 +176,8 @@
           placa, aqui dentro.</p>
 
         <details class="atalho-cola">
-          <summary>O que colar na conversa com a IA (clique para abrir)</summary>
-          <p class="fraco">Cole este bloco e ela já sabe falar com o estúdio:</p>
+          <summary data-i18n="tela.o-que-colar-na-conversa">O que colar na conversa com a IA (clique para abrir)</summary>
+          <p class="fraco" data-i18n="tela.cole-este-bloco-e-ela">Cole este bloco e ela já sabe falar com o estúdio:</p>
           <pre id="atalhoTexto">O Estúdio Local roda em http://127.0.0.1:8194 e tem estes endereços:
 
   GET  /api/presets      a lista de IAs instaladas, com formatos e qualidades de cada uma
@@ -221,8 +221,8 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
     <section class="bloco-inicio catalogo" aria-labelledby="catTitulo">
       <div class="bloco-cab">
-        <h2 id="catTitulo">Conheça as IAs do estúdio</h2>
-        <p class="fraco">Clique numa IA para ver a ficha completa.</p>
+        <h2 id="catTitulo" data-i18n="tela.conheca-as-ias-do-estudio">Conheça as IAs do estúdio</h2>
+        <p class="fraco" data-i18n="tela.clique-numa-ia-para-ver">Clique numa IA para ver a ficha completa.</p>
       </div>
       <div class="catalogo-grade" id="catalogo"></div>
     </section>
@@ -241,7 +241,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         </div>
 
         <section class="bloco" id="secIA" aria-labelledby="hIA">
-          <h2 class="passo" id="hIA">Escolha a IA</h2>
+          <h2 class="passo" id="hIA" data-i18n="tela.escolha-a-ia">Escolha a IA</h2>
           <div id="iaAtual"></div>
           <div id="seletorIA" class="seletor-ia" hidden>
             <label class="busca">
@@ -250,14 +250,14 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             </label>
             <div id="listaIA" class="lista-ia"></div>
             <details class="em-teste" id="emTeste" hidden>
-              <summary>Em teste — ainda não liberadas</summary>
+              <summary data-i18n="tela.em-teste-ainda-nao-liberadas">Em teste — ainda não liberadas</summary>
               <ul id="listaTeste"></ul>
             </details>
           </div>
         </section>
 
         <section class="bloco" id="secModo" hidden aria-labelledby="hModo">
-          <h2 class="passo" id="hModo">Como começar</h2>
+          <h2 class="passo" id="hModo" data-i18n="tela.como-comecar">Como começar</h2>
           <div class="chips" id="modos" role="group" aria-labelledby="hModo"></div>
         </section>
 
@@ -266,11 +266,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           <label class="upload" id="upImagem">
             <input type="file" accept="image/*" class="sr-only" aria-describedby="tituloImagem">
             <span class="up-ic" data-ic="enviar"></span>
-            <span class="up-txt">Clique, arraste ou cole (Ctrl+V) a imagem</span>
+            <span class="up-txt" data-i18n="tela.clique-arraste-ou-cole-ctrl">Clique, arraste ou cole (Ctrl+V) a imagem</span>
             <img alt="Imagem enviada" hidden>
           </label>
           <div class="texto-ia-barra" id="barraDescrever" hidden>
-            <button type="button" class="bt-sec bt-texto" id="btDescrever" title="A IA de texto olha a imagem e escreve uma descrição que pode virar prompt"><span data-ic="ver"></span><span>Descrever esta imagem</span></button>
+            <button type="button" class="bt-sec bt-texto" id="btDescrever" title="A IA de texto olha a imagem e escreve uma descrição que pode virar prompt"><span data-ic="ver"></span><span data-i18n="tela.descrever-esta-imagem">Descrever esta imagem</span></button>
             <span class="texto-ia-status" id="descreverStatus" aria-live="polite"></span>
           </div>
         </section>
@@ -281,27 +281,27 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           <label class="upload baixo" id="upRefs">
             <input type="file" accept="image/*" multiple class="sr-only" aria-describedby="refsDica">
             <span class="up-ic" data-ic="mais"></span>
-            <span class="up-txt">Adicionar imagens (rosto, roupa, carro, cenário…)</span>
+            <span class="up-txt" data-i18n="tela.adicionar-imagens-rosto-roupa-carro">Adicionar imagens (rosto, roupa, carro, cenário…)</span>
           </label>
           <p class="nota" id="refsDica">Clique numa imagem para colocar a etiqueta dela no prompt.</p>
         </section>
 
         <section class="bloco" id="secVideo" hidden aria-labelledby="hVideo">
-          <h2 class="passo" id="hVideo">Vídeo de movimento</h2>
+          <h2 class="passo" id="hVideo" data-i18n="tela.video-de-movimento">Vídeo de movimento</h2>
           <label class="upload" id="upVideo">
             <input type="file" accept="video/*" class="sr-only" aria-describedby="hVideo">
             <span class="up-ic" data-ic="video"></span>
-            <span class="up-txt">1 pessoa, câmera parada, corpo inteiro</span>
+            <span class="up-txt" data-i18n="tela.1-pessoa-camera-parada-corpo">1 pessoa, câmera parada, corpo inteiro</span>
             <video muted playsinline hidden></video>
           </label>
         </section>
 
         <section class="bloco" id="secEnquadrar" hidden aria-labelledby="hEnq">
-          <h2 class="passo" id="hEnq">Enquadramento do personagem</h2>
+          <h2 class="passo" id="hEnq" data-i18n="tela.enquadramento-do-personagem">Enquadramento do personagem</h2>
           <div class="chips" id="enquadrarChips" role="group" aria-labelledby="hEnq"></div>
           <div class="enquadre" id="enquadre" hidden>
-            <figure><video id="enqVideo" muted playsinline preload="auto"></video><figcaption>Vídeo (1º quadro)</figcaption></figure>
-            <figure><img id="enqImagem" alt="Personagem enquadrado"><figcaption>Personagem enquadrado</figcaption></figure>
+            <figure><video id="enqVideo" muted playsinline preload="auto"></video><figcaption data-i18n="tela.video-1-quadro">Vídeo (1º quadro)</figcaption></figure>
+            <figure><img id="enqImagem" alt="Personagem enquadrado"><figcaption data-i18n="tela.personagem-enquadrado">Personagem enquadrado</figcaption></figure>
           </div>
           <p class="nota" id="enqStatus" aria-live="polite"></p>
         </section>
@@ -311,20 +311,20 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           <textarea id="prompt" rows="5" aria-labelledby="hPrompt" aria-describedby="dicaPrompt" placeholder="Descreva o que você quer gerar…"></textarea>
           <div class="texto-ia-barra" id="barraTexto">
             <button type="button" class="bt-sec bt-texto" id="btMelhorar" title="A IA de texto do estúdio reescreve o seu pedido no formato que esta IA entende melhor (em inglês). Você vê antes e depois e pode desfazer.">✨ Melhorar prompt</button>
-            <button type="button" class="bt-sec bt-texto" id="btEscrever" hidden title="Escreva o tema na caixa (ex.: dicas para dormir melhor) e a IA de texto escreve o que a pessoa vai falar."><span data-ic="texto"></span><span>Escrever o texto</span></button>
+            <button type="button" class="bt-sec bt-texto" id="btEscrever" hidden title="Escreva o tema na caixa (ex.: dicas para dormir melhor) e a IA de texto escreve o que a pessoa vai falar."><span data-ic="texto"></span><span data-i18n="tela.escrever-o-texto">Escrever o texto</span></button>
             <span class="texto-ia-status" id="textoStatus" aria-live="polite"></span>
           </div>
           <div class="texto-ia-caixa" id="textoCaixa" hidden>
             <div class="texto-ia-cab"><b id="textoTitulo">Prompt melhorado</b><span class="texto-ia-onde" id="textoOnde"></span></div>
             <div class="texto-ia-comparar" id="textoComparar">
-              <div><span class="texto-ia-rot">Antes</span><p class="texto-ia-antes" id="textoAntes"></p></div>
+              <div><span class="texto-ia-rot" data-i18n="tela.antes">Antes</span><p class="texto-ia-antes" id="textoAntes"></p></div>
               <div><span class="texto-ia-rot" id="textoDepoisRot">Depois (já está na caixa acima)</span><p class="texto-ia-depois" id="textoDepois"></p></div>
             </div>
             <p class="aviso-linha" id="textoAviso" hidden></p>
             <div class="texto-ia-acoes">
-              <button type="button" class="bt-sec" id="btUsarTexto" hidden><span data-ic="ok"></span><span>Usar como prompt</span></button>
-              <button type="button" class="bt-sec" id="btJuntarTexto" hidden><span data-ic="mais"></span><span>Juntar ao prompt</span></button>
-              <button type="button" class="bt-sec" id="btDesfazer"><span data-ic="reusar"></span><span>Desfazer</span></button>
+              <button type="button" class="bt-sec" id="btUsarTexto" hidden><span data-ic="ok"></span><span data-i18n="tela.usar-como-prompt">Usar como prompt</span></button>
+              <button type="button" class="bt-sec" id="btJuntarTexto" hidden><span data-ic="mais"></span><span data-i18n="tela.juntar-ao-prompt">Juntar ao prompt</span></button>
+              <button type="button" class="bt-sec" id="btDesfazer"><span data-ic="reusar"></span><span data-i18n="tela.desfazer">Desfazer</span></button>
               <button type="button" class="bt-fantasma mini" id="btFecharTexto">Fechar</button>
             </div>
           </div>
@@ -332,15 +332,15 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         </section>
 
         <section class="bloco" id="secVoz" hidden aria-labelledby="hVoz">
-          <h2 class="passo" id="hVoz">Voz e motor do vídeo</h2>
-          <h3 class="sub" id="hIdioma">Idioma da fala</h3>
+          <h2 class="passo" id="hVoz" data-i18n="tela.voz-e-motor-do-video">Voz e motor do vídeo</h2>
+          <h3 class="sub" id="hIdioma" data-i18n="tela.idioma-da-fala">Idioma da fala</h3>
           <div class="chips" id="idiomas" role="group" aria-labelledby="hIdioma"></div>
-          <h3 class="sub" id="hVozes">Voz <small>(escolha uma salva ou clone uma nova)</small></h3>
+          <h3 class="sub" id="hVozes">Voz <small data-i18n="tela.escolha-uma-salva-ou-clone">(escolha uma salva ou clone uma nova)</small></h3>
           <div class="chips" id="vozes" role="group" aria-labelledby="hVozes"></div>
           <label class="upload baixo" id="upVoz">
             <input type="file" accept="audio/*,video/*" class="sr-only" aria-describedby="hVozes">
             <span class="up-ic" data-ic="microfone"></span>
-            <span class="up-txt">Clonar uma voz nova: envie 10–20 s só da voz (sem música)</span>
+            <span class="up-txt" data-i18n="tela.clonar-uma-voz-nova-envie">Clonar uma voz nova: envie 10–20 s só da voz (sem música)</span>
             <audio controls preload="none" hidden></audio>
           </label>
           <div class="salvar-voz" id="salvarVoz" hidden>
@@ -353,14 +353,14 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
                so via as vozes locais e nenhuma explicacao. A chave e DELA e fica na maquina
                dela; nada de ElevenLabs viaja no pacote. -->
           <details class="nuvem" id="nuvem11Bloco">
-            <summary><span data-ic="onda"></span> Vozes na nuvem <small>(opcional)</small>
+            <summary><span data-ic="onda"></span> Vozes na nuvem <small data-i18n="tela.opcional">(opcional)</small>
               <i class="nuvem-selo" id="nuvem11Selo"></i></summary>
             <div class="nuvem-corpo">
               <p class="nuvem-ex">As vozes da lista acima são <b>locais e de graça</b>, e é com
                 elas que o estúdio já funciona. Se você tiver conta no <b>ElevenLabs</b> e quiser
                 usar as vozes de lá, cole a <b>sua</b> chave: elas aparecem na lista com o
                 símbolo ☁ e gastam crédito da <b>sua</b> conta.</p>
-              <label class="nuvem-rot" for="nuvem11Chave">Chave do ElevenLabs</label>
+              <label class="nuvem-rot" for="nuvem11Chave" data-i18n="tela.chave-do-elevenlabs">Chave do ElevenLabs</label>
               <input type="password" id="nuvem11Chave" autocomplete="off" spellcheck="false"
                      placeholder="cole a chave aqui" maxlength="300">
               <div class="nuvem-bts">
@@ -372,39 +372,39 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
                 <code>API</code>. Nunca sai daqui e nunca vai para o GitHub.</p>
             </div>
           </details>
-          <h3 class="sub" id="hAudio">Ou áudio pronto <small>(opcional · ele dubla esse áudio em vez do texto)</small></h3>
+          <h3 class="sub" id="hAudio">Ou áudio pronto <small data-i18n="tela.opcional-ele-dubla-esse-audio">(opcional · ele dubla esse áudio em vez do texto)</small></h3>
           <label class="upload baixo" id="upAudio">
             <input type="file" accept="audio/*,video/*" class="sr-only" aria-describedby="hAudio">
             <span class="up-ic" data-ic="onda"></span>
-            <span class="up-txt">Clique ou arraste o áudio que ele vai falar</span>
+            <span class="up-txt" data-i18n="tela.clique-ou-arraste-o-audio">Clique ou arraste o áudio que ele vai falar</span>
             <audio controls preload="none" hidden></audio>
           </label>
           <button type="button" id="limparAudio" class="bt-sec" hidden>Remover áudio pronto (voltar a usar o texto)</button>
-          <h3 class="sub" id="hMotor">Motor do vídeo</h3>
+          <h3 class="sub" id="hMotor" data-i18n="tela.motor-do-video">Motor do vídeo</h3>
           <div class="chips" id="motores" role="group" aria-labelledby="hMotor"></div>
           <p class="nota" id="motorNota"></p>
         </section>
 
         <section class="bloco" id="secAjustes" aria-labelledby="hAjustes">
-          <h2 class="passo" id="hAjustes">Ajustes</h2>
+          <h2 class="passo" id="hAjustes" data-i18n="tela.ajustes">Ajustes</h2>
           <div class="opcoes">
-            <div id="optEstilo" hidden><h3 class="sub" id="hEstilo">Estilo</h3><div class="chips" id="estilos" role="group" aria-labelledby="hEstilo"></div></div>
-            <div id="optFormato" hidden><h3 class="sub" id="hFormato">Formato</h3><div class="chips" id="formatos" role="group" aria-labelledby="hFormato"></div></div>
-            <div id="optResolucao" hidden><h3 class="sub" id="hResolucao">Resolução</h3><div class="chips" id="resolucoes" role="group" aria-labelledby="hResolucao"></div></div>
-            <div id="optDuracao" hidden><h3 class="sub" id="hDuracao">Duração</h3><div class="chips" id="duracoes" role="group" aria-labelledby="hDuracao"></div></div>
-            <div id="optQualidade" hidden><h3 class="sub" id="hQualidade">Qualidade</h3><div class="chips" id="qualidades" role="group" aria-labelledby="hQualidade"></div></div>
+            <div id="optEstilo" hidden><h3 class="sub" id="hEstilo" data-i18n="tela.estilo">Estilo</h3><div class="chips" id="estilos" role="group" aria-labelledby="hEstilo"></div></div>
+            <div id="optFormato" hidden><h3 class="sub" id="hFormato" data-i18n="tela.formato">Formato</h3><div class="chips" id="formatos" role="group" aria-labelledby="hFormato"></div></div>
+            <div id="optResolucao" hidden><h3 class="sub" id="hResolucao" data-i18n="tela.resolucao">Resolução</h3><div class="chips" id="resolucoes" role="group" aria-labelledby="hResolucao"></div></div>
+            <div id="optDuracao" hidden><h3 class="sub" id="hDuracao" data-i18n="tela.duracao">Duração</h3><div class="chips" id="duracoes" role="group" aria-labelledby="hDuracao"></div></div>
+            <div id="optQualidade" hidden><h3 class="sub" id="hQualidade" data-i18n="tela.qualidade">Qualidade</h3><div class="chips" id="qualidades" role="group" aria-labelledby="hQualidade"></div></div>
             <div id="optForca" hidden>
-              <h3 class="sub"><label for="forca">Força da transformação</label> <b id="forcaVal">0,60</b></h3>
+              <h3 class="sub"><label for="forca" data-i18n="tela.forca-da-transformacao">Força da transformação</label> <b id="forcaVal">0,60</b></h3>
               <input type="range" id="forca" min="0.2" max="0.9" step="0.05" value="0.6">
-              <p class="nota">Baixa = fica parecida com a original. Alta = muda mais.</p>
+              <p class="nota" data-i18n="tela.baixa-fica-parecida-com-a">Baixa = fica parecida com a original. Alta = muda mais.</p>
             </div>
           </div>
           <p class="nota" id="ajustesFixos"></p>
         </section>
 
         <details class="bloco avancado" id="secAvancado">
-          <summary>Avançado</summary>
-          <label class="campo" for="seed">Semente (seed) <small>(vazio = aleatória; repita a mesma para refazer igual)</small></label>
+          <summary data-i18n="tela.avancado">Avançado</summary>
+          <label class="campo" for="seed">Semente (seed) <small data-i18n="tela.vazio-aleatoria-repita-a-mesma">(vazio = aleatória; repita a mesma para refazer igual)</small></label>
           <input id="seed" inputmode="numeric" placeholder="aleatória" autocomplete="off">
         </details>
       </div>
@@ -449,9 +449,9 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
     <div class="musica-off" id="musicaOff" hidden>
       <div class="musica-off-card">
         <span class="musica-off-ic" data-ic="musica"></span>
-        <h2>O painel de música está desligado</h2>
-        <p>Ele gera músicas com letra cantada, instrumentais e separa a voz (YuE2, ACE-Step, MiniMax Music, Stable Audio). Ligar leva uns 30 segundos.</p>
-        <button type="button" class="gerar" id="ligarMusica"><span data-ic="ligar"></span><span>Ligar música</span></button>
+        <h2 data-i18n="tela.o-painel-de-musica-esta">O painel de música está desligado</h2>
+        <p data-i18n="tela.ele-gera-musicas-com-letra">Ele gera músicas com letra cantada, instrumentais e separa a voz (YuE2, ACE-Step, MiniMax Music, Stable Audio). Ligar leva uns 30 segundos.</p>
+        <button type="button" class="gerar" id="ligarMusica"><span data-ic="ligar"></span><span data-i18n="tela.ligar-musica">Ligar música</span></button>
         <p class="nota" id="ligarMusicaStatus" aria-live="polite"></p>
       </div>
     </div>
@@ -466,7 +466,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
   <section id="vFila" hidden>
     <h1 class="sr-only" id="filaTitulo" tabindex="-1">Fila</h1>
     <div class="fila-topo">
-      <h2 class="fila-tit">O que a máquina está gerando agora</h2>
+      <h2 class="fila-tit" data-i18n="tela.o-que-a-maquina-esta">O que a máquina está gerando agora</h2>
       <p class="nota" id="filaQuando"></p>
     </div>
     <div class="fila-lista" id="filaLista"></div>
@@ -479,15 +479,15 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         <h2 class="fila-tit">Já gerado <span class="fila-hist-n" id="filaHistN"></span></h2>
         <div class="fila-hist-bts">
           <button type="button" class="voz-gerir-bt" id="filaLimpar">
-            <span data-ic="lixo"></span><span>Limpar histórico</span></button>
+            <span data-ic="lixo"></span><span data-i18n="tela.limpar-historico">Limpar histórico</span></button>
         </div>
       </div>
       <div class="voz-confirma" id="filaLimparConfirma" hidden>
         <p class="nota">Apagar a <b>lista</b> de <b id="filaLimparN"></b>? As imagens e os
           vídeos <b>continuam no disco</b> — some só o registro daqui, e não dá para desfazer.</p>
         <div class="voz-confirma-bts">
-          <button type="button" class="voz-gerir-bt perigo" id="filaLimparSim">Sim, limpar</button>
-          <button type="button" class="voz-gerir-bt" id="filaLimparNao">Deixa</button>
+          <button type="button" class="voz-gerir-bt perigo" id="filaLimparSim" data-i18n="tela.sim-limpar">Sim, limpar</button>
+          <button type="button" class="voz-gerir-bt" id="filaLimparNao" data-i18n="tela.deixa">Deixa</button>
         </div>
       </div>
       <p class="nota" id="filaLimparStatus" aria-live="polite"></p>
@@ -506,7 +506,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             <div class="painel-cab">
               <span class="painel-ic" data-ic="video"></span>
               <div>
-                <p class="sobrelinha">Uma tomada só, sem corte</p>
+                <p class="sobrelinha" data-i18n="tela.uma-tomada-so-sem-corte">Uma tomada só, sem corte</p>
                 <h1 id="planoTitulo" tabindex="-1">Plano-sequência</h1>
               </div>
             </div>
@@ -514,7 +514,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
               emendada: ela sai inteira. <b id="planoNomeIA"></b></p>
 
             <section class="bloco">
-              <h2 class="passo">A cena, em português</h2>
+              <h2 class="passo" data-i18n="tela.a-cena-em-portugues">A cena, em português</h2>
               <textarea id="planoCena" class="voz-texto" rows="7"
                 placeholder="Conte a cena inteira, como se estivesse descrevendo um take.&#10;&#10;Ex.: Um rapaz sentado na cama do quarto, de fones, aperta o play num gravador antigo. Ele fecha os olhos enquanto a fita começa a rodar, abaixa a cabeça devagar e respira fundo."></textarea>
               <p class="plano-dica">⚠️ <b>Ninguém fala e ninguém canta</b> — a boca fica fechada e o
@@ -523,23 +523,23 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             </section>
 
             <section class="bloco">
-              <h2 class="passo">Duração</h2>
+              <h2 class="passo" data-i18n="tela.duracao-2">Duração</h2>
               <div class="chips plano-chips" id="planoDuracoes"></div>
             </section>
 
             <section class="bloco">
-              <h2 class="passo">Tamanho do quadro</h2>
+              <h2 class="passo" data-i18n="tela.tamanho-do-quadro">Tamanho do quadro</h2>
               <div class="chips" id="planoResolucoes"></div>
             </section>
 
             <section class="bloco">
-              <h2 class="passo">A pessoa <small>(opcional)</small></h2>
+              <h2 class="passo">A pessoa <small data-i18n="tela.opcional-2">(opcional)</small></h2>
               <label class="upload" id="planoUp">
                 <input type="file" accept="image/*" class="sr-only">
                 <span class="up-ic" data-ic="enviar"></span>
-                <span class="up-txt">Clique ou arraste a foto (opcional — sem ela, o estúdio cria a pessoa)</span>
+                <span class="up-txt" data-i18n="tela.clique-ou-arraste-a-foto">Clique ou arraste a foto (opcional — sem ela, o estúdio cria a pessoa)</span>
               </label>
-              <button type="button" class="bt-fantasma mini" id="planoTirarFoto">Tirar a foto</button>
+              <button type="button" class="bt-fantasma mini" id="planoTirarFoto" data-i18n="tela.tirar-a-foto">Tirar a foto</button>
             </section>
 
             <div class="plano-andamento" id="planoAndamento" hidden>
@@ -550,11 +550,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             </div>
 
             <details class="ficha-tecnica">
-              <summary>Ficha técnica e o que já aprendemos</summary>
-              <h3 class="plano-lado-tit">A configuração</h3>
+              <summary data-i18n="tela.ficha-tecnica-e-o-que">Ficha técnica e o que já aprendemos</summary>
+              <h3 class="plano-lado-tit" data-i18n="tela.a-configuracao">A configuração</h3>
               <div class="plano-config" id="planoConfig"></div>
 
-              <h3 class="plano-lado-tit">O que já aprendemos</h3>
+              <h3 class="plano-lado-tit" data-i18n="tela.o-que-ja-aprendemos">O que já aprendemos</h3>
               <ul class="plano-licoes">
                 <li><b>Ao levantar, a câmera cola</b> e mostra nuca e tronco. Se a pessoa for se
                   levantar, escreva <i>&ldquo;a câmera recua acompanhando, rosto sempre no
@@ -570,20 +570,20 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
           <div class="painel-rodape">
             <div class="plano-conta" id="planoConta"></div>
-            <button type="button" class="gerar" id="planoGerar"><span data-ic="play"></span><span>Gerar a tomada</span></button>
+            <button type="button" class="gerar" id="planoGerar"><span data-ic="play"></span><span data-i18n="tela.gerar-a-tomada">Gerar a tomada</span></button>
           </div>
         </aside>
 
         <section class="criacoes" aria-labelledby="planoCriTitulo">
           <div class="cri-cab">
             <div>
-              <h2 id="planoCriTitulo" tabindex="-1">Tomadas geradas</h2>
+              <h2 id="planoCriTitulo" tabindex="-1" data-i18n="tela.tomadas-geradas">Tomadas geradas</h2>
               <p class="fraco" id="planoCriConta" aria-live="polite"></p>
             </div>
           </div>
           <div class="grade" id="planoGrade"></div>
           <div class="vazio" id="planoVazio" hidden>
-            <p>Nenhuma tomada ainda. Conte a cena ao lado, escolha a duração e clique em Gerar a tomada.</p>
+            <p data-i18n="tela.nenhuma-tomada-ainda-conte-a">Nenhuma tomada ainda. Conte a cena ao lado, escolha a duração e clique em Gerar a tomada.</p>
           </div>
         </section>
       </div>
@@ -607,9 +607,9 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         <div class="chips-ia" id="tudoFiltro" role="group" aria-label="Filtrar por tipo"></div>
       </div>
       <div class="grade" id="tudoGrade"></div>
-      <div class="vazio" id="tudoVazio" hidden><p>Nada por aqui ainda.</p></div>
+      <div class="vazio" id="tudoVazio" hidden><p data-i18n="tela.nada-por-aqui-ainda">Nada por aqui ainda.</p></div>
       <div class="mais" id="tudoMaisBox" hidden>
-        <button type="button" class="bt-sec" id="tudoMais">Carregar mais</button>
+        <button type="button" class="bt-sec" id="tudoMais" data-i18n="tela.carregar-mais">Carregar mais</button>
       </div>
     </section>
   </section>
@@ -620,14 +620,14 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       <div class="canal-cab-tit">
         <span class="painel-ic" data-ic="fila"></span>
         <div>
-          <p class="sobrelinha">Do texto ao vídeo pronto</p>
+          <p class="sobrelinha" data-i18n="tela.do-texto-ao-video-pronto">Do texto ao vídeo pronto</p>
           <h1 id="canalTitulo" tabindex="-1">Canal automático</h1>
           <p class="canal-pasta" id="canalPasta"></p>
         </div>
       </div>
       <div class="canal-cab-bts">
         <button type="button" class="bt-sec" id="canalAtualizar"><span data-ic="reusar"></span>Atualizar</button>
-        <button type="button" class="gerar" id="canalNovoBt"><span data-ic="mais"></span><span>Vídeo novo</span></button>
+        <button type="button" class="gerar" id="canalNovoBt"><span data-ic="mais"></span><span data-i18n="tela.video-novo">Vídeo novo</span></button>
       </div>
     </div>
 
@@ -645,19 +645,19 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
     <!-- vídeo novo -->
     <div class="canal-novo" id="canalNovo" hidden>
-      <h2 class="passo">O texto da narração</h2>
-      <label class="voz-campo"><span>Título (vira o nome da pasta)</span>
+      <h2 class="passo" data-i18n="tela.o-texto-da-narracao">O texto da narração</h2>
+      <label class="voz-campo"><span data-i18n="tela.titulo-vira-o-nome-da">Título (vira o nome da pasta)</span>
         <input id="canalTituloIn" type="text" maxlength="80" placeholder="Ex.: A pedra de Ebenézer"></label>
       <textarea id="canalTexto" class="voz-texto" rows="9"
         placeholder="Cole aqui a narração inteira.&#10;&#10;Gancho nos 5 primeiros segundos, uma ideia só, a referência falada por extenso e uma pergunta no fim."></textarea>
       <div class="canal-conta">
         <b id="canalLetras">0</b> letras · <b id="canalSegundos">0 s</b> de narração ·
-        <span id="canalPlaca">0 min de placa</span>
+        <span id="canalPlaca" data-i18n="tela.0-min-de-placa">0 min de placa</span>
       </div>
       <p class="canal-dica" id="canalDica" hidden></p>
       <div class="canal-novo-bts">
-        <button type="button" class="bt-sec" id="canalCancelar">Cancelar</button>
-        <button type="button" class="gerar" id="canalCriar"><span data-ic="ok"></span><span>Criar o vídeo</span></button>
+        <button type="button" class="bt-sec" id="canalCancelar" data-i18n="tela.cancelar">Cancelar</button>
+        <button type="button" class="gerar" id="canalCriar"><span data-ic="ok"></span><span data-i18n="tela.criar-o-video">Criar o vídeo</span></button>
       </div>
     </div>
 
@@ -668,8 +668,8 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
     <div class="canal-barra" id="canalBarra" hidden>
       <span id="canalBarraTxt"></span>
       <div class="canal-barra-bts">
-        <button type="button" class="bt-sec" id="canalLimparSel">Limpar seleção</button>
-        <button type="button" class="gerar" id="canalFazer"><span data-ic="play"></span><span>Fazer os escolhidos</span></button>
+        <button type="button" class="bt-sec" id="canalLimparSel" data-i18n="tela.limpar-selecao">Limpar seleção</button>
+        <button type="button" class="gerar" id="canalFazer"><span data-ic="play"></span><span data-i18n="tela.fazer-os-escolhidos">Fazer os escolhidos</span></button>
       </div>
     </div>
   </section>
@@ -677,10 +677,10 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
   <!-- janela das cenas -->
   <dialog class="janela canal-cenas" id="dlgCenas" aria-labelledby="cenasTitulo">
     <div class="janela-corpo">
-      <h2 id="cenasTitulo">Imagens de apoio</h2>
+      <h2 id="cenasTitulo" data-i18n="tela.imagens-de-apoio">Imagens de apoio</h2>
       <p class="fraco" id="cenasSub"></p>
       <div class="cenas-topo">
-        <label class="voz-campo pequeno"><span>Quantas imagens</span>
+        <label class="voz-campo pequeno"><span data-i18n="tela.quantas-imagens">Quantas imagens</span>
           <input id="cenasQuantas" type="number" min="2" max="12" value="6"></label>
         <button type="button" class="bt-sec" id="cenasSugerir"><span data-ic="brilho"></span>Sugerir sozinho</button>
         <button type="button" class="bt-sec" id="cenasMais"><span data-ic="mais"></span>Linha em branco</button>
@@ -690,7 +690,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       <div class="cenas-tabela" id="cenasTabela"></div>
       <p class="nota" id="cenasStatus" aria-live="polite"></p>
       <div class="janela-acoes">
-        <button type="button" class="bt-sec" id="cenasFechar">Fechar</button>
+        <button type="button" class="bt-sec" id="cenasFechar" data-i18n="tela.fechar">Fechar</button>
         <button type="button" class="gerar" id="cenasGravar"><span data-ic="ok"></span>Gravar as cenas</button>
       </div>
     </div>
@@ -705,24 +705,24 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       <div class="voz-off-card">
         <span class="voz-off-ic" data-ic="microfone"></span>
         <div class="voz-off-texto">
-          <h2>A voz local está desligada</h2>
+          <h2 data-i18n="tela.a-voz-local-esta-desligada">A voz local está desligada</h2>
           <p>A tela abaixo é a da narração — ela volta a funcionar assim que o
             <b>VoiceStudio</b> estiver aberto.</p>
         </div>
         <div class="voz-off-bts">
-          <button type="button" class="gerar" id="vozLigar"><span data-ic="ligar"></span><span>Ligar a voz local</span></button>
+          <button type="button" class="gerar" id="vozLigar"><span data-ic="ligar"></span><span data-i18n="tela.ligar-a-voz-local">Ligar a voz local</span></button>
           <button type="button" class="bt-sec" id="vozReprocurar"><span data-ic="reusar"></span>Procurar de novo</button>
         </div>
         <details class="voz-off-ajuda">
-          <summary>Como ligar na mão / não tenho o VoiceStudio</summary>
+          <summary data-i18n="tela.como-ligar-na-mao-nao">Como ligar na mão / não tenho o VoiceStudio</summary>
           <ol class="voz-passos">
-            <li>Abra o VoiceStudio (ícone na Área de Trabalho ou no menu Iniciar).</li>
-            <li>Espere a janela dele carregar por completo.</li>
+            <li data-i18n="tela.abra-o-voicestudio-icone-na">Abra o VoiceStudio (ícone na Área de Trabalho ou no menu Iniciar).</li>
+            <li data-i18n="tela.espere-a-janela-dele-carregar">Espere a janela dele carregar por completo.</li>
             <li>Volte aqui e clique em <b>Procurar de novo</b>.</li>
           </ol>
           <p class="nota" id="vozOffDetalhe" aria-live="polite"></p>
           <p class="nota fraco">Não tem o VoiceStudio? Ele é gratuito e de código aberto:
-            <span class="voz-link">github.com/debpalash/VoiceStudio</span> — baixe o arquivo
+            <span class="voz-link" data-i18n="tela.github-com-debpalash-voicestudio">github.com/debpalash/VoiceStudio</span> — baixe o arquivo
             <b>win-x64</b> da página de releases.</p>
         </details>
       </div>
@@ -732,11 +732,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       <!-- coluna da esquerda: as três coisas que dá para fazer -->
       <nav class="voz-lado" aria-label="Ferramentas de voz">
         <button type="button" class="voz-lado-bt" data-tela="falar" aria-current="page">
-          <span data-ic="onda"></span><span>Texto para fala</span></button>
+          <span data-ic="onda"></span><span data-i18n="tela.texto-para-fala">Texto para fala</span></button>
         <button type="button" class="voz-lado-bt" data-tela="desenhar">
-          <span data-ic="brilho"></span><span>Criar uma voz</span></button>
+          <span data-ic="brilho"></span><span data-i18n="tela.criar-uma-voz">Criar uma voz</span></button>
         <button type="button" class="voz-lado-bt" data-tela="clonar">
-          <span data-ic="microfone"></span><span>Clonar uma voz</span></button>
+          <span data-ic="microfone"></span><span data-i18n="tela.clonar-uma-voz">Clonar uma voz</span></button>
         <!-- Vozes na nuvem: a chave e de QUEM USA, nunca vem no pacote (03/11/2026) -->
         <details class="nuvem" id="nuvemBloco">
           <summary><span data-ic="onda"></span> Vozes na nuvem <i class="nuvem-selo" id="nuvemSelo"></i></summary>
@@ -744,12 +744,12 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             <p class="nuvem-ex">A narração aqui é <b>local e de graça</b>. Se você tiver conta
               no ElevenLabs e quiser as vozes de lá, cole a <b>sua</b> chave. Elas gastam
               crédito da <b>sua</b> conta.</p>
-            <label class="nuvem-rot" for="nuvemChave">Chave do ElevenLabs</label>
+            <label class="nuvem-rot" for="nuvemChave" data-i18n="tela.chave-do-elevenlabs-2">Chave do ElevenLabs</label>
             <input type="password" id="nuvemChave" autocomplete="off" spellcheck="false"
                    placeholder="cole a chave aqui" maxlength="300">
             <div class="nuvem-bts">
-              <button type="button" class="gerar" id="nuvemSalvar">Salvar</button>
-              <button type="button" class="bt-sec" id="nuvemTirar">Remover</button>
+              <button type="button" class="gerar" id="nuvemSalvar" data-i18n="tela.salvar">Salvar</button>
+              <button type="button" class="bt-sec" id="nuvemTirar" data-i18n="tela.remover">Remover</button>
             </div>
             <p class="nuvem-msg" id="nuvemMsg" role="status"></p>
             <p class="nuvem-pe">Fica num arquivo de texto na sua máquina, na pasta
@@ -765,7 +765,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       <!-- meio: o texto, como no ElevenLabs -->
       <div class="voz-meio">
         <div class="voz-meio-cab">
-          <span class="voz-chip" id="vozChipVoz">Nenhuma voz escolhida</span>
+          <span class="voz-chip" id="vozChipVoz" data-i18n="tela.nenhuma-voz-escolhida">Nenhuma voz escolhida</span>
           <span class="voz-selo" id="vozChipLic" hidden></span>
         </div>
 
@@ -780,7 +780,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             </div>
             <div class="voz-barra-bts">
               <button type="button" class="bt-sec" id="vozLimpar"><span data-ic="lixo"></span>Limpar</button>
-              <button type="button" class="gerar" id="vozFalar"><span data-ic="play"></span><span>Gerar narração</span></button>
+              <button type="button" class="gerar" id="vozFalar"><span data-ic="play"></span><span data-i18n="tela.gerar-narracao">Gerar narração</span></button>
             </div>
           </div>
           <!-- 07/11/2026: a barra. O motor nao manda progresso, entao o que e FATO aqui e o
@@ -809,27 +809,27 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
         <!-- TELA 2: criar uma voz pela descrição -->
         <div class="voz-pagina" data-pagina="desenhar" hidden>
-          <h2 class="passo">Descreva a voz que você quer</h2>
+          <h2 class="passo" data-i18n="tela.descreva-a-voz-que-voce">Descreva a voz que você quer</h2>
           <textarea id="vozDesc" class="voz-texto curta" rows="4"
             placeholder="Ex.: homem idoso, voz grave, calma e acolhedora, sotaque brasileiro, fala devagar como quem conta história"></textarea>
           <p class="voz-entendeu" id="vozEntendeu" aria-live="polite"></p>
-          <h2 class="passo">Ponto de partida</h2>
+          <h2 class="passo" data-i18n="tela.ponto-de-partida">Ponto de partida</h2>
           <div class="chips" id="vozEstilos" role="group" aria-label="Ponto de partida"></div>
-          <label class="voz-campo"><span>Nome desta voz</span>
+          <label class="voz-campo"><span data-i18n="tela.nome-desta-voz">Nome desta voz</span>
             <input id="vozDescNome" type="text" maxlength="60" placeholder="Ex.: Senhor da varanda"></label>
-          <button type="button" class="gerar" id="vozCriar"><span data-ic="brilho"></span><span>Criar a voz</span></button>
+          <button type="button" class="gerar" id="vozCriar"><span data-ic="brilho"></span><span data-i18n="tela.criar-a-voz">Criar a voz</span></button>
           <p class="nota" id="vozCriarStatus" aria-live="polite"></p>
         </div>
 
         <!-- TELA 3: clonar -->
         <div class="voz-pagina" data-pagina="clonar" hidden>
-          <h2 class="passo">Áudio de referência</h2>
+          <h2 class="passo" data-i18n="tela.audio-de-referencia">Áudio de referência</h2>
           <label class="upload" id="vozUp">
             <input type="file" accept="audio/*" class="sr-only">
             <span class="up-ic" data-ic="enviar"></span>
-            <span class="up-txt">Clique ou arraste um áudio limpo — uma pessoa só, sem música. Mande 30 s a 1 min: eu escolho os melhores 25 s de dentro</span>
+            <span class="up-txt" data-i18n="tela.clique-ou-arraste-um-audio">Clique ou arraste um áudio limpo — uma pessoa só, sem música. Mande 30 s a 1 min: eu escolho os melhores 25 s de dentro</span>
           </label>
-          <h2 class="passo">O que está falado no áudio <span class="fraco">(pode deixar em branco)</span></h2>
+          <h2 class="passo">O que está falado no áudio <span class="fraco" data-i18n="tela.pode-deixar-em-branco">(pode deixar em branco)</span></h2>
           <textarea id="vozTransc" class="voz-texto curta" rows="4"
             placeholder="As PALAVRAS que a pessoa fala no áudio, do jeito que ela fala. Na dúvida, deixe vazio."></textarea>
           <p class="aviso-linha">⚠️ Só escreva aqui se for <b>exatamente o que se ouve</b>. Texto
@@ -839,23 +839,23 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
                transcreve. E transcreve o MESMO trecho de 25 s que vai ser clonado, para o
                texto nunca descrever audio que o motor nao ouve. -->
           <button type="button" class="voz-gerir-bt" id="vozDescobrir">
-            <span data-ic="onda"></span><span>Não sei — descobre pelo áudio</span></button>
+            <span data-ic="onda"></span><span data-i18n="tela.nao-sei-descobre-pelo-audio">Não sei — descobre pelo áudio</span></button>
           <p class="nota" id="vozDescobrirStatus" aria-live="polite"></p>
-          <label class="voz-campo"><span>Nome desta voz</span>
+          <label class="voz-campo"><span data-i18n="tela.nome-desta-voz-2">Nome desta voz</span>
             <input id="vozClonNome" type="text" maxlength="60" placeholder="Ex.: Minha voz"></label>
-          <p class="aviso-linha">Clone apenas a sua própria voz ou a de quem autorizou você.</p>
+          <p class="aviso-linha" data-i18n="tela.clone-apenas-a-sua-propria">Clone apenas a sua própria voz ou a de quem autorizou você.</p>
           <p class="nota" id="vozRefLaudo" aria-live="polite"></p>
-          <button type="button" class="gerar" id="vozClonar"><span data-ic="microfone"></span><span>Clonar a voz</span></button>
+          <button type="button" class="gerar" id="vozClonar"><span data-ic="microfone"></span><span data-i18n="tela.clonar-a-voz">Clonar a voz</span></button>
           <p class="nota" id="vozClonarStatus" aria-live="polite"></p>
         </div>
       </div>
 
       <!-- direita: os ajustes, como no painel do ElevenLabs -->
       <aside class="voz-ajustes" aria-label="Configurações da narração">
-        <h2 class="voz-ajustes-tit">Configurações</h2>
+        <h2 class="voz-ajustes-tit" data-i18n="tela.configuracoes">Configurações</h2>
 
         <div class="voz-grupo">
-          <label class="voz-rot" for="vozVoz">Voz</label>
+          <label class="voz-rot" for="vozVoz" data-i18n="tela.voz">Voz</label>
           <select id="vozVoz" class="voz-select"></select>
           <p class="voz-licenca" id="vozLicenca"></p>
           <!-- 07/11/2026: ele pediu para poder APAGAR voz criada ("quero apagar a YAMI e
@@ -863,13 +863,13 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
                e aqui que ele ja olha quando a voz esta ruim. -->
           <div class="voz-gerir">
             <button type="button" class="voz-gerir-bt" id="vozApagar">
-              <span data-ic="lixo"></span><span>Apagar esta voz</span></button>
+              <span data-ic="lixo"></span><span data-i18n="tela.apagar-esta-voz">Apagar esta voz</span></button>
             <div class="voz-confirma" id="vozApagarConfirma" hidden>
               <p class="nota">Apagar <b id="vozApagarNome"></b>? Some do VoiceStudio inteiro,
                 não só daqui, e <b>não dá para desfazer</b>.</p>
               <div class="voz-confirma-bts">
-                <button type="button" class="voz-gerir-bt perigo" id="vozApagarSim">Sim, apagar</button>
-                <button type="button" class="voz-gerir-bt" id="vozApagarNao">Deixa</button>
+                <button type="button" class="voz-gerir-bt perigo" id="vozApagarSim" data-i18n="tela.sim-apagar">Sim, apagar</button>
+                <button type="button" class="voz-gerir-bt" id="vozApagarNao" data-i18n="tela.deixa-2">Deixa</button>
               </div>
             </div>
             <p class="nota" id="vozApagarStatus" aria-live="polite"></p>
@@ -877,37 +877,37 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         </div>
 
         <div class="voz-grupo">
-          <label class="voz-rot" for="vozIdioma">Idioma</label>
+          <label class="voz-rot" for="vozIdioma" data-i18n="tela.idioma">Idioma</label>
           <select id="vozIdioma" class="voz-select"></select>
         </div>
 
         <div class="voz-grupo">
-          <span class="voz-rot">Emoção e entrega</span>
+          <span class="voz-rot" data-i18n="tela.emocao-e-entrega">Emoção e entrega</span>
           <div class="chips" id="vozEmocoes" role="group" aria-label="Emoção"></div>
           <input id="vozInstruct" type="text" class="voz-instruct" maxlength="200"
                  placeholder="ou escreva: fale devagar, com calma, como quem conta história">
           <p class="voz-nota-peq">⚠️ A entrega entra na <b>voz</b>, não em cada fala: este motor
             só a aceita na hora de criar ou clonar.
-            <button type="button" class="voz-link-bt" id="vozIrCriar">Criar uma voz com essa
+            <button type="button" class="voz-link-bt" id="vozIrCriar" data-i18n="tela.criar-uma-voz-com-essa">Criar uma voz com essa
             entrega</button> — aí ela fala assim em tudo que você gerar com ela.</p>
         </div>
 
         <div class="voz-grupo">
           <label class="voz-rot" for="vozVel">Velocidade <b id="vozVelVal">1,00×</b></label>
           <input id="vozVel" type="range" min="0.6" max="1.4" step="0.05" value="1">
-          <div class="voz-extremos"><span>devagar</span><span>rápido</span></div>
+          <div class="voz-extremos"><span data-i18n="tela.devagar">devagar</span><span data-i18n="tela.rapido">rápido</span></div>
         </div>
 
         <details class="voz-avancado">
-          <summary>Ajuste fino</summary>
+          <summary data-i18n="tela.ajuste-fino">Ajuste fino</summary>
           <label class="voz-rot" for="vozSteps">Capricho <b id="vozStepsVal">16</b></label>
           <input id="vozSteps" type="range" min="4" max="48" step="2" value="16">
-          <div class="voz-extremos"><span>rápido</span><span>caprichado</span></div>
-          <p class="voz-nota-peq">Mais passos = mais tempo de placa pela mesma fala. Em 16 a
+          <div class="voz-extremos"><span data-i18n="tela.rapido-2">rápido</span><span data-i18n="tela.caprichado">caprichado</span></div>
+          <p class="voz-nota-peq" data-i18n="tela.mais-passos-mais-tempo-de">Mais passos = mais tempo de placa pela mesma fala. Em 16 a
             narração sai bem e mais rápida que o tempo real.</p>
         </details>
 
-        <p class="voz-rodape">Tudo isto roda no seu computador. Nenhum texto sai daqui e não
+        <p class="voz-rodape" data-i18n="tela.tudo-isto-roda-no-seu">Tudo isto roda no seu computador. Nenhum texto sai daqui e não
           existe mensalidade.</p>
       </aside>
     </div>
@@ -946,7 +946,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       <p class="lupa-sub" id="lupaSub"></p>
       <dl class="lupa-dados" id="lupaDados"></dl>
       <p class="aviso-linha" id="lupaAviso" hidden></p>
-      <div class="lupa-prompt-cab"><h3>Prompt</h3><button type="button" class="bt-fantasma mini" id="lupaCopiar"><span data-ic="copiar"></span>Copiar</button></div>
+      <div class="lupa-prompt-cab"><h3 data-i18n="tela.prompt">Prompt</h3><button type="button" class="bt-fantasma mini" id="lupaCopiar"><span data-ic="copiar"></span>Copiar</button></div>
       <p class="lupa-prompt" id="lupaPrompt"></p>
       <p class="lupa-ficha" id="lupaFicha"></p>
       <div class="lupa-saidas" id="lupaSaidas" hidden></div>
@@ -967,11 +967,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
 <!-- idioma.js vem ANTES dos outros: ele troca o texto da casca assim que a tela existe,
      para a pessoa que escolheu inglês não ver o português piscar primeiro. -->
-<script src="idioma.js?v=20261111-cartoes"></script>
+<script src="idioma.js?v=20261111-telacheia"></script>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261103-conta2"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
-<script src="app.js?v=20261111-cartoes"></script>
+<script src="app.js?v=20261111-telacheia"></script>
 <script src="voz.js?v=20261109-selo"></script>
 <script src="fila.js?v=20261109-musica"></script>
 <script src="canal.js?v=20261030-canal"></script>
