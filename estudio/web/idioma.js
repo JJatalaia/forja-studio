@@ -601,7 +601,79 @@
     'O que faz': 'What it does', 'Melhor para': 'Best for', 'Evite para': 'Avoid it for',
     'Tempo típico (medido nesta máquina)': 'Typical time (measured on this machine)',
     'A mais rápida e a mais caprichada': 'The fastest and the most careful',
-    'Mais rápida': 'Fastest'
+    'Mais rápida': 'Fastest',
+
+    // Os botõezinhos de ajuste. ⚠ A CHAVE É O TEXTO DEPOIS DO rot(): o preset guarda
+    // "Rapido (8 passos)" sem acento, o rot() acentua, e só então o TX procura. Chave
+    // sem acento aqui não acha nada - e não dá erro, só fica em português para sempre.
+    'Livre': 'Free', 'Traço artístico': 'Artistic line', 'Cartoon 2D': '2D cartoon',
+    'Ghibli aquarela': 'Ghibli watercolour',
+    'Rápido': 'Fast', 'Rápido (4 passos)': 'Fast (4 steps)', 'Rápido (8 passos)': 'Fast (8 steps)',
+    'Turbo (8 passos)': 'Turbo (8 steps)', 'Turbo (12 passos)': 'Turbo (12 steps)',
+    'Normal': 'Normal', 'Normal (20 passos)': 'Normal (20 steps)',
+    'Caprichado': 'Careful', 'Caprichado (30 passos)': 'Careful (30 steps)',
+    'Máxima': 'Maximum', 'Máxima (48 passos)': 'Maximum (48 steps)',
+    '1:1 grande (2048)': '1:1 large (2048)',
+    'Só texto': 'Text only', 'Com imagem': 'With an image',
+    'Personagem + movimento': 'Character + motion',
+    'Começar de uma imagem': 'Start from an image',
+    'Primeiro/último quadro': 'First/last frame',
+    'Com imagens de referência': 'With reference images',
+    'Com imagem de referência': 'With a reference image',
+
+    // mensagens do caminho de trabalho
+    'Enviando e convertendo para 16 fps…': 'Uploading and converting to 16 fps…',
+    'Detectando a pose… (alguns segundos; se a GPU estiver gerando, espera a geração atual)':
+      'Detecting the pose… (a few seconds; if the GPU is busy generating, it waits for the '
+      + 'current job)',
+    'Usa a imagem como está. Se o vídeo for de perto e a imagem de corpo inteiro, o personagem pode sair cortado.':
+      'Uses the image as it is. If the video is a close-up and the image is full body, the '
+      + 'character may end up cropped.',
+    'Envie a imagem e o vídeo: o personagem é recortado para ficar do mesmo tamanho e posição da pessoa do vídeo.':
+      'Send the image and the video: the character is cropped to match the size and position '
+      + 'of the person in the video.',
+    'modelo já carregado (mais rápido)': 'model already loaded (faster)',
+    'baseada nas suas gerações': 'based on your own generations',
+    'estimativa inicial (melhora com o uso)': 'first estimate (gets better with use)',
+    'Uma chave esta guardada e funcionando.': 'A key is stored and working.',
+    'uma chave ja esta guardada — cole outra para trocar':
+      'a key is already stored — paste another one to replace it',
+    'Conferindo a chave com o ElevenLabs…': 'Checking the key with ElevenLabs…',
+    'Nova (ainda não salva)': 'New (not saved yet)',
+    'Voz padrão': 'Default voice',
+    'Voz nova enviada. Dê um nome e salve para reusar depois sem enviar de novo.':
+      'New voice uploaded. Give it a name and save it to reuse later without uploading again.',
+    'Escreva um nome para a voz.': 'Write a name for the voice.',
+    'rodou na placa de vídeo': 'ran on the graphics card',
+    'Texto escrito pela IA': 'Text written by the AI',
+    'Descrição da imagem': 'Description of the image',
+    'A placa de vídeo estava ocupada: a IA rápida rodou no processador para não atrapalhar a geração.':
+      'The graphics card was busy: the fast AI ran on the processor so it would not get in the '
+      + 'way of the generation.',
+    'Rodou na placa de vídeo e foi descarregada dela logo depois (a placa já está livre de novo).':
+      'It ran on the graphics card and was unloaded right after (the card is free again).',
+    'Escreva o TEMA na caixa (ex.: 3 dicas para dormir melhor) e clique de novo.':
+      'Write the TOPIC in the box (e.g. 3 tips for sleeping better) and click again.',
+    'Escreva o pedido primeiro (pode ser curto, em português).':
+      'Write what you want first (it can be short).',
+    'Começando…': 'Starting…',
+    'Não deu certo: ': 'It did not work: ',
+    'Vídeo do trabalho reusado': 'Video from the reused job',
+    'Áudio do trabalho reusado': 'Audio from the reused job',
+    'Com erro ou cancelados': 'Failed or cancelled',
+    'Carregar estas configurações no formulário': 'Load these settings into the form',
+    'Essa IA foi removida do estúdio: não dá para reusar':
+      'This AI was removed from the studio: it cannot be reused',
+    'O arquivo já não está no HD: tira este trabalho da lista (e apaga o que sobrou dele)':
+      'The file is no longer on the drive: removes this job from the list (and deletes what is '
+      + 'left of it)',
+    'Cancelar esta geração?': 'Cancel this generation?',
+    'Cancelar geração': 'Cancel generation',
+    'A ComfyUI não respondeu; o trabalho foi marcado como cancelado aqui.':
+      'ComfyUI did not answer; the job was marked as cancelled here.',
+    'Esta versão do servidor do estúdio manda só as 120 criações mais recentes desta aba; as mais antigas continuam no HD (pasta output da ComfyUI).':
+      'This version of the studio server only sends the 120 most recent creations of this tab; '
+      + 'the older ones are still on the drive (ComfyUI’s output folder).'
   };
 
   var FRASES_ES = {
@@ -706,7 +778,79 @@
     'O que faz': 'Qué hace', 'Melhor para': 'Mejor para', 'Evite para': 'Evítala para',
     'Tempo típico (medido nesta máquina)': 'Tiempo típico (medido en este ordenador)',
     'A mais rápida e a mais caprichada': 'La más rápida y la más cuidada',
-    'Mais rápida': 'La más rápida'
+    'Mais rápida': 'La más rápida',
+
+    // Os botõezinhos de ajuste. ⚠ A CHAVE É O TEXTO DEPOIS DO rot(): o preset guarda
+    // "Rapido (8 passos)" sem acento, o rot() acentua, e só então o TX procura. Chave
+    // sem acento aqui não acha nada - e não dá erro, só fica em português para sempre.
+    'Livre': 'Libre', 'Traço artístico': 'Trazo artístico', 'Cartoon 2D': 'Cartoon 2D',
+    'Ghibli aquarela': 'Ghibli acuarela',
+    'Rápido': 'Rápido', 'Rápido (4 passos)': 'Rápido (4 pasos)',
+    'Rápido (8 passos)': 'Rápido (8 pasos)',
+    'Turbo (8 passos)': 'Turbo (8 pasos)', 'Turbo (12 passos)': 'Turbo (12 pasos)',
+    'Normal': 'Normal', 'Normal (20 passos)': 'Normal (20 pasos)',
+    'Caprichado': 'Cuidado', 'Caprichado (30 passos)': 'Cuidado (30 pasos)',
+    'Máxima': 'Máxima', 'Máxima (48 passos)': 'Máxima (48 pasos)',
+    '1:1 grande (2048)': '1:1 grande (2048)',
+    'Só texto': 'Solo texto', 'Com imagem': 'Con imagen',
+    'Personagem + movimento': 'Personaje + movimiento',
+    'Começar de uma imagem': 'Empezar desde una imagen',
+    'Primeiro/último quadro': 'Primer/último fotograma',
+    'Com imagens de referência': 'Con imágenes de referencia',
+    'Com imagem de referência': 'Con imagen de referencia',
+
+    // mensagens do caminho de trabalho
+    'Enviando e convertendo para 16 fps…': 'Subiendo y convirtiendo a 16 fps…',
+    'Detectando a pose… (alguns segundos; se a GPU estiver gerando, espera a geração atual)':
+      'Detectando la pose… (unos segundos; si la GPU está generando, espera al trabajo actual)',
+    'Usa a imagem como está. Se o vídeo for de perto e a imagem de corpo inteiro, o personagem pode sair cortado.':
+      'Usa la imagen tal cual. Si el vídeo es de cerca y la imagen de cuerpo entero, el '
+      + 'personaje puede salir cortado.',
+    'Envie a imagem e o vídeo: o personagem é recortado para ficar do mesmo tamanho e posição da pessoa do vídeo.':
+      'Envía la imagen y el vídeo: el personaje se recorta para quedar del mismo tamaño y '
+      + 'posición que la persona del vídeo.',
+    'modelo já carregado (mais rápido)': 'modelo ya cargado (más rápido)',
+    'baseada nas suas gerações': 'basada en tus propias generaciones',
+    'estimativa inicial (melhora com o uso)': 'estimación inicial (mejora con el uso)',
+    'Uma chave esta guardada e funcionando.': 'Hay una clave guardada y funcionando.',
+    'uma chave ja esta guardada — cole outra para trocar':
+      'ya hay una clave guardada — pega otra para cambiarla',
+    'Conferindo a chave com o ElevenLabs…': 'Comprobando la clave con ElevenLabs…',
+    'Nova (ainda não salva)': 'Nueva (todavía sin guardar)',
+    'Voz padrão': 'Voz por defecto',
+    'Voz nova enviada. Dê um nome e salve para reusar depois sem enviar de novo.':
+      'Voz nueva subida. Ponle un nombre y guárdala para reutilizarla sin volver a subirla.',
+    'Escreva um nome para a voz.': 'Escribe un nombre para la voz.',
+    'rodou na placa de vídeo': 'funcionó en la tarjeta gráfica',
+    'Texto escrito pela IA': 'Texto escrito por la IA',
+    'Descrição da imagem': 'Descripción de la imagen',
+    'A placa de vídeo estava ocupada: a IA rápida rodou no processador para não atrapalhar a geração.':
+      'La tarjeta gráfica estaba ocupada: la IA rápida funcionó en el procesador para no '
+      + 'estorbar a la generación.',
+    'Rodou na placa de vídeo e foi descarregada dela logo depois (a placa já está livre de novo).':
+      'Funcionó en la tarjeta gráfica y se descargó justo después (la tarjeta ya está libre).',
+    'Escreva o TEMA na caixa (ex.: 3 dicas para dormir melhor) e clique de novo.':
+      'Escribe el TEMA en la caja (ej.: 3 consejos para dormir mejor) y pulsa otra vez.',
+    'Escreva o pedido primeiro (pode ser curto, em português).':
+      'Escribe primero lo que quieres (puede ser corto).',
+    'Começando…': 'Empezando…',
+    'Não deu certo: ': 'No salió bien: ',
+    'Vídeo do trabalho reusado': 'Vídeo del trabajo reutilizado',
+    'Áudio do trabalho reusado': 'Audio del trabajo reutilizado',
+    'Com erro ou cancelados': 'Con error o cancelados',
+    'Carregar estas configurações no formulário': 'Cargar estos ajustes en el formulario',
+    'Essa IA foi removida do estúdio: não dá para reusar':
+      'Esa IA se quitó del estudio: no se puede reutilizar',
+    'O arquivo já não está no HD: tira este trabalho da lista (e apaga o que sobrou dele)':
+      'El archivo ya no está en el disco: quita este trabajo de la lista (y borra lo que quede '
+      + 'de él)',
+    'Cancelar esta geração?': '¿Cancelar esta generación?',
+    'Cancelar geração': 'Cancelar la generación',
+    'A ComfyUI não respondeu; o trabalho foi marcado como cancelado aqui.':
+      'ComfyUI no respondió; el trabajo se marcó como cancelado aquí.',
+    'Esta versão do servidor do estúdio manda só as 120 criações mais recentes desta aba; as mais antigas continuam no HD (pasta output da ComfyUI).':
+      'Esta versión del servidor del estudio solo manda las 120 creaciones más recientes de '
+      + 'esta pestaña; las más antiguas siguen en el disco (carpeta output de ComfyUI).'
   };
 
   var FRASES = { en: FRASES_EN, es: FRASES_ES };

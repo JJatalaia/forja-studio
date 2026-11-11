@@ -227,6 +227,7 @@ const podeReusar = (j) => j.preset_existe !== false && presetsDa(rotaDoJob(j)).s
 const sumiu = (j) => j.arquivo_existe === false || G.sumidos.has(j.id);
 const prontoComArquivo = (j) => j.estado === 'concluido' && (j.saidas || []).length > 0 && !sumiu(j);
 const ROT_MODO = { prompt: 'Só texto', referencia: 'Com imagem', personagem: 'Personagem + movimento' };
+// Os rotulos acima passam por TX() na hora de desenhar (ver chips e rotuloModo).
 // "Chatterbox Multilingual · Minha voz" → "voz: Chatterbox · Minha voz" (regra: sempre mostrar qual IA fez a voz)
 const vozCurta = (j) => { const v = iaDe(j).voz; return v ? `voz: ${String(v).replace('Chatterbox Multilingual', 'Chatterbox')}` : null; };
 
@@ -1391,7 +1392,7 @@ function chips(el, valores, atual, aoEscolher, rotulo = rot) {
     const b = document.createElement('button');
     b.type = 'button';
     b.dataset.v = v;
-    b.textContent = rotulo(v);
+    b.textContent = TX(rotulo(v));   // um funil so: todo botaozinho de ajuste passa aqui
     b.setAttribute('aria-pressed', String(v === atual));
     b.onclick = () => aoEscolher(v);
     el.appendChild(b);
