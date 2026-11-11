@@ -601,6 +601,42 @@
     'O que faz': 'What it does', 'Melhor para': 'Best for', 'Evite para': 'Avoid it for',
     'Tempo típico (medido nesta máquina)': 'Typical time (measured on this machine)',
     'A mais rápida e a mais caprichada': 'The fastest and the most careful',
+    // ---- ligar e desligar os serviços
+    'Serviços': 'Services', 'Ligar tudo': 'Turn all on', 'Desligar tudo': 'Turn all off',
+    'Ligar imagem e vídeo': 'Turn on image and video', 'Ligar música': 'Turn on music',
+    'Desligar': 'Turn off', 'Abrir': 'Open', 'Desligando…': 'Turning off…',
+    'Desligado.': 'Turned off.', 'porta': 'port',
+    'Imagem e vídeo (ComfyUI)': 'Image and video (ComfyUI)',
+    'Painel de música': 'Music panel', 'ComfyUI de música': 'Music ComfyUI',
+    'ACE-Step (música)': 'ACE-Step (music)', 'Hermes (IA que conversa)': 'Hermes (the AI that talks)',
+    'Telegram do Hermes (avisos no celular)': 'Hermes Telegram (alerts on your phone)',
+    'Ligar tudo o que está desligado': 'Turn on everything that is off',
+    'Desligar todas as IAs para liberar memória': 'Turn off every AI to free memory',
+    'Ligar a IA de imagem e vídeo (ComfyUI)': 'Turn on the image and video AI (ComfyUI)',
+    'Ligar as IAs de música (painel, ComfyUI de música e ACE-Step)':
+      'Turn on the music AIs (panel, music ComfyUI and ACE-Step)',
+    'Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)':
+      'Turn off every AI to free memory? (The page stays open. To use them again, click Turn on.)',
+    'Desliga para liberar memória; liga de novo pelo botão Ligar':
+      'Turns it off to free memory; turn it back on with the Turn on button',
+    'Abrir o Hermes no navegador': 'Open Hermes in the browser',
+    'Abrir o painel do Hermes': 'Open the Hermes panel',
+    'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…':
+      'Starting the image and video ComfyUI (takes 1–2 min)…',
+    'Ligando a música (painel, ComfyUI de música e ACE-Step)…':
+      'Starting the music (panel, music ComfyUI and ACE-Step)…',
+    'Ligando a IA de texto no processador…': 'Starting the text AI on the processor…',
+    'Ligando o Hermes (painel web, uns 6 s)…': 'Starting Hermes (web panel, about 6 s)…',
+    'Ligando o Telegram do Hermes (uns 20 s)…': 'Starting the Hermes Telegram (about 20 s)…',
+    'Ligando o que estava desligado…': 'Starting whatever was off…',
+    'Ligando o painel de música…': 'Starting the music panel…',
+    'Para ter o botão Desligar, feche e abra o estúdio de novo.':
+      'To get the Turn off button, close and open the studio again.',
+    'Não consegui guardar a preferência: ': 'I could not save the preference: ',
+    'Esta versão do servidor do estúdio ainda não liga os serviços pelo Início. Feche o estúdio pelo atalho “Desligar Estúdio” (com nada gerando) e abra de novo para ativar os botões.':
+      'This version of the studio server cannot start the services from the Home screen yet. '
+      + 'Close the studio with the “Desligar Estúdio” shortcut (with nothing generating) '
+      + 'and open it again to enable the buttons.',
     'Mais rápida': 'Fastest',
 
     // Os botõezinhos de ajuste. ⚠ A CHAVE É O TEXTO DEPOIS DO rot(): o preset guarda
@@ -778,6 +814,43 @@
     'O que faz': 'Qué hace', 'Melhor para': 'Mejor para', 'Evite para': 'Evítala para',
     'Tempo típico (medido nesta máquina)': 'Tiempo típico (medido en este ordenador)',
     'A mais rápida e a mais caprichada': 'La más rápida y la más cuidada',
+    // ---- ligar e desligar os serviços
+    'Serviços': 'Servicios', 'Ligar tudo': 'Encender todo', 'Desligar tudo': 'Apagar todo',
+    'Ligar imagem e vídeo': 'Encender imagen y vídeo', 'Ligar música': 'Encender la música',
+    'Desligar': 'Apagar', 'Abrir': 'Abrir', 'Desligando…': 'Apagando…',
+    'Desligado.': 'Apagado.', 'porta': 'puerto',
+    'Imagem e vídeo (ComfyUI)': 'Imagen y vídeo (ComfyUI)',
+    'Painel de música': 'Panel de música', 'ComfyUI de música': 'ComfyUI de música',
+    'ACE-Step (música)': 'ACE-Step (música)', 'Hermes (IA que conversa)': 'Hermes (la IA que conversa)',
+    'Telegram do Hermes (avisos no celular)': 'Telegram de Hermes (avisos en el móvil)',
+    'Ligar tudo o que está desligado': 'Encender todo lo que está apagado',
+    'Desligar todas as IAs para liberar memória': 'Apagar todas las IAs para liberar memoria',
+    'Ligar a IA de imagem e vídeo (ComfyUI)': 'Encender la IA de imagen y vídeo (ComfyUI)',
+    'Ligar as IAs de música (painel, ComfyUI de música e ACE-Step)':
+      'Encender las IAs de música (panel, ComfyUI de música y ACE-Step)',
+    'Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)':
+      '¿Apagar todas las IAs para liberar memoria? (La página sigue abierta. Para usarlas otra '
+      + 'vez, pulsa Encender.)',
+    'Desliga para liberar memória; liga de novo pelo botão Ligar':
+      'Lo apaga para liberar memoria; se vuelve a encender con el botón Encender',
+    'Abrir o Hermes no navegador': 'Abrir Hermes en el navegador',
+    'Abrir o painel do Hermes': 'Abrir el panel de Hermes',
+    'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…':
+      'Encendiendo la ComfyUI de imagen y vídeo (tarda 1–2 min)…',
+    'Ligando a música (painel, ComfyUI de música e ACE-Step)…':
+      'Encendiendo la música (panel, ComfyUI de música y ACE-Step)…',
+    'Ligando a IA de texto no processador…': 'Encendiendo la IA de texto en el procesador…',
+    'Ligando o Hermes (painel web, uns 6 s)…': 'Encendiendo Hermes (panel web, unos 6 s)…',
+    'Ligando o Telegram do Hermes (uns 20 s)…': 'Encendiendo el Telegram de Hermes (unos 20 s)…',
+    'Ligando o que estava desligado…': 'Encendiendo lo que estaba apagado…',
+    'Ligando o painel de música…': 'Encendiendo el panel de música…',
+    'Para ter o botão Desligar, feche e abra o estúdio de novo.':
+      'Para tener el botón Apagar, cierra y abre el estudio otra vez.',
+    'Não consegui guardar a preferência: ': 'No pude guardar la preferencia: ',
+    'Esta versão do servidor do estúdio ainda não liga os serviços pelo Início. Feche o estúdio pelo atalho “Desligar Estúdio” (com nada gerando) e abra de novo para ativar os botões.':
+      'Esta versión del servidor del estudio todavía no enciende los servicios desde Inicio. '
+      + 'Cierra el estudio con el acceso directo “Desligar Estúdio” (sin nada '
+      + 'generándose) y ábrelo otra vez para activar los botones.',
     'Mais rápida': 'La más rápida',
 
     // Os botõezinhos de ajuste. ⚠ A CHAVE É O TEXTO DEPOIS DO rot(): o preset guarda
@@ -857,7 +930,8 @@
 
   // Frases que terminam em ": " e ganham o recado do servidor colado no fim.
   var PREFIXOS = ['Não consegui apagar a voz: ', 'Não consegui cancelar: ',
-    'Não consegui ligar a música: ', 'Não consegui ligar agora: ', 'Não consegui remover: '];
+    'Não consegui ligar a música: ', 'Não consegui ligar agora: ', 'Não consegui remover: ',
+    'Não consegui guardar a preferência: ', 'Não deu certo: '];
 
   // pt-BR porque é o português que está escrito no HTML; os outros vão como estão.
   var ETIQUETA = { pt: 'pt-BR', en: 'en', es: 'es' };

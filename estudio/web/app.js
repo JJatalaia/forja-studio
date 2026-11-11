@@ -962,13 +962,13 @@ function podeLigar(acao) {
 }
 function linhaServico(s) {
   const acao = ACAO_DO_SERV[s.chave] || 'video';
-  const nome = `<span class="servico-nome"${s.porta ? ` title="porta ${esc(s.porta)}"` : ''}>${esc(s.nome)}</span>`;
+  const nome = `<span class="servico-nome"${s.porta ? ` title="${esc(TX('porta'))} ${esc(s.porta)}"` : ''}>${esc(TX(s.nome))}</span>`;
   if (s.estado === 'ligado') {
     const alvoD = ALVO_DESLIGAR[s.chave];
     const btD = alvoD && !(G.inicio && G.inicio.legado)
-      ? `<button type="button" class="bt-desligar" data-desligar="${alvoD}" aria-label="Desligar: ${esc(s.nome)}" title="Desliga para liberar memória; liga de novo pelo botão Ligar">${ic('ligar')}<span>Desligar</span></button>` : '';
+      ? `<button type="button" class="bt-desligar" data-desligar="${alvoD}" aria-label="${esc(TX('Desligar'))}: ${esc(TX(s.nome))}" title="${esc(TX('Desliga para liberar memória; liga de novo pelo botão Ligar'))}">${ic('ligar')}<span>${esc(TX('Desligar'))}</span></button>` : '';
     const abrir = s.chave === 'hermes'
-      ? `<a class="bt-ligar" href="${esc(s.url || 'http://127.0.0.1:9119/?profile=default')}" target="_blank" rel="noopener" aria-label="Abrir o Hermes no navegador" title="Abrir o painel do Hermes">${ic('seta')}<span>Abrir</span></a>` : '';
+      ? `<a class="bt-ligar" href="${esc(s.url || 'http://127.0.0.1:9119/?profile=default')}" target="_blank" rel="noopener" aria-label="${esc(TX('Abrir o Hermes no navegador'))}" title="${esc(TX('Abrir o painel do Hermes'))}">${ic('seta')}<span>${esc(TX('Abrir'))}</span></a>` : '';
     return `<div class="servico"><i class="ponto on" aria-hidden="true"></i>${nome}<span class="servico-lado"><span class="servico-estado ok">${s.lento ? 'ligado (respondendo devagar)' : 'ligado'}</span>${abrir}${btD}</span></div>`;
   }
   if (s.estado === 'ligando') {
@@ -1027,16 +1027,16 @@ function renderServicos() {
   $('#btDesligarTudo').hidden = I.legado || !algumLigado;
   const nota = $('#maqServNota');
   nota.hidden = !(I.legado && off && !podeLigar('musica'));
-  nota.textContent = nota.hidden ? '' : LEGADO_MSG;
+  nota.textContent = nota.hidden ? '' : TX(LEGADO_MSG);
 }
 const LIGANDO_CLIQUE = new Set();  // trava contra dois cliques (o servidor também não liga em dobro)
 const FRASE_LIGAR = { video: 'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…', musica: 'Ligando a música (painel, ComfyUI de música e ACE-Step)…',
   texto: 'Ligando a IA de texto no processador…', hermes: 'Ligando o Hermes (painel web, uns 6 s)…', telegram: 'Ligando o Telegram do Hermes (uns 20 s)…', tudo: 'Ligando o que estava desligado…' };
 const ALVO_DESLIGAR = { video: 'video', painel_musica: 'painel', comfy_musica: 'comfy_musica', ace: 'ace', hermes: 'hermes' };
 async function desligarServico(alvo, bt) {
-  if (alvo === 'tudo' && !confirm('Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)')) return;
+  if (alvo === 'tudo' && !confirm(TX('Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)'))) return;
   const antes = bt ? bt.innerHTML : null;
-  if (bt) { bt.disabled = true; const sp = bt.querySelector('span'); if (sp) sp.textContent = 'Desligando…'; }
+  if (bt) { bt.disabled = true; const sp = bt.querySelector('span'); if (sp) sp.textContent = TX('Desligando…'); }
   try {
     const r = await api('/api/servicos/desligar', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ servico: alvo }), timeout: 60000 });
@@ -1044,7 +1044,8 @@ async function desligarServico(alvo, bt) {
       if (r.servicos && Object.keys(r.servicos).length) G.inicio.servicos = r.servicos;
       if (r.texto && G.inicio.texto) G.inicio.texto.simples = r.texto;
     }
-    aviso((r && r.mensagem) || 'Desligado.', 'ok');
+    // r.mensagem vem do servidor: fica em portugues ate o server.py ser traduzido.
+    aviso((r && r.mensagem) || TX('Desligado.'), 'ok');
   } catch (e) {
     aviso(e.status === 404 ? 'Para ter o botão Desligar, feche e abra o estúdio de novo.' : e.message, 'erro', 8000);
   } finally {
@@ -1213,9 +1214,9 @@ function montarMaquina() {
     <div class="maq-linha" id="maqServLinha" hidden>
       <span class="ic-caixa">${ic('servidor')}</span>
       <div>
-        <div class="maq-rot maq-rot-bt"><span>Serviços</span>
-          <button type="button" class="bt-ligar bt-ligar-tudo" id="btLigarTudo" data-ligar="tudo" hidden aria-label="Ligar tudo o que está desligado">${ic('ligar')}<span>Ligar tudo</span></button><button type="button" class="bt-desligar bt-desligar-tudo" id="btDesligarTudo" data-desligar="tudo" hidden aria-label="Desligar todas as IAs para liberar memória">${ic('ligar')}<span>Desligar tudo</span></button></div>
-        <div class="servicos-grupos" id="maqGrupos" hidden><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarVideo" data-ligar="video" hidden aria-label="Ligar a IA de imagem e vídeo (ComfyUI)">${ic('ligar')}<span>Ligar imagem e vídeo</span></button><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarMusicaGrupo" data-ligar="musica" hidden aria-label="Ligar as IAs de música (painel, ComfyUI de música e ACE-Step)">${ic('ligar')}<span>Ligar música</span></button></div>
+        <div class="maq-rot maq-rot-bt"><span>${esc(TX('Serviços'))}</span>
+          <button type="button" class="bt-ligar bt-ligar-tudo" id="btLigarTudo" data-ligar="tudo" hidden aria-label="${esc(TX('Ligar tudo o que está desligado'))}">${ic('ligar')}<span>${esc(TX('Ligar tudo'))}</span></button><button type="button" class="bt-desligar bt-desligar-tudo" id="btDesligarTudo" data-desligar="tudo" hidden aria-label="${esc(TX('Desligar todas as IAs para liberar memória'))}">${ic('ligar')}<span>${esc(TX('Desligar tudo'))}</span></button></div>
+        <div class="servicos-grupos" id="maqGrupos" hidden><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarVideo" data-ligar="video" hidden aria-label="${esc(TX('Ligar a IA de imagem e vídeo (ComfyUI)'))}">${ic('ligar')}<span>${esc(TX('Ligar imagem e vídeo'))}</span></button><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarMusicaGrupo" data-ligar="musica" hidden aria-label="${esc(TX('Ligar as IAs de música (painel, ComfyUI de música e ACE-Step)'))}">${ic('ligar')}<span>${esc(TX('Ligar música'))}</span></button></div>
         <div class="servicos" id="maqServ"></div>
         <p class="nota" id="maqServNota" hidden></p>
       </div>
@@ -1228,7 +1229,7 @@ function montarMaquina() {
         <p class="texto-extra nota" id="textoExtra" hidden></p>
         <div class="texto-acoes" id="textoAcoes">
           <button type="button" class="bt-sec" id="btTextoLigar" hidden>${ic('ligar')}<span>Ligar agora</span></button>
-          <button type="button" class="bt-sec" id="btTextoDesligar" hidden>${ic('parar')}<span>Desligar</span></button>
+          <button type="button" class="bt-sec" id="btTextoDesligar" hidden>${ic('parar')}<span>${esc(TX('Desligar'))}</span></button>
         </div>
         <p class="nota" id="textoNotaRam">Fica na memória do computador, uns 8 GB, sem ocupar a placa de vídeo.</p>
         <label class="marcar" id="textoSempreRot" hidden><input type="checkbox" id="chkTextoSempre"><span>Deixar sempre ligada ao abrir o estúdio</span></label>
