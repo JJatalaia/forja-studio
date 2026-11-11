@@ -1,202 +1,148 @@
+LICENÇA DE USO DO JERS · FORJA STUDIO
 
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+Copyright (C) 2026 Jerffeson. Todos os direitos reservados.
 
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+Este programa é de uso GRATUITO e o código fica à vista, mas NÃO é software livre:
+ele não pode ser redistribuído nem revendido. Leia os três pontos abaixo; o resto
+do texto é o detalhe deles.
 
-   1. Definitions.
+  1. Você pode BAIXAR, INSTALAR e USAR, de graça, inclusive para ganhar dinheiro
+     com o que produzir aqui.
+  2. Você PRECISA criar uma conta gratuita para usar. É condição de uso, não
+     detalhe técnico.
+  3. Você NÃO pode redistribuir, republicar, revender, nem usar a configuração
+     deste programa em outro lugar.
 
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
 
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
+--------------------------------------------------------------------------------
+1. O QUE VOCÊ PODE FAZER
+--------------------------------------------------------------------------------
 
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
+a) Baixar e instalar o Forja Studio nos seus próprios computadores, respeitando o
+   número de máquinas do seu plano.
 
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
+b) Usar o programa à vontade, para fins pessoais OU comerciais.
 
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
+c) FICAR COM TUDO O QUE VOCÊ PRODUZIR. As imagens, vídeos, áudios e textos que
+   saírem daqui são SEUS. O autor deste programa não reivindica nada sobre eles,
+   não cobra participação e não precisa ser citado. Venda, publique, monetize:
+   é o seu trabalho.
 
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
+d) Criar, usar e distribuir as SUAS próprias configurações e workflows. O que é
+   seu é seu.
 
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
+e) Ler o código. Ele está à vista de propósito: para você saber o que roda na sua
+   máquina e ter certeza de que nada aqui espiona você.
 
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
+f) Modificar a sua cópia instalada, para o seu uso pessoal — desde que não
+   redistribua o resultado e não burle o item 2(d).
 
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
 
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
+--------------------------------------------------------------------------------
+2. O QUE VOCÊ NÃO PODE FAZER
+--------------------------------------------------------------------------------
 
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
+a) REDISTRIBUIR. Não republique, não espelhe, não hospede cópias, não inclua em
+   outro pacote, não compartilhe o instalador. Quem quiser o programa pega na
+   origem.
 
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
+b) VENDER. Não venda, alugue, licencie nem sublicencie este programa, nem como
+   parte de outro produto ou serviço.
 
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
+c) FAZER OBRA DERIVADA PARA DISTRIBUIR. Modificar para uso próprio pode (1(f));
+   distribuir a versão modificada, não.
 
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
+d) BURLAR A CONTA. Não remova, desative, contorne nem ajude a contornar o
+   cadastro, o login, a licença, a verificação de assinatura ou qualquer parte do
+   sistema de contas. Não compartilhe credenciais para esse fim.
 
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
+e) EXTRAIR A CONFIGURAÇÃO. A configuração do Forja — os presets, os workflows, os
+   parâmetros de cada IA — viaja criptografada e é o coração deste trabalho. Não
+   descriptografe fora do uso normal do programa, não extraia, não publique e não
+   use essa configuração em outro programa, seu ou de terceiros.
 
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
+f) TIRAR OS AVISOS. Não remova nem altere avisos de autoria, de copyright ou esta
+   licença.
 
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
 
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
+--------------------------------------------------------------------------------
+3. PROGRAMAS E MODELOS DE TERCEIROS
+--------------------------------------------------------------------------------
 
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
+Esta licença cobre SOMENTE o código deste repositório.
 
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
+Os programas com que o Forja conversa (ComfyUI, VoiceStudio, llama.cpp e outros) e
+os modelos de IA que você baixa têm CADA UM a sua própria licença, e são elas que
+valem para eles. Algumas proíbem uso comercial. O arquivo NOTICE lista quais são, e
+o painel mostra a licença do motor de voz que estiver ligado.
 
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
+É sua a responsabilidade de conferir a licença do modelo antes de monetizar o que
+produzir com ele.
 
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
 
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
+--------------------------------------------------------------------------------
+4. SEM GARANTIA
+--------------------------------------------------------------------------------
 
-   END OF TERMS AND CONDITIONS
+ESTE PROGRAMA É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE ESPÉCIE ALGUMA, EXPRESSA OU
+IMPLÍCITA, INCLUINDO MAS NÃO SE LIMITANDO A GARANTIAS DE COMERCIALIZAÇÃO, ADEQUAÇÃO
+A UM FIM ESPECÍFICO E NÃO VIOLAÇÃO.
 
-   APPENDIX: How to apply the Apache License to your work.
+O AUTOR NÃO RESPONDE POR QUALQUER DANO — DIRETO, INDIRETO, INCIDENTAL, ESPECIAL OU
+CONSEQUENTE — DECORRENTE DO USO OU DA IMPOSSIBILIDADE DE USO DESTE PROGRAMA,
+INCLUINDO PERDA DE DADOS, PERDA DE LUCROS E INTERRUPÇÃO DE TRABALHO.
 
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
+Você usa por sua conta e risco, na sua máquina.
 
-   Copyright [yyyy] [name of copyright owner]
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+--------------------------------------------------------------------------------
+5. SE VOCÊ DESCUMPRIR
+--------------------------------------------------------------------------------
 
-       http://www.apache.org/licenses/LICENSE-2.0
+O direito de usar acaba automaticamente se você violar qualquer item da seção 2, e
+a conta pode ser encerrada. Os itens 2(a), 2(b), 2(c) e 2(e) continuam valendo
+depois disso.
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+
+--------------------------------------------------------------------------------
+6. QUER FAZER ALGO QUE A LICENÇA NÃO PERMITE?
+--------------------------------------------------------------------------------
+
+Pergunte. Permissão por escrito do autor libera qualquer item da seção 2. Revenda,
+distribuição, uso em sala de aula, integração em outro produto — tudo é conversável.
+O "não" acima quer dizer "não sem combinar", e não "nunca".
+
+
+--------------------------------------------------------------------------------
+7. LEI E VERSÕES ANTERIORES
+--------------------------------------------------------------------------------
+
+Esta licença é regida pelas leis do Brasil, em especial a Lei 9.609/98 (programa de
+computador) e a Lei 9.610/98 (direitos autorais).
+
+VERSÕES ANTERIORES: até 11 de novembro de 2026, este projeto foi distribuído sob a
+Apache License 2.0. Quem recebeu uma cópia naquele período continua com os direitos
+que aquela licença deu, sobre aquela cópia. Esta licença vale para esta versão e
+para as seguintes.
+
+
+--------------------------------------------------------------------------------
+IN ENGLISH (SHORT)
+--------------------------------------------------------------------------------
+
+JerS · Forja Studio - Copyright (C) 2026 Jerffeson. All rights reserved.
+
+Free to download, install and use, including commercially. A free account is
+required. Everything you create with it is yours, with no claim from the author.
+
+You may NOT redistribute, mirror, resell, sublicense, distribute modified versions,
+circumvent the account/licensing system, or extract and reuse the program's
+encrypted configuration (presets and workflows).
+
+Third-party programs and AI models keep their own licenses - see NOTICE.
+
+Provided "as is", without warranty of any kind. Governed by the laws of Brazil.
+Want to do something this license forbids? Ask - written permission is available.
+
+Versions distributed before 11 November 2026 were released under the Apache License
+2.0 and remain so for those copies.

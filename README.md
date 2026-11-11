@@ -204,9 +204,23 @@ máquina. Nenhum servidor local protege disso.
 
 ## Licença
 
-Este projeto é **Apache License 2.0** (veja [LICENSE](LICENSE)). Você pode usar, modificar e
-vender o que fizer com ele — só precisa manter o aviso de autoria. O [NOTICE](NOTICE) lista os
-programas com que ele conversa e as licenças deles.
+**Gratuito, de código à vista, mas não é software livre.** Em três linhas (o texto
+completo está em [LICENSE](LICENSE)):
+
+- **Pode** baixar, instalar e usar de graça, inclusive para ganhar dinheiro.
+- **Precisa** criar uma conta gratuita. É condição de uso.
+- **Não pode** redistribuir, revender, nem usar a configuração do Forja em outro lugar.
+
+**O que você produzir aqui é seu.** Imagens, vídeos, áudios e textos: o autor não
+reivindica nada, não cobra participação e não precisa ser citado.
+
+O código fica à vista de propósito — para você saber o que roda na sua máquina. Quer
+fazer algo que a licença não permite? Pergunte: permissão por escrito libera.
+
+O [NOTICE](NOTICE) lista os programas com que o Forja conversa e as licenças deles.
+
+> Até 11/11/2026 este projeto saiu sob **Apache License 2.0**. Quem pegou uma cópia
+> naquele período continua com os direitos daquela licença, sobre aquela cópia.
 
 ### ⚠️ Mas a licença dos MODELOS é outra história
 
