@@ -41,9 +41,26 @@ SERVIDOR = os.environ.get("FORJA_CONTAS_URL") or "https://jers.viverbemcomoesta.
 TEMPERO = b"forja-studio/impressao/v1"
 
 # Quantos dias o painel aguenta sem conseguir falar com o servidor depois de a licenca
-# vencer. E a troca medida: tolerancia grande deixa o cliente tranquilo numa queda de
-# internet, mas atrasa a revogacao na mesma proporcao.
-DIAS_DE_FOLGA = 3
+# vencer.
+#
+# 11/11/2026: era 3 e virou ZERO, por decisao dele. A licenca passou a valer 24 HORAS
+# (CONTAS_DIAS=1 no servidor), e a regra ficou assim: o painel fala com o servidor toda
+# vez que abre e de 6 em 6 horas; quem passar de 24 horas sem conseguir falar fica
+# travado e precisa ligar a internet.
+#
+# O que isso compra: a conta revogada para em UM DIA, nao em dez. O que isso custa: quem
+# ficar um dia inteiro sem internet nao abre a configuracao. Foi a troca escolhida.
+#
+# Folga zero sozinha nao bastaria: a chave do cofre guardada aqui (DPAPI) abria os
+# presets sem perguntar nada a ninguem. Ver abrir_cofre(), que agora exige licenca viva
+# ANTES de usar a chave guardada - e esse o freio que de fato trava as 24 horas.
+DIAS_DE_FOLGA = 0
+
+# O recado da janela estourada. Fica numa constante porque aparece em tres lugares, e
+# tres copias de um texto viram, com o tempo, tres textos diferentes - e a pessoa le o
+# mais confuso dos tres.
+SEM_FALAR_24H = ("Faz mais de 24 horas que o painel nao fala com o servidor. Ligue a "
+                 "internet e abra o painel de novo para liberar as configuracoes.")
 
 _impressao = None       # a leitura da maquina e lenta (~1 s): le uma vez por execucao
 _ultimo_erro = None
@@ -311,9 +328,9 @@ async def abrir_cofre():
 
     Ordem de propósito:
       1. se nao existe cofre (maquina de desenvolvimento), nao ha o que abrir;
-      2. tenta a chave GUARDADA aqui - assim quem ja entrou uma vez abre o painel sem
-         internet, pelos mesmos dias que a licenca aguenta;
-      3. so entao pede ao servidor, e guarda para a proxima.
+      2. com a licenca VIVA, tenta a chave guardada aqui - e o que faz o painel abrir
+         rapido e sem internet dentro da janela de 24 horas;
+      3. licenca vencida, ou sem chave guardada: pede ao servidor, e guarda para a proxima.
 
     A chave guardada passa pelo DPAPI do Windows: presa a esta conta nesta maquina.
     Copiar o arquivo para outro PC nao adianta. Ver cofre.py.
@@ -325,18 +342,43 @@ async def abrir_cofre():
     if cofre.aberto():
         return True
 
-    guardada = cofre.chave_guardada()
-    if guardada and cofre.abrir(guardada):
-        return True
+    # ⭐ 11/11/2026 - A JANELA DE 24 HORAS.
+    #
+    # Antes, a chave guardada aqui abria o cofre sem perguntar nada: bastava entrar na
+    # conta UMA vez e o painel abria a configuracao para sempre, mesmo sem internet,
+    # mesmo com a conta revogada - a licenca vencia e ninguem olhava.
+    #
+    # Agora a chave guardada so vale enquanto a licenca estiver viva. Licenca de 24 h +
+    # folga zero = quem passar um dia sem falar com o servidor nao abre a configuracao,
+    # e a tela diz por que. Com internet a renovacao acontece sozinha (ao abrir e de 6 em
+    # 6 horas) e a pessoa nao ve nada disso.
+    e = estado()
+    # Com folga ZERO, "nao entrou" e "vencida" querem dizer a mesma coisa; os dois ficam
+    # escritos porque a folga pode voltar a ser maior que zero um dia.
+    fora_da_janela = (not e.get("entrou")) or bool(e.get("vencida"))
+    if fora_da_janela:
+        # A chave guardada vai embora JUNTO: se ficasse, bastaria abrir o painel offline
+        # na proxima vez para ela servir de novo, e a janela nao valeria nada.
+        cofre.esquecer_chave()
+        cofre.trancar()
+        # Nao sai aqui: se houver internet AGORA, o pedido abaixo renova e abre na hora.
+    else:
+        guardada = cofre.chave_guardada()
+        if guardada and cofre.abrir(guardada):
+            return True
 
     g = ler()
     if not g.get("token"):
-        cofre._erro = "Entre na sua conta para o painel carregar as configuracoes."
+        cofre._erro = ("Entre na sua conta para o painel carregar as configuracoes."
+                       if not fora_da_janela else SEM_FALAR_24H)
         return False
     try:
         r = await _pedir("/api/presets/chave", {"token": g["token"], "maquina": impressao()})
     except ErroDeConta as exc:
-        cofre._erro = str(exc)
+        # Fora da janela, o motivo que importa e a janela - nao o texto da falha de rede.
+        # Sem isto a tela diria "nao consegui falar com o servidor" e a pessoa nao
+        # entenderia que o painel ficou travado porque passou de um dia.
+        cofre._erro = SEM_FALAR_24H if fora_da_janela else str(exc)
         return False
     try:
         chave = _desb64(r.get("chave") or "")
