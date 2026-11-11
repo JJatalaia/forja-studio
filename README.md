@@ -1,4 +1,4 @@
-***Português** · [English](README.en.md)*
+***Português** · [English](README.en.md) · [Español](README.es.md)*
 
 # Estúdio Local
 

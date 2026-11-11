@@ -1,4 +1,4 @@
-*[Português](README.md) · **English***
+*[Português](README.md) · **English** · [Español](README.es.md)*
 
 # Forja Studio (Estúdio Local)
 
