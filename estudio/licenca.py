@@ -467,7 +467,15 @@ async def abrir_cofre():
                        if not fora_da_janela else SEM_FALAR_24H)
         return False
     try:
-        r = await _pedir("/api/presets/chave", {"token": g["token"], "maquina": impressao()})
+        # 11/11/2026: diz QUAL cofre esta aqui. Cada montagem tem a sua chave, e o
+        # cabecalho do cofre carrega o identificador dela desde 04/11 (so que ninguem
+        # usava). Sem isto o servidor teria de ter uma chave unica e eterna - e, com o
+        # arquivo cifrado publico no GitHub, uma chave eterna vazada abre tudo para
+        # sempre. Ver chave_do_chaveiro() em contas/servidor.py.
+        quem = cofre.id_do_cofre()
+        r = await _pedir("/api/presets/chave",
+                         {"token": g["token"], "maquina": impressao(),
+                          "cofre_id": quem.hex() if quem else None})
     except ErroDeConta as exc:
         # Fora da janela, o motivo que importa e a janela - nao o texto da falha de rede.
         # Sem isto a tela diria "nao consegui falar com o servidor" e a pessoa nao
