@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>JerS · Forja Studio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d7ff3a'/%3E%3Cpath d='M16 5l2.6 7.4L26 15l-7.4 2.6L16 25l-2.6-7.4L6 15l7.4-2.6z' fill='%230b0d12'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="estilo.css?v=20261102-brasa3">
+<link rel="stylesheet" href="estilo.css?v=20261111-idioma">
 <link rel="stylesheet" href="voz.css?v=20261103-nuvem">
 <link rel="stylesheet" href="canal.css?v=20261102-molde">
 <link rel="stylesheet" href="plano.css?v=20261102-molde2">
@@ -63,26 +63,31 @@
 </div>
 
 <header class="topo">
-  <a class="marca" href="#/" aria-label="JerS Forja Studio — início">
+  <a class="marca" href="#/" aria-label="JerS Forja Studio — início"
+     data-i18n-attr="aria-label:topo.marca">
     <span class="marca-ic" id="marcaIc"></span>
     <span class="marca-txt"><span class="marca-jers">JerS</span><b>Forja</b></span>
   </a>
-  <nav class="nav" id="nav" aria-label="Seções">
-    <a href="#/" data-rota="inicio"><span data-ic="inicio"></span><span>Início</span></a>
-    <a href="#/tudo" data-rota="tudo"><span data-ic="estrela"></span><span>Minhas criações</span></a>
-    <a href="#/imagem" data-rota="imagem"><span data-ic="imagem"></span><span>Imagem</span></a>
-    <a href="#/video" data-rota="video"><span data-ic="video"></span><span>Vídeo</span></a>
-    <a href="#/apresentador" data-rota="apresentador"><span data-ic="apresentador"></span><span>Pessoa falando</span></a>
-    <a href="#/plano" data-rota="plano"><span data-ic="video"></span><span>Plano-sequência</span></a>
-    <a href="#/canal" data-rota="canal"><span data-ic="fila"></span><span>Canal</span></a>
-    <a href="#/voz" data-rota="voz"><span data-ic="onda"></span><span>Narração</span></a>
-    <a href="#/musica" data-rota="musica"><span data-ic="musica"></span><span>Música</span></a>
-    <a href="#/fila" data-rota="fila"><span data-ic="fila"></span><span>Fila</span>
+  <nav class="nav" id="nav" aria-label="Seções" data-i18n-attr="aria-label:nav.secoes">
+    <a href="#/" data-rota="inicio"><span data-ic="inicio"></span><span data-i18n="nav.inicio">Início</span></a>
+    <a href="#/tudo" data-rota="tudo"><span data-ic="estrela"></span><span data-i18n="nav.tudo">Minhas criações</span></a>
+    <a href="#/imagem" data-rota="imagem"><span data-ic="imagem"></span><span data-i18n="nav.imagem">Imagem</span></a>
+    <a href="#/video" data-rota="video"><span data-ic="video"></span><span data-i18n="nav.video">Vídeo</span></a>
+    <a href="#/apresentador" data-rota="apresentador"><span data-ic="apresentador"></span><span data-i18n="nav.apresentador">Pessoa falando</span></a>
+    <a href="#/plano" data-rota="plano"><span data-ic="video"></span><span data-i18n="nav.plano">Plano-sequência</span></a>
+    <a href="#/canal" data-rota="canal"><span data-ic="fila"></span><span data-i18n="nav.canal">Canal</span></a>
+    <a href="#/voz" data-rota="voz"><span data-ic="onda"></span><span data-i18n="nav.voz">Narração</span></a>
+    <a href="#/musica" data-rota="musica"><span data-ic="musica"></span><span data-i18n="nav.musica">Música</span></a>
+    <a href="#/fila" data-rota="fila"><span data-ic="fila"></span><span data-i18n="nav.fila">Fila</span>
       <span class="nav-contador" id="navFilaN" hidden></span></a>
   </nav>
-  <a class="maq-mini" id="maqMini" href="#/" title="Sua máquina (abre o Início)">
+  <a class="maq-mini" id="maqMini" href="#/" title="Sua máquina (abre o Início)"
+     data-i18n-attr="title:maq.dica">
     <i class="ponto" id="maqPonto"></i><span id="maqTxt">verificando…</span>
   </a>
+  <!-- 11/11/2026: português é o padrão e nunca se pergunta nada a quem já está em
+       português. Quem quiser inglês troca aqui, e a escolha fica no navegador. -->
+  <div class="idioma-canto" id="idiomaCanto"></div>
   <div class="conta-canto" id="contaCanto"></div>
   <!-- fio de progresso: aparece em QUALQUER aba enquanto algo gera (02/11/2026) -->
   <i class="topo-prog" id="topoProg" hidden aria-hidden="true"></i>
@@ -100,8 +105,8 @@
       <div class="heroi-brasa" aria-hidden="true"></div>
       <div class="heroi-corpo">
         <p class="heroi-marca"><span class="heroi-jers">JerS</span><i aria-hidden="true"></i>Forja Studio</p>
-        <h1 id="inicioTitulo" tabindex="-1">O que vamos <em>forjar</em> hoje?</h1>
-        <p class="heroi-sub">Imagem, vídeo, pessoa falando, narração e música — forjados na sua
+        <h1 id="inicioTitulo" tabindex="-1" data-i18n-html="inicio.titulo">O que vamos <em>forjar</em> hoje?</h1>
+        <p class="heroi-sub" data-i18n="inicio.sub">Imagem, vídeo, pessoa falando, narração e música — forjados na sua
           própria placa de vídeo. Sem mensalidade, sem nuvem, sem fila de ninguém.</p>
         <div class="heroi-tiras" id="heroiTiras" role="status"></div>
         <!-- os fornos: a linha de serviços da "Sua máquina" é MOVIDA para cá pelo app.js.
@@ -957,6 +962,9 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
 <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
 
+<!-- idioma.js vem ANTES dos outros: ele troca o texto da casca assim que a tela existe,
+     para a pessoa que escolheu inglês não ver o português piscar primeiro. -->
+<script src="idioma.js?v=20261111-i18n"></script>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261103-conta2"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>

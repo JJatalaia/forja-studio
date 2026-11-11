@@ -136,6 +136,15 @@ input[type=range] { width: 100%; accent-color: var(--acento); }
   background: var(--fundo-2); color: var(--fraco); font-size: 12.5px; text-decoration: none; white-space: nowrap; font-variant-numeric: tabular-nums;
   min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .maq-mini:hover { color: var(--texto); border-color: var(--borda-forte); }
+/* Seletor de idioma (11/11/2026). Discreto de proposito: quem esta em portugues - que e
+   o padrao - nao precisa nem reparar que ele existe. */
+.idioma-canto { flex: none; }
+.idioma-sel { appearance: none; -webkit-appearance: none; background: var(--fundo-2);
+  color: var(--fraco); border: 1px solid var(--borda); border-radius: 999px;
+  padding: 6px 10px; font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  cursor: pointer; text-align: center; }
+.idioma-sel:hover { color: var(--texto); border-color: var(--borda-forte); }
+.idioma-sel:focus-visible { outline: 2px solid var(--brasa); outline-offset: 2px; }
 .maq-mini b { color: var(--texto); font-weight: 600; }
 .ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--fraco); flex: none; }
 .ponto.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
