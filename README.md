@@ -1,3 +1,5 @@
+***Português** · [English](README.en.md)*
+
 # Estúdio Local
 
 Um painel só para gerar **imagem, vídeo e narração** no seu próprio computador, com IA de
