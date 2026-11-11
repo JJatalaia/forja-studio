@@ -234,9 +234,40 @@ def ler():
 
 
 def gravar(d):
+    """Grava a licenca no disco. Levanta ErroDeConta, em portugues, se nao der.
+
+    ⭐ 11/11/2026 - O SEGUNDO JEITO DE O LOGIN NAO COLAR
+
+    Isto nao tratava erro nenhum. Se a pasta do estudio nao aceita escrita - e o caso
+    classico e instalar dentro de "Arquivos de Programas", que pede administrador -,
+    acontecia o seguinte:
+
+      1. o servidor criava a sessao (ja esta la, contada no gerenciador);
+      2. a gravacao aqui estourava PermissionError;
+      3. o api_conta_entrar so pega ErroDeConta, entao subia um 500 cru;
+      4. a tela dizia uma falha generica e continuava pedindo login;
+      5. a pessoa entrava de novo. E de novo.
+
+    Bate com o que o banco mostrou do primeiro usuario de fora: cinco sessoes criadas,
+    NENHUMA usada depois de nascer, zero erro de senha. A sessao nascia e o painel nunca
+    chegava a usa-la.
+
+    Agora o erro vira recado: diz o caminho, o motivo e o que fazer.
+    """
     tmp = ARQUIVO.with_suffix(".tmp")
-    tmp.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
-    os.replace(tmp, ARQUIVO)
+    try:
+        tmp.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+        os.replace(tmp, ARQUIVO)
+    except OSError as exc:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        raise ErroDeConta(
+            f"Entrei na sua conta, mas nao consegui guardar a licenca em {ARQUIVO}: "
+            f"{exc.strerror or exc}. Quase sempre e pasta que nao aceita escrita - por "
+            "exemplo dentro de Arquivos de Programas. Instale o Forja numa pasta sua, "
+            "como C:\\Forja Studio, e entre de novo.", 500) from exc
 
 
 def apagar():
