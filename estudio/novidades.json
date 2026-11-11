@@ -2,10 +2,18 @@
   "_sobre": "As notícias que aparecem na página inicial do Forja Studio. Uma por bloco, a mais nova em cima. Campos: id (nunca repetir), data (AAAA-MM-DD), etiqueta (novidade | ias | dica | aviso), titulo, texto. O 'destaque' deixa a primeira em evidência. Quando o servidor de contas entrar no ar, este arquivo passa a vir de lá — e todo mundo recebe a mesma notícia sem baixar nada de novo.",
   "novidades": [
     {
+      "id": "2026-11-11-idiomas",
+      "data": "2026-11-11",
+      "etiqueta": "novidade",
+      "destaque": true,
+      "titulo": "O painel agora fala inglês e espanhol",
+      "texto": "No alto da tela tem PT · EN · ES. O português continua sendo o padrão e nada muda para quem já usa assim. Quem escolher outro idioma vê o menu, a tela de Início, o gerador inteiro, a aba de Voz e os cartões das IAs traduzidos — e a escolha fica guardada no navegador. O que ainda não foi traduzido continua aparecendo em português, de propósito: meia tela traduzida confunde mais do que ajuda. O README do projeto também já está nos três idiomas."
+    },
+    {
       "id": "2026-11-06-instalar-5gb",
       "data": "2026-11-06",
       "etiqueta": "novidade",
-      "destaque": true,
+      "destaque": false,
       "titulo": "Agora instala com 5 GB — as IAs você baixa depois",
       "texto": "Antes era preciso baixar 275 GB de modelos antes de ver a primeira tela. Agora não: a plataforma inteira cabe em ~5 GB, abre em minutos, e cada IA aparece no cartão dela escrita “Falta instalar — 19,3 GB”, com botão. Você baixa só as que quiser, quando quiser. Dá para usar o estúdio enquanto baixa, e se parar no meio continua de onde parou."
     },
