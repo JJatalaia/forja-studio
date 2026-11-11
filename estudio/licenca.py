@@ -63,6 +63,7 @@ SEM_FALAR_24H = ("Faz mais de 24 horas que o painel nao fala com o servidor. Lig
                  "internet e abra o painel de novo para liberar as configuracoes.")
 
 _impressao = None       # a leitura da maquina e lenta (~1 s): le uma vez por execucao
+_motivo = None          # por que a ultima conferencia de licenca falhou (ver conferir())
 _ultimo_erro = None
 _no_ar = {"quando": 0, "valor": None}   # o servidor de contas respondeu? (guardado 60 s)
 
@@ -147,17 +148,77 @@ def conferir(licenca):
 
     Importante: confere a assinatura sobre os BYTES que vieram, nunca sobre um JSON
     remontado aqui. Reescrever o JSON muda um espaco e a conferencia falha sem motivo.
+
+    ⭐ 11/11/2026 - POR QUE ISTO GUARDA O MOTIVO AGORA
+
+    Esta funcao tinha um `except Exception: return None` cego. Quando ela falhava, o
+    painel ficava com "entrou = nao" para sempre e NINGUEM descobria por que: nem quem
+    instalou, nem o log, nem o dono. A pessoa entrava, a tela voltava a pedir, ela
+    entrava de novo.
+
+    Foi o que aconteceu com o primeiro usuario de fora (11/11, 00:54-00:56): CINCO
+    entradas no servidor, zero erro de senha, uma so maquina - e nenhuma das cinco
+    sessoes foi usada depois de nascer. O login funcionava; o painel e que nao se
+    considerava logado, calado.
+
+    Engolir a excecao nao foi o defeito - foi o que escondeu o defeito. Agora cada
+    motivo tem a sua frase, em portugues, e ela chega a tela e ao log.
     """
+    global _motivo
     if not isinstance(licenca, dict):
+        _motivo = "Nao ha licenca guardada nesta maquina."
         return None
     try:
         from cryptography.hazmat.primitives.serialization import load_pem_public_key
-        pub = load_pem_public_key(CHAVE_PUBLICA.read_bytes())
-        cru = _desb64(licenca["dados"])
-        pub.verify(_desb64(licenca["assinatura"]), cru)
-        return json.loads(cru.decode("utf-8"))
-    except Exception:
+    except Exception as exc:
+        _motivo = ("Falta a biblioteca 'cryptography' nesta instalacao, e sem ela o "
+                   "painel nao consegue conferir a licenca. Rode o instalador de novo. "
+                   f"({exc.__class__.__name__})")
         return None
+    try:
+        pem = CHAVE_PUBLICA.read_bytes()
+    except OSError as exc:
+        _motivo = (f"Nao achei o arquivo da chave publica ({CHAVE_PUBLICA.name}) na pasta "
+                   "do estudio. Baixe o pacote de novo. "
+                   f"({exc.__class__.__name__})")
+        return None
+    try:
+        pub = load_pem_public_key(pem)
+    except Exception:
+        _motivo = ("O arquivo da chave publica esta corrompido. Baixe o pacote de novo.")
+        return None
+    if "dados" not in licenca or "assinatura" not in licenca:
+        _motivo = "A licenca guardada esta incompleta. Entre na conta de novo."
+        return None
+    try:
+        cru = _desb64(licenca["dados"])
+        assinatura = _desb64(licenca["assinatura"])
+    except Exception:
+        _motivo = "A licenca guardada esta ilegivel. Entre na conta de novo."
+        return None
+    try:
+        pub.verify(assinatura, cru)
+    except Exception:
+        _motivo = ("A licenca desta maquina nao foi assinada pela chave deste pacote. "
+                   "Quase sempre e pacote e servidor de versoes diferentes: baixe o "
+                   "pacote de novo e entre na conta.")
+        return None
+    try:
+        dados = json.loads(cru.decode("utf-8"))
+    except Exception:
+        _motivo = "A licenca abriu mas o conteudo nao faz sentido. Entre na conta de novo."
+        return None
+    _motivo = None
+    return dados
+
+
+def motivo_da_recusa():
+    """Por que a ultima conferencia falhou, em portugues. None quando deu certo.
+
+    Serve para a tela e para o log. Sem isto, "entrou = nao" nao se distingue de
+    "nunca entrou", e os dois pedem coisas opostas a quem esta na frente do painel.
+    """
+    return _motivo
 
 
 # ------------------------------------------------------------------ o arquivo na maquina
@@ -191,10 +252,12 @@ def estado():
     guardado = ler()
     dados = conferir(guardado.get("licenca"))
     if not dados:
+        # O motivo ESPECIFICO primeiro (ver conferir()): "nao confere com a nossa chave"
+        # servia para tudo e nao ajudava ninguem - a pessoa so sabia que nao entrou.
         return {"entrou": False, "servidor": SERVIDOR,
                 "campos_da_maquina": quantos_campos(),
-                "motivo": _ultimo_erro if not guardado else
-                          "A licenca guardada nao confere com a nossa chave. Entre de novo."}
+                "tem_licenca": bool(guardado.get("licenca")),
+                "motivo": (_motivo if guardado.get("licenca") else None) or _ultimo_erro}
     agora = int(time.time())
     vence_em = dados.get("validade", 0) - agora
     folga = DIAS_DE_FOLGA * 86400

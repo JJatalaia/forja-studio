@@ -3951,6 +3951,16 @@ async def renovar_licenca_de_vez_em_quando():
     De 6 em 6 horas, e nao a cada minuto, de proposito: a licenca vale dias, e bater no
     servidor toda hora so gastaria internet e prenderia o estudio a um servidor no ar.
     """
+    # 11/11/2026: se a licenca guardada nao confere, DIGA no log. Antes ficava mudo e o
+    # painel apenas voltava a pedir login - a pessoa entrava de novo, de novo, e ninguem
+    # tinha como saber por que (aconteceu 5 vezes com o primeiro usuario de fora).
+    try:
+        inicial = licenca.estado()
+        if not inicial.get("entrou") and inicial.get("motivo"):
+            print(f"[estúdio] a licença não vale aqui: {inicial['motivo']}", flush=True)
+    except Exception as exc:
+        print(f"[estúdio] não consegui conferir a licença: {exc!r}", flush=True)
+
     # O cofre primeiro, e sem esperar os 20 s: se a chave ja esta guardada aqui, o painel
     # tem os presets em menos de um segundo, mesmo sem internet.
     await destrancar_presets()
