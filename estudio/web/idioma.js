@@ -233,7 +233,38 @@
     'tela.mais-passos-mais-tempo-de': 'More steps = more card time for the same speech. At 16 '
       + 'the narration comes out well and faster than real time.',
     'tela.tudo-isto-roda-no-seu': 'All of this runs on your computer. No text leaves here and '
-      + 'there is no monthly fee.'
+      + 'there is no monthly fee.',
+
+    // ---- as dicas e os campos em branco (title, placeholder, aria-label)
+    'dica.como-voce-quer-ser': 'What should we call you',
+    'dica.voce-exemplo-com': 'you@example.com',
+    'dica.pelo-menos-8-letras': 'at least 8 letters or numbers',
+    'dica.mostrar-a-senha': 'Show the password',
+    'dica.conte-a-cena-inteira': 'Tell the whole scene, as if you were describing a take.\n\n'
+      + 'E.g.: A young man sitting on his bedroom bed, headphones on, presses play on an old '
+      + 'tape recorder. He closes his eyes as the tape starts rolling, lowers his head slowly '
+      + 'and takes a deep breath.',
+    'dica.buscar-no-prompt': 'Search in the prompt',
+    'dica.buscar-nas-criacoes': 'Search your creations',
+    'dica.filtrar-por-tipo': 'Filter by type',
+    'dica.ex-a-pedra-de': 'E.g.: The stone of Ebenezer',
+    'dica.cole-aqui-a-narracao': 'Paste the whole narration here.\n\nA hook in the first 5 '
+      + 'seconds, one idea only, the reference spoken in full, and a question at the end.',
+    'dica.ferramentas-de-voz': 'Voice tools',
+    'dica.cole-a-chave-aqui': 'paste the key here',
+    'dica.escreva-aqui-o-texto': 'Write the narration text here.\n\nTip: ellipses… are where '
+      + 'the voice breathes. Do not write numbers as digits (6:33) — write them out (Matthew '
+      + 'six), or it reads them wrong.',
+    'dica.ex-homem-idoso-voz': 'E.g.: elderly man, deep voice, calm and warm, speaks slowly '
+      + 'like someone telling a story',
+    'dica.ponto-de-partida': 'Starting point',
+    'dica.ex-senhor-da-varanda': 'E.g.: The man on the porch',
+    'dica.as-palavras-que-a': 'The WORDS the person says in the audio, exactly as they say '
+      + 'them. When in doubt, leave it empty.',
+    'dica.ex-minha-voz': 'E.g.: My voice',
+    'dica.configuracoes-da-narracao': 'Narration settings',
+    'dica.emocao': 'Emotion',
+    'dica.ou-escreva-fale-devagar': 'or write: speak slowly, calmly, like someone telling a story'
   };
 
   // Espanhol (11/11/2026). Entrou pelos vizinhos: toda a América Latina menos o Brasil.
@@ -425,11 +456,264 @@
     'tela.mais-passos-mais-tempo-de': 'Más pasos = más tiempo de tarjeta para la misma frase. '
       + 'En 16 la narración sale bien y más rápida que el tiempo real.',
     'tela.tudo-isto-roda-no-seu': 'Todo esto funciona en tu ordenador. Ningún texto sale de '
-      + 'aquí y no hay ninguna mensualidad.'
+      + 'aquí y no hay ninguna mensualidad.',
+
+    // ---- as dicas e os campos em branco (title, placeholder, aria-label)
+    'dica.como-voce-quer-ser': 'Cómo quieres que te llamemos',
+    'dica.voce-exemplo-com': 'tu@ejemplo.com',
+    'dica.pelo-menos-8-letras': 'al menos 8 letras o números',
+    'dica.mostrar-a-senha': 'Mostrar la contraseña',
+    'dica.conte-a-cena-inteira': 'Cuenta la escena entera, como si describieras una toma.\n\n'
+      + 'Ej.: Un chico sentado en la cama de su cuarto, con auriculares, pulsa play en una '
+      + 'grabadora antigua. Cierra los ojos mientras la cinta empieza a girar, baja la cabeza '
+      + 'despacio y respira hondo.',
+    'dica.buscar-no-prompt': 'Buscar en el prompt',
+    'dica.buscar-nas-criacoes': 'Buscar en tus creaciones',
+    'dica.filtrar-por-tipo': 'Filtrar por tipo',
+    'dica.ex-a-pedra-de': 'Ej.: La piedra de Ebenezer',
+    'dica.cole-aqui-a-narracao': 'Pega aquí la narración entera.\n\nUn gancho en los primeros '
+      + '5 segundos, una sola idea, la referencia dicha completa y una pregunta al final.',
+    'dica.ferramentas-de-voz': 'Herramientas de voz',
+    'dica.cole-a-chave-aqui': 'pega la clave aquí',
+    'dica.escreva-aqui-o-texto': 'Escribe aquí el texto de la narración.\n\nConsejo: los '
+      + 'puntos suspensivos… son donde la voz respira. No escribas números en cifras (6:33) — '
+      + 'escríbelos con letras (Mateo seis), o los lee mal.',
+    'dica.ex-homem-idoso-voz': 'Ej.: hombre mayor, voz grave, tranquila y acogedora, habla '
+      + 'despacio como quien cuenta una historia',
+    'dica.ponto-de-partida': 'Punto de partida',
+    'dica.ex-senhor-da-varanda': 'Ej.: El señor del porche',
+    'dica.as-palavras-que-a': 'Las PALABRAS que la persona dice en el audio, tal como las '
+      + 'dice. Si dudas, déjalo vacío.',
+    'dica.ex-minha-voz': 'Ej.: Mi voz',
+    'dica.configuracoes-da-narracao': 'Configuración de la narración',
+    'dica.emocao': 'Emoción',
+    'dica.ou-escreva-fale-devagar': 'o escribe: habla despacio, con calma, como quien cuenta '
+      + 'una historia'
   };
 
   // O português NÃO entra aqui: ele é o que já está escrito no HTML.
   var DICIONARIOS = { en: EN, es: ES };
+
+  // ------------------------------------------------------- as frases soltas do app.js
+  // Aqui a chave É a frase em português, do jeito que está escrita no código. Ver tx().
+  var FRASES_EN = {
+    // avisos que aparecem no canto da tela
+    'Bloco copiado. Cole na conversa com a IA de código.':
+      'Block copied. Paste it into the chat with the coding AI.',
+    'Carregando as IAs do estúdio… a seção abre sozinha em instantes.':
+      'Loading the studio’s AIs… the section opens by itself in a moment.',
+    'Configurações carregadas no formulário. Ajuste o que quiser e clique em Gerar.':
+      'Settings loaded into the form. Change whatever you like and click Generate.',
+    'Envie a imagem primeiro.': 'Send the image first.',
+    'Essa IA foi removida do estúdio: não dá para reusar este trabalho.':
+      'This AI was removed from the studio: this job cannot be reused.',
+    'Esse tipo de arquivo não serve aqui.': 'That kind of file does not work here.',
+    'Geração cancelada.': 'Generation cancelled.',
+    'Não consegui apagar a voz: ': 'I could not delete the voice: ',
+    'Não consegui cancelar: ': 'I could not cancel: ',
+    'Não consegui copiar (o navegador bloqueou). Selecione o texto e use Ctrl+C.':
+      'I could not copy (the browser blocked it). Select the text and press Ctrl+C.',
+    'Não consegui copiar sozinho — o bloco está selecionado, use Ctrl+C.':
+      'I could not copy it myself — the block is selected, press Ctrl+C.',
+    'Não consegui ligar a música: ': 'I could not turn the music on: ',
+    'Não consegui ligar agora: ': 'I could not turn it on right now: ',
+    'Não consegui remover: ': 'I could not remove it: ',
+    'Não consegui tocar essa música (o painel de música está ligado?).':
+      'I could not play that track (is the music panel on?).',
+    'Prompt copiado.': 'Prompt copied.',
+    'Tem geração rodando ou na fila: espere terminar para liberar a memória.':
+      'Something is generating or waiting in the queue: wait for it to finish before freeing memory.',
+    'Voz apagada.': 'Voice deleted.',
+    'Já estava ligado (ou ligando).': 'It was already on (or turning on).',
+    'Memória liberada: os modelos foram descarregados.':
+      'Memory freed: the models were unloaded.',
+    'Não deu para liberar agora.': 'It could not be freed right now.',
+    'Painel de música ligado.': 'Music panel is on.',
+    'O painel de música não respondeu a tempo. Tente de novo em instantes.':
+      'The music panel did not answer in time. Try again in a moment.',
+    'Começando a baixar.': 'Starting the download.',
+    'Não deu para começar.': 'Could not start.',
+    'Não consegui falar com o estúdio.': 'I could not reach the studio.',
+
+    // quando o estúdio não responde
+    'O estúdio demorou demais para responder.': 'The studio took too long to answer.',
+    'Sem resposta do estúdio (o servidor está ligado?).':
+      'No answer from the studio (is the server running?).',
+    'O servidor do estúdio teve um erro interno (500).':
+      'The studio server hit an internal error (500).',
+    'Não encontrado (404).': 'Not found (404).',
+    'Resposta incompleta do estúdio.': 'Incomplete answer from the studio.',
+
+    // o chip da máquina, no alto
+    'Estúdio sem resposta': 'Studio not answering',
+    'tentando de novo…': 'trying again…',
+    'O estúdio não respondeu agora. A tela tenta de novo sozinha a cada poucos segundos.':
+      'The studio did not answer just now. The screen retries by itself every few seconds.',
+    'Nada gerando agora. Clique para ver a sua máquina no Início.':
+      'Nothing generating right now. Click to see your machine on the Home screen.',
+    'Trabalhos do estúdio esperando a vez na placa de vídeo (uma geração por vez).':
+      'Studio jobs waiting their turn on the graphics card (one generation at a time).',
+    'A IA de texto está usando a placa de vídeo por alguns segundos (ela sai sozinha ao terminar).':
+      'The text AI is using the graphics card for a few seconds (it leaves on its own when done).',
+    'A ComfyUI de imagem e vídeo está ligando (leva 1–2 min).':
+      'The image and video ComfyUI is starting up (takes 1–2 min).',
+    'A ComfyUI de imagem e vídeo está desligada. Clique para ir ao Início e ligar.':
+      'The image and video ComfyUI is off. Click to go Home and turn it on.',
+    'A ComfyUI de vídeo está gerando algo que não foi pedido pelo estúdio.':
+      'The video ComfyUI is generating something the studio did not ask for.',
+
+    // os cartões do Início
+    'Fotos realistas, ilustrações, cartazes com texto escrito certo e transformação de uma imagem sua.':
+      'Realistic photos, illustration, posters with the text spelled right, and turning an '
+      + 'image of yours into something else.',
+    'Texto ou imagem viram vídeo: com som, emendando cenas ou copiando o movimento de um vídeo real.':
+      'Text or an image becomes video: with sound, stitching scenes, or copying the motion of '
+      + 'a real video.',
+    'Uma foto de frente e um texto viram alguém falando para a câmera, com voz e boca sincronizada.':
+      'A front-facing photo and a text become someone speaking to the camera, with the voice '
+      + 'and lips in sync.',
+    'Pessoa de verdade numa tomada contínua, sem corte: a cena sai inteira, de 16 a 32 segundos.':
+      'A real person in one continuous take, no cuts: the scene comes out whole, 16 to 32 seconds.',
+    'Texto vira voz falada no seu computador, de graça: criar uma voz pela descrição ou clonar a sua.':
+      'Text becomes a spoken voice on your computer, for free: create a voice from a '
+      + 'description or clone your own.',
+    'Músicas com letra cantada, instrumentais, covers e separação da voz (YuE2, ACE-Step e outros).':
+      'Songs with sung lyrics, instrumentals, covers and voice separation (YuE2, ACE-Step and others).',
+
+    // nomes das seções
+    'Início': 'Home', 'Imagem': 'Image', 'Vídeo': 'Video', 'Pessoa falando': 'Talking person',
+    'Narração': 'Narration', 'Canal automático': 'Automatic channel',
+    'Plano-sequência': 'One-take scene', 'Música': 'Music', 'Fila': 'Queue',
+    'Minhas criações': 'My creations',
+    'Criar imagem': 'Create image', 'Criar vídeo': 'Create video', 'Apresentador': 'Presenter',
+    'Criações de imagem': 'Image creations', 'Criações de vídeo': 'Video creations',
+    'Pessoas falando': 'Talking people',
+    'Gerar imagem': 'Generate image', 'Gerar vídeo': 'Generate video',
+    'Gerar pessoa falando': 'Generate talking person',
+    'Nenhuma imagem ainda. Escolha uma IA, descreva a ideia e clique em Gerar imagem.':
+      'No images yet. Choose an AI, describe the idea and click Generate image.',
+    'Nenhum vídeo ainda. Escolha uma IA, descreva a cena e clique em Gerar vídeo.':
+      'No videos yet. Choose an AI, describe the scene and click Generate video.',
+    'Nenhum vídeo de pessoa falando ainda. Envie uma foto de frente, escreva o texto e clique em Gerar.':
+      'No talking-person videos yet. Send a front-facing photo, write the text and click Generate.',
+
+    // a ficha da IA
+    'O que faz': 'What it does', 'Melhor para': 'Best for', 'Evite para': 'Avoid it for',
+    'Tempo típico (medido nesta máquina)': 'Typical time (measured on this machine)',
+    'A mais rápida e a mais caprichada': 'The fastest and the most careful',
+    'Mais rápida': 'Fastest'
+  };
+
+  var FRASES_ES = {
+    'Bloco copiado. Cole na conversa com a IA de código.':
+      'Bloque copiado. Pégalo en la conversación con la IA de programación.',
+    'Carregando as IAs do estúdio… a seção abre sozinha em instantes.':
+      'Cargando las IAs del estudio… la sección se abre sola en un momento.',
+    'Configurações carregadas no formulário. Ajuste o que quiser e clique em Gerar.':
+      'Ajustes cargados en el formulario. Cambia lo que quieras y pulsa Generar.',
+    'Envie a imagem primeiro.': 'Envía primero la imagen.',
+    'Essa IA foi removida do estúdio: não dá para reusar este trabalho.':
+      'Esa IA se quitó del estudio: este trabajo no se puede reutilizar.',
+    'Esse tipo de arquivo não serve aqui.': 'Ese tipo de archivo no sirve aquí.',
+    'Geração cancelada.': 'Generación cancelada.',
+    'Não consegui apagar a voz: ': 'No pude borrar la voz: ',
+    'Não consegui cancelar: ': 'No pude cancelar: ',
+    'Não consegui copiar (o navegador bloqueou). Selecione o texto e use Ctrl+C.':
+      'No pude copiar (el navegador lo bloqueó). Selecciona el texto y pulsa Ctrl+C.',
+    'Não consegui copiar sozinho — o bloco está selecionado, use Ctrl+C.':
+      'No pude copiarlo solo — el bloque está seleccionado, pulsa Ctrl+C.',
+    'Não consegui ligar a música: ': 'No pude encender la música: ',
+    'Não consegui ligar agora: ': 'No pude encenderlo ahora: ',
+    'Não consegui remover: ': 'No pude quitarlo: ',
+    'Não consegui tocar essa música (o painel de música está ligado?).':
+      'No pude reproducir esa música (¿está encendido el panel de música?).',
+    'Prompt copiado.': 'Prompt copiado.',
+    'Tem geração rodando ou na fila: espere terminar para liberar a memória.':
+      'Hay algo generándose o en la cola: espera a que termine para liberar la memoria.',
+    'Voz apagada.': 'Voz borrada.',
+    'Já estava ligado (ou ligando).': 'Ya estaba encendido (o encendiéndose).',
+    'Memória liberada: os modelos foram descarregados.':
+      'Memoria liberada: los modelos se descargaron.',
+    'Não deu para liberar agora.': 'No se pudo liberar ahora.',
+    'Painel de música ligado.': 'Panel de música encendido.',
+    'O painel de música não respondeu a tempo. Tente de novo em instantes.':
+      'El panel de música no respondió a tiempo. Inténtalo de nuevo en un momento.',
+    'Começando a baixar.': 'Empezando a descargar.',
+    'Não deu para começar.': 'No se pudo empezar.',
+    'Não consegui falar com o estúdio.': 'No conseguí hablar con el estudio.',
+
+    'O estúdio demorou demais para responder.': 'El estudio tardó demasiado en responder.',
+    'Sem resposta do estúdio (o servidor está ligado?).':
+      'Sin respuesta del estudio (¿está encendido el servidor?).',
+    'O servidor do estúdio teve um erro interno (500).':
+      'El servidor del estudio tuvo un error interno (500).',
+    'Não encontrado (404).': 'No encontrado (404).',
+    'Resposta incompleta do estúdio.': 'Respuesta incompleta del estudio.',
+
+    'Estúdio sem resposta': 'El estudio no responde',
+    'tentando de novo…': 'intentándolo de nuevo…',
+    'O estúdio não respondeu agora. A tela tenta de novo sozinha a cada poucos segundos.':
+      'El estudio no respondió ahora. La pantalla lo vuelve a intentar sola cada pocos segundos.',
+    'Nada gerando agora. Clique para ver a sua máquina no Início.':
+      'No se está generando nada. Pulsa para ver tu ordenador en Inicio.',
+    'Trabalhos do estúdio esperando a vez na placa de vídeo (uma geração por vez).':
+      'Trabajos del estudio esperando turno en la tarjeta gráfica (una generación cada vez).',
+    'A IA de texto está usando a placa de vídeo por alguns segundos (ela sai sozinha ao terminar).':
+      'La IA de texto está usando la tarjeta gráfica unos segundos (se va sola al terminar).',
+    'A ComfyUI de imagem e vídeo está ligando (leva 1–2 min).':
+      'La ComfyUI de imagen y vídeo se está encendiendo (tarda 1–2 min).',
+    'A ComfyUI de imagem e vídeo está desligada. Clique para ir ao Início e ligar.':
+      'La ComfyUI de imagen y vídeo está apagada. Pulsa para ir a Inicio y encenderla.',
+    'A ComfyUI de vídeo está gerando algo que não foi pedido pelo estúdio.':
+      'La ComfyUI de vídeo está generando algo que el estudio no pidió.',
+
+    'Fotos realistas, ilustrações, cartazes com texto escrito certo e transformação de uma imagem sua.':
+      'Fotos realistas, ilustraciones, carteles con el texto bien escrito y transformación de '
+      + 'una imagen tuya.',
+    'Texto ou imagem viram vídeo: com som, emendando cenas ou copiando o movimento de um vídeo real.':
+      'Texto o imagen se convierten en vídeo: con sonido, enlazando escenas o copiando el '
+      + 'movimiento de un vídeo real.',
+    'Uma foto de frente e um texto viram alguém falando para a câmera, com voz e boca sincronizada.':
+      'Una foto de frente y un texto se convierten en alguien hablando a la cámara, con la voz '
+      + 'y la boca sincronizadas.',
+    'Pessoa de verdade numa tomada contínua, sem corte: a cena sai inteira, de 16 a 32 segundos.':
+      'Una persona de verdad en una toma continua, sin cortes: la escena sale entera, de 16 a '
+      + '32 segundos.',
+    'Texto vira voz falada no seu computador, de graça: criar uma voz pela descrição ou clonar a sua.':
+      'El texto se convierte en voz hablada en tu ordenador, gratis: crea una voz por '
+      + 'descripción o clona la tuya.',
+    'Músicas com letra cantada, instrumentais, covers e separação da voz (YuE2, ACE-Step e outros).':
+      'Canciones con letra cantada, instrumentales, versiones y separación de la voz (YuE2, '
+      + 'ACE-Step y otros).',
+
+    'Início': 'Inicio', 'Imagem': 'Imagen', 'Vídeo': 'Vídeo', 'Pessoa falando': 'Persona hablando',
+    'Narração': 'Narración', 'Canal automático': 'Canal automático',
+    'Plano-sequência': 'Plano secuencia', 'Música': 'Música', 'Fila': 'Cola',
+    'Minhas criações': 'Mis creaciones',
+    'Criar imagem': 'Crear imagen', 'Criar vídeo': 'Crear vídeo', 'Apresentador': 'Presentador',
+    'Criações de imagem': 'Creaciones de imagen', 'Criações de vídeo': 'Creaciones de vídeo',
+    'Pessoas falando': 'Personas hablando',
+    'Gerar imagem': 'Generar imagen', 'Gerar vídeo': 'Generar vídeo',
+    'Gerar pessoa falando': 'Generar persona hablando',
+    'Nenhuma imagem ainda. Escolha uma IA, descreva a ideia e clique em Gerar imagem.':
+      'Todavía no hay imágenes. Elige una IA, describe la idea y pulsa Generar imagen.',
+    'Nenhum vídeo ainda. Escolha uma IA, descreva a cena e clique em Gerar vídeo.':
+      'Todavía no hay vídeos. Elige una IA, describe la escena y pulsa Generar vídeo.',
+    'Nenhum vídeo de pessoa falando ainda. Envie uma foto de frente, escreva o texto e clique em Gerar.':
+      'Todavía no hay vídeos de persona hablando. Envía una foto de frente, escribe el texto y '
+      + 'pulsa Generar.',
+
+    'O que faz': 'Qué hace', 'Melhor para': 'Mejor para', 'Evite para': 'Evítala para',
+    'Tempo típico (medido nesta máquina)': 'Tiempo típico (medido en este ordenador)',
+    'A mais rápida e a mais caprichada': 'La más rápida y la más cuidada',
+    'Mais rápida': 'La más rápida'
+  };
+
+  var FRASES = { en: FRASES_EN, es: FRASES_ES };
+
+  // Frases que terminam em ": " e ganham o recado do servidor colado no fim.
+  var PREFIXOS = ['Não consegui apagar a voz: ', 'Não consegui cancelar: ',
+    'Não consegui ligar a música: ', 'Não consegui ligar agora: ', 'Não consegui remover: '];
 
   // pt-BR porque é o português que está escrito no HTML; os outros vão como estão.
   var ETIQUETA = { pt: 'pt-BR', en: 'en', es: 'es' };
@@ -455,6 +739,29 @@
     var d = DICIONARIOS[atual];
     if (d && d[chave]) return d[chave];
     return sobra === undefined ? chave : sobra;
+  }
+
+  // ------------------------------------------------------------------ traduzir PELO TEXTO
+  // Para as frases que nascem espalhadas no app.js, inventar uma chave para cada uma sairia
+  // caro e daria chave errada. Aqui a CHAVE É A PRÓPRIA FRASE EM PORTUGUÊS - que continua
+  // escrita no código, onde quem programa a lê. Frase que não está no dicionário sai em
+  // português, que é o certo.
+  //
+  // Serve para embrulhar a FUNÇÃO que mostra (aviso, título), não cada chamada: assim as 43
+  // chamadas de aviso() continuam como estão e passam a falar três línguas de uma vez.
+  function tx(portugues) {
+    if (portugues == null) return portugues;
+    var d = FRASES[atual];
+    if (!d) return portugues;
+    var s = String(portugues);
+    if (d[s]) return d[s];
+    // A frase pode vir com um pedaço colado no fim ("Não consegui ligar agora: 500").
+    // Nesse caso traduz o começo conhecido e deixa o resto, que é recado do servidor.
+    for (var i = 0; i < PREFIXOS.length; i += 1) {
+      var p = PREFIXOS[i];
+      if (s.indexOf(p) === 0) return d[p] + s.slice(p.length);
+    }
+    return s;
   }
 
   // ------------------------------------------------------------------ aplicar na tela
@@ -542,6 +849,7 @@
 
   window.I18N = {
     t: t,
+    tx: tx,
     aplicar: aplicar,
     trocar: trocar,
     get idioma() { return atual; }

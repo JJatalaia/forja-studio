@@ -34,11 +34,11 @@
     <form class="porta-form" id="portaForm" autocomplete="on" novalidate>
       <label class="so-criar" hidden>Seu nome
         <input type="text" id="cNome" name="nome" autocomplete="name" maxlength="80"
-               placeholder="Como você quer ser chamado">
+               placeholder="Como você quer ser chamado" data-i18n-attr="placeholder:dica.como-voce-quer-ser">
       </label>
       <label>E-mail
         <input type="email" id="cEmail" name="email" autocomplete="username"
-               required maxlength="160" placeholder="voce@exemplo.com">
+               required maxlength="160" placeholder="voce@exemplo.com" data-i18n-attr="placeholder:dica.voce-exemplo-com">
       </label>
       <label class="so-criar" hidden>Telefone (com DDD)
         <input type="tel" id="cTel" name="telefone" autocomplete="tel" maxlength="24"
@@ -47,8 +47,8 @@
       <label>Senha
         <span class="porta-senha">
           <input type="password" id="cSenha" name="senha" autocomplete="current-password"
-                 required minlength="8" maxlength="256" placeholder="pelo menos 8 letras ou números">
-          <button type="button" id="cVer" class="porta-olho" aria-label="Mostrar a senha">ver</button>
+                 required minlength="8" maxlength="256" placeholder="pelo menos 8 letras ou números" data-i18n-attr="placeholder:dica.pelo-menos-8-letras">
+          <button type="button" id="cVer" class="porta-olho" aria-label="Mostrar a senha" data-i18n-attr="aria-label:dica.mostrar-a-senha">ver</button>
         </span>
       </label>
       <p class="porta-erro" id="portaErro" role="alert" hidden></p>
@@ -516,7 +516,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             <section class="bloco">
               <h2 class="passo" data-i18n="tela.a-cena-em-portugues">A cena, em português</h2>
               <textarea id="planoCena" class="voz-texto" rows="7"
-                placeholder="Conte a cena inteira, como se estivesse descrevendo um take.&#10;&#10;Ex.: Um rapaz sentado na cama do quarto, de fones, aperta o play num gravador antigo. Ele fecha os olhos enquanto a fita começa a rodar, abaixa a cabeça devagar e respira fundo."></textarea>
+                placeholder="Conte a cena inteira, como se estivesse descrevendo um take.&#10;&#10;Ex.: Um rapaz sentado na cama do quarto, de fones, aperta o play num gravador antigo. Ele fecha os olhos enquanto a fita começa a rodar, abaixa a cabeça devagar e respira fundo." data-i18n-attr="placeholder:dica.conte-a-cena-inteira"></textarea>
               <p class="plano-dica">⚠️ <b>Ninguém fala e ninguém canta</b> — a boca fica fechada e o
                 que entra é som ambiente. E <b>não use frase negativa</b> (&ldquo;sem olhar para a
                 câmera&rdquo;): descreva o que acontece, não o que não acontece.</p>
@@ -600,11 +600,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         </div>
         <label class="busca busca-cri">
           <span data-ic="busca"></span>
-          <input id="tudoBusca" type="search" placeholder="Buscar no prompt" aria-label="Buscar nas criações" autocomplete="off">
+          <input id="tudoBusca" type="search" placeholder="Buscar no prompt" aria-label="Buscar nas criações" autocomplete="off" data-i18n-attr="placeholder:dica.buscar-no-prompt, aria-label:dica.buscar-nas-criacoes">
         </label>
       </div>
       <div class="filtros">
-        <div class="chips-ia" id="tudoFiltro" role="group" aria-label="Filtrar por tipo"></div>
+        <div class="chips-ia" id="tudoFiltro" role="group" aria-label="Filtrar por tipo" data-i18n-attr="aria-label:dica.filtrar-por-tipo"></div>
       </div>
       <div class="grade" id="tudoGrade"></div>
       <div class="vazio" id="tudoVazio" hidden><p data-i18n="tela.nada-por-aqui-ainda">Nada por aqui ainda.</p></div>
@@ -647,9 +647,9 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
     <div class="canal-novo" id="canalNovo" hidden>
       <h2 class="passo" data-i18n="tela.o-texto-da-narracao">O texto da narração</h2>
       <label class="voz-campo"><span data-i18n="tela.titulo-vira-o-nome-da">Título (vira o nome da pasta)</span>
-        <input id="canalTituloIn" type="text" maxlength="80" placeholder="Ex.: A pedra de Ebenézer"></label>
+        <input id="canalTituloIn" type="text" maxlength="80" placeholder="Ex.: A pedra de Ebenézer" data-i18n-attr="placeholder:dica.ex-a-pedra-de"></label>
       <textarea id="canalTexto" class="voz-texto" rows="9"
-        placeholder="Cole aqui a narração inteira.&#10;&#10;Gancho nos 5 primeiros segundos, uma ideia só, a referência falada por extenso e uma pergunta no fim."></textarea>
+        placeholder="Cole aqui a narração inteira.&#10;&#10;Gancho nos 5 primeiros segundos, uma ideia só, a referência falada por extenso e uma pergunta no fim." data-i18n-attr="placeholder:dica.cole-aqui-a-narracao"></textarea>
       <div class="canal-conta">
         <b id="canalLetras">0</b> letras · <b id="canalSegundos">0 s</b> de narração ·
         <span id="canalPlaca" data-i18n="tela.0-min-de-placa">0 min de placa</span>
@@ -730,7 +730,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
     <div class="voz-tela" id="vozTela" hidden>
       <!-- coluna da esquerda: as três coisas que dá para fazer -->
-      <nav class="voz-lado" aria-label="Ferramentas de voz">
+      <nav class="voz-lado" aria-label="Ferramentas de voz" data-i18n-attr="aria-label:dica.ferramentas-de-voz">
         <button type="button" class="voz-lado-bt" data-tela="falar" aria-current="page">
           <span data-ic="onda"></span><span data-i18n="tela.texto-para-fala">Texto para fala</span></button>
         <button type="button" class="voz-lado-bt" data-tela="desenhar">
@@ -746,7 +746,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
               crédito da <b>sua</b> conta.</p>
             <label class="nuvem-rot" for="nuvemChave" data-i18n="tela.chave-do-elevenlabs-2">Chave do ElevenLabs</label>
             <input type="password" id="nuvemChave" autocomplete="off" spellcheck="false"
-                   placeholder="cole a chave aqui" maxlength="300">
+                   placeholder="cole a chave aqui" maxlength="300" data-i18n-attr="placeholder:dica.cole-a-chave-aqui">
             <div class="nuvem-bts">
               <button type="button" class="gerar" id="nuvemSalvar" data-i18n="tela.salvar">Salvar</button>
               <button type="button" class="bt-sec" id="nuvemTirar" data-i18n="tela.remover">Remover</button>
@@ -772,7 +772,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         <!-- TELA 1: texto para fala -->
         <div class="voz-pagina" data-pagina="falar">
           <textarea id="vozTexto" class="voz-texto" rows="12" spellcheck="true"
-            placeholder="Escreva aqui o texto da narração.&#10;&#10;Dica: reticências… são onde a voz respira. Não escreva número em algarismo (6:33) — escreva por extenso (Mateus seis), senão ele lê errado."></textarea>
+            placeholder="Escreva aqui o texto da narração.&#10;&#10;Dica: reticências… são onde a voz respira. Não escreva número em algarismo (6:33) — escreva por extenso (Mateus seis), senão ele lê errado." data-i18n-attr="placeholder:dica.escreva-aqui-o-texto"></textarea>
           <div class="voz-barra">
             <div class="voz-conta">
               <b id="vozLetras">0</b> letras · <b id="vozEstimado">0 s</b> estimados
@@ -811,12 +811,12 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         <div class="voz-pagina" data-pagina="desenhar" hidden>
           <h2 class="passo" data-i18n="tela.descreva-a-voz-que-voce">Descreva a voz que você quer</h2>
           <textarea id="vozDesc" class="voz-texto curta" rows="4"
-            placeholder="Ex.: homem idoso, voz grave, calma e acolhedora, sotaque brasileiro, fala devagar como quem conta história"></textarea>
+            placeholder="Ex.: homem idoso, voz grave, calma e acolhedora, sotaque brasileiro, fala devagar como quem conta história" data-i18n-attr="placeholder:dica.ex-homem-idoso-voz"></textarea>
           <p class="voz-entendeu" id="vozEntendeu" aria-live="polite"></p>
           <h2 class="passo" data-i18n="tela.ponto-de-partida">Ponto de partida</h2>
-          <div class="chips" id="vozEstilos" role="group" aria-label="Ponto de partida"></div>
+          <div class="chips" id="vozEstilos" role="group" aria-label="Ponto de partida" data-i18n-attr="aria-label:dica.ponto-de-partida"></div>
           <label class="voz-campo"><span data-i18n="tela.nome-desta-voz">Nome desta voz</span>
-            <input id="vozDescNome" type="text" maxlength="60" placeholder="Ex.: Senhor da varanda"></label>
+            <input id="vozDescNome" type="text" maxlength="60" placeholder="Ex.: Senhor da varanda" data-i18n-attr="placeholder:dica.ex-senhor-da-varanda"></label>
           <button type="button" class="gerar" id="vozCriar"><span data-ic="brilho"></span><span data-i18n="tela.criar-a-voz">Criar a voz</span></button>
           <p class="nota" id="vozCriarStatus" aria-live="polite"></p>
         </div>
@@ -831,7 +831,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
           </label>
           <h2 class="passo">O que está falado no áudio <span class="fraco" data-i18n="tela.pode-deixar-em-branco">(pode deixar em branco)</span></h2>
           <textarea id="vozTransc" class="voz-texto curta" rows="4"
-            placeholder="As PALAVRAS que a pessoa fala no áudio, do jeito que ela fala. Na dúvida, deixe vazio."></textarea>
+            placeholder="As PALAVRAS que a pessoa fala no áudio, do jeito que ela fala. Na dúvida, deixe vazio." data-i18n-attr="placeholder:dica.as-palavras-que-a"></textarea>
           <p class="aviso-linha">⚠️ Só escreva aqui se for <b>exatamente o que se ouve</b>. Texto
             errado é pior que campo vazio: medido em 31/10, uma transcrição trocada fez a fala
             sair <b>cortada pela metade</b>. Em branco, o motor se vira sozinho.</p>
@@ -842,7 +842,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             <span data-ic="onda"></span><span data-i18n="tela.nao-sei-descobre-pelo-audio">Não sei — descobre pelo áudio</span></button>
           <p class="nota" id="vozDescobrirStatus" aria-live="polite"></p>
           <label class="voz-campo"><span data-i18n="tela.nome-desta-voz-2">Nome desta voz</span>
-            <input id="vozClonNome" type="text" maxlength="60" placeholder="Ex.: Minha voz"></label>
+            <input id="vozClonNome" type="text" maxlength="60" placeholder="Ex.: Minha voz" data-i18n-attr="placeholder:dica.ex-minha-voz"></label>
           <p class="aviso-linha" data-i18n="tela.clone-apenas-a-sua-propria">Clone apenas a sua própria voz ou a de quem autorizou você.</p>
           <p class="nota" id="vozRefLaudo" aria-live="polite"></p>
           <button type="button" class="gerar" id="vozClonar"><span data-ic="microfone"></span><span data-i18n="tela.clonar-a-voz">Clonar a voz</span></button>
@@ -851,7 +851,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       </div>
 
       <!-- direita: os ajustes, como no painel do ElevenLabs -->
-      <aside class="voz-ajustes" aria-label="Configurações da narração">
+      <aside class="voz-ajustes" aria-label="Configurações da narração" data-i18n-attr="aria-label:dica.configuracoes-da-narracao">
         <h2 class="voz-ajustes-tit" data-i18n="tela.configuracoes">Configurações</h2>
 
         <div class="voz-grupo">
@@ -883,9 +883,9 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
         <div class="voz-grupo">
           <span class="voz-rot" data-i18n="tela.emocao-e-entrega">Emoção e entrega</span>
-          <div class="chips" id="vozEmocoes" role="group" aria-label="Emoção"></div>
+          <div class="chips" id="vozEmocoes" role="group" aria-label="Emoção" data-i18n-attr="aria-label:dica.emocao"></div>
           <input id="vozInstruct" type="text" class="voz-instruct" maxlength="200"
-                 placeholder="ou escreva: fale devagar, com calma, como quem conta história">
+                 placeholder="ou escreva: fale devagar, com calma, como quem conta história" data-i18n-attr="placeholder:dica.ou-escreva-fale-devagar">
           <p class="voz-nota-peq">⚠️ A entrega entra na <b>voz</b>, não em cada fala: este motor
             só a aceita na hora de criar ou clonar.
             <button type="button" class="voz-link-bt" id="vozIrCriar" data-i18n="tela.criar-uma-voz-com-essa">Criar uma voz com essa
@@ -967,11 +967,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
 <!-- idioma.js vem ANTES dos outros: ele troca o texto da casca assim que a tela existe,
      para a pessoa que escolheu inglês não ver o português piscar primeiro. -->
-<script src="idioma.js?v=20261111-telacheia"></script>
+<script src="idioma.js?v=20261111-tudo"></script>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261103-conta2"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
-<script src="app.js?v=20261111-telacheia"></script>
+<script src="app.js?v=20261111-tudo"></script>
 <script src="voz.js?v=20261109-selo"></script>
 <script src="fila.js?v=20261109-musica"></script>
 <script src="canal.js?v=20261030-canal"></script>

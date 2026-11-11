@@ -57,6 +57,10 @@ const nomeCurto = (n) => rot(String(n || '').replace(/\s*\([^)]*\)/g, '').trim()
 // 11/11/2026 - a traducao da tela. A REGRA: o PORTUGUES fica escrito AQUI, no codigo, e
 // e ele que aparece se a traducao faltar. O outro idioma so troca por cima. O dicionario
 // mora em idioma.js. {n} vira o numero: T("ia.trocar", "Trocar IA - {n}", { n: 4 }).
+// TX(frase) traduz pelo texto em portugues, sem chave inventada. Embrulha a FUNCAO que
+// mostra (aviso, o chip da maquina, o titulo da secao), nao cada chamada - assim as 43
+// chamadas de aviso() continuam escritas em portugues e passam a falar tres linguas.
+const TX = (pt) => (window.I18N ? window.I18N.tx(pt) : pt);
 const T = (chave, pt, troca) => {
   let s = window.I18N ? window.I18N.t(chave, pt) : pt;
   if (troca) Object.keys(troca).forEach((k) => { s = s.split('{' + k + '}').join(troca[k]); });
@@ -78,8 +82,8 @@ async function apiCompleta(url, opt = {}) {
     if (!r.ok) { const e = new Error(msgErro(txt, r.status)); e.status = r.status; throw e; }
     return { dados: txt ? JSON.parse(txt) : {}, headers: r.headers };
   } catch (e) {
-    if (e.name === 'AbortError') { const x = new Error('O estúdio demorou demais para responder.'); x.status = 0; throw x; }
-    if (e instanceof TypeError) { const x = new Error('Sem resposta do estúdio (o servidor está ligado?).'); x.status = 0; throw x; }
+    if (e.name === 'AbortError') { const x = new Error(TX('O estúdio demorou demais para responder.')); x.status = 0; throw x; }
+    if (e instanceof TypeError) { const x = new Error(TX('Sem resposta do estúdio (o servidor está ligado?).')); x.status = 0; throw x; }
     throw e;
   } finally { if (t) clearTimeout(t); }
 }
@@ -87,9 +91,9 @@ function msgErro(txt, status) {
   let m = String(txt || '').trim();
   if (/^\{/.test(m)) { try { const j = JSON.parse(m); if (j && typeof j.erro === 'string') m = j.erro; } catch (e) { /* texto comum */ } }
   if (/^</.test(m)) m = '';  // página HTML de erro
-  if (/^500 Internal Server Error/i.test(m)) m = 'O servidor do estúdio teve um erro interno (500).';
+  if (/^500 Internal Server Error/i.test(m)) m = TX('O servidor do estúdio teve um erro interno (500).');
   m = m.replace(/^\d{3}:\s*/, '');
-  if (!m || /^Not Found$/i.test(m)) m = status === 404 ? 'Não encontrado (404).' : status >= 500 ? `Erro no servidor (${status}).` : `Erro ${status}.`;
+  if (!m || /^Not Found$/i.test(m)) m = status === 404 ? TX('Não encontrado (404).') : status >= 500 ? `Erro no servidor (${status}).` : `Erro ${status}.`;
   return m;
 }
 
@@ -250,6 +254,7 @@ const urlMidia = (j, i = 0) => `/api/midia/${encodeURIComponent(j.id)}/${i}`;
 
 // ================================================================ avisos flutuantes e janelas
 function aviso(msg, tipo = 'ok', ms = 5500) {
+  msg = TX(msg);   // ver TX(): a frase em portugues e a propria chave
   const el = document.createElement('div');
   el.className = 'aviso-toast' + (tipo === 'erro' ? ' erro-t' : tipo === 'aviso' ? ' aviso-t' : '');
   el.innerHTML = ic(tipo === 'erro' ? 'alerta' : tipo === 'aviso' ? 'info' : 'ok') + `<span>${esc(msg)}</span>`;
@@ -311,10 +316,10 @@ function abrirFicha(f) {
     </div>
     ${notas ? `<div class="ficha-notas">${notas}</div>` : ''}
     <div class="ficha-grade">
-      ${sec('largo', 'info', 'O que faz', f.o_que_faz)}
-      ${sec('bom', 'ok', 'Melhor para', f.melhor_para)}
-      ${sec('ruim', 'alerta', 'Evite para', f.evite_para)}
-      ${sec('largo', 'relogio', 'Tempo típico (medido nesta máquina)', f.tempo_tipico)}
+      ${sec('largo', 'info', TX('O que faz'), f.o_que_faz)}
+      ${sec('bom', 'ok', TX('Melhor para'), f.melhor_para)}
+      ${sec('ruim', 'alerta', TX('Evite para'), f.evite_para)}
+      ${sec('largo', 'relogio', TX('Tempo típico (medido nesta máquina)'), f.tempo_tipico)}
       ${sec('largo', 'fila', 'Limites', f.limites)}
       ${sec('dica', 'dica', 'Dica de prompt', f.dica_prompt)}
     </div>
@@ -416,10 +421,10 @@ function renderCabecalho() {
   a.classList.toggle('gerando', !!c.rodando);
   G.rotaGerando = c.rodando ? rotaDoJob(c.rodando) : null;
   const fila = c.naFila ? ` · <b>${c.naFila}</b> na fila` : '';
-  let titulo = 'Sua máquina (abre o Início)';
+  let titulo = TX('Sua máquina (abre o Início)');
   if (c.erro) {
-    p.className = 'ponto off'; t.innerHTML = 'Estúdio sem resposta<span class="longo"> · tentando de novo…</span>';
-    titulo = 'O estúdio não respondeu agora. A tela tenta de novo sozinha a cada poucos segundos.';
+    p.className = 'ponto off'; t.innerHTML = esc(TX('Estúdio sem resposta')) + '<span class="longo"> · ' + esc(TX('tentando de novo…')) + '</span>';
+    titulo = TX('O estúdio não respondeu agora. A tela tenta de novo sozinha a cada poucos segundos.');
   }
   else if (c.rodando) {
     const r = c.rodando, pct = Math.floor((r.progresso && r.progresso.pct) || 0);
@@ -429,27 +434,27 @@ function renderCabecalho() {
   } else if (c.naFila) {
     p.className = 'ponto ocupado';
     t.innerHTML = `Fila do estúdio <b>${c.naFila}</b>`;
-    titulo = 'Trabalhos do estúdio esperando a vez na placa de vídeo (uma geração por vez).';
+    titulo = TX('Trabalhos do estúdio esperando a vez na placa de vídeo (uma geração por vez).');
   } else if (c.texto) {
     p.className = 'ponto ocupado';
     t.innerHTML = 'IA de texto<span class="longo"> na placa</span>';
-    titulo = 'A IA de texto está usando a placa de vídeo por alguns segundos (ela sai sozinha ao terminar).';
+    titulo = TX('A IA de texto está usando a placa de vídeo por alguns segundos (ela sai sozinha ao terminar).');
   } else if (c.comfy === false && c.comfyLigando) {
     p.className = 'ponto ocupado'; t.innerHTML = 'ComfyUI <b>ligando…</b>';
-    titulo = 'A ComfyUI de imagem e vídeo está ligando (leva 1–2 min).';
+    titulo = TX('A ComfyUI de imagem e vídeo está ligando (leva 1–2 min).');
   } else if (c.comfy === false) {
     // desligada não é defeito: ponto cinza (vermelho é só para erro de verdade) e o Início tem o botão Ligar
     p.className = 'ponto parado'; t.innerHTML = 'ComfyUI <b>desligada</b>';
-    titulo = 'A ComfyUI de imagem e vídeo está desligada. Clique para ir ao Início e ligar.';
+    titulo = TX('A ComfyUI de imagem e vídeo está desligada. Clique para ir ao Início e ligar.');
   } else if (c.filaComfy) {
     p.className = 'ponto ocupado';
     t.innerHTML = `ComfyUI ocupada<span class="longo"> por fora</span> · <b>${c.filaComfy}</b>`;
-    titulo = 'A ComfyUI de vídeo está gerando algo que não foi pedido pelo estúdio.';
+    titulo = TX('A ComfyUI de vídeo está gerando algo que não foi pedido pelo estúdio.');
   } else {
     p.className = 'ponto on';
     const vram = c.vramLivre != null ? `VRAM <b>${num(c.vramLivre)} GB</b><span class="longo"> livres</span> · ` : '';
     t.innerHTML = `${vram}Livre`;
-    titulo = 'Nada gerando agora. Clique para ver a sua máquina no Início.';
+    titulo = TX('Nada gerando agora. Clique para ver a sua máquina no Início.');
   }
   a.title = titulo;
 }
@@ -481,7 +486,7 @@ function irPara() {
   // o Início aparece na hora; as outras seções precisam da lista de IAs (vem do servidor): esperam por ela
   if (ehGerador(r) && !G.presets) {
     G.irDepois = true;
-    aviso('Carregando as IAs do estúdio… a seção abre sozinha em instantes.', 'aviso');
+    aviso(TX('Carregando as IAs do estúdio… a seção abre sozinha em instantes.'), 'aviso');
     return;
   }
   if (antes && ehGerador(antes) && ESTADOS[antes]) salvarCampos(ESTADOS[antes]);
@@ -560,7 +565,7 @@ async function carregarInicio() {
   catch (e) { if (e.status !== 404) throw e; }
   if (I && typeof I === 'object') {
     // resposta incompleta (o servidor teve um problema para montar): conta como falha e mantém o que já estava na tela
-    if (I.incompleto && G.inicio) throw new Error('Resposta incompleta do estúdio.');
+    if (I.incompleto && G.inicio) throw new Error(TX('Resposta incompleta do estúdio.'));
     I.sistema = I.sistema || {};
     I.fila = I.fila || {};
     I.contagem = I.contagem || {};
@@ -650,8 +655,8 @@ function htmlDestaques(lista) {
   if (!d) return '';
   const tag = (cls, icone, rot, f) =>
     `<span class="nota-tag ${cls}">${ic(icone)}<span>${rot}: <b>${esc(nomeCurto(f.nome))}</b></span></span>`;
-  if (d.mesma) return `<span class="escolha-notas">${tag('dupla', 'raio', 'A mais rápida e a mais caprichada', d.vel)}</span>`;
-  return `<span class="escolha-notas">${tag('rapida', 'velocidade', 'Mais rápida', d.vel)}`
+  if (d.mesma) return `<span class="escolha-notas">${tag('dupla', 'raio', TX('A mais rápida e a mais caprichada'), d.vel)}</span>`;
+  return `<span class="escolha-notas">${tag('rapida', 'velocidade', TX('Mais rápida'), d.vel)}`
     + `${tag('fina', 'estrela', 'Mais caprichada', d.qua)}</span>`;
 }
 
@@ -745,11 +750,11 @@ function renderEscolhas(forcar) {
     const pe = [n ? `${n} IA${n > 1 ? 's' : ''}` : '', qtd != null ? `${qtd} criaç${qtd === 1 ? 'ão' : 'ões'}` : ''].filter(Boolean).join(' · ');
     // o aviso de serviço desligado é IRMÃO do link (botão dentro de link não é permitido), posicionado sobre o cartão
     return `<div class="escolha-caixa">
-      <a class="escolha ${e.tipo}" href="#/${e.rota}" aria-label="${esc(e.titulo)}: ${esc(e.frase)}">
+      <a class="escolha ${e.tipo}" href="#/${e.rota}" aria-label="${esc(TX(e.titulo))}: ${esc(TX(e.frase))}">
       <span class="escolha-marca" aria-hidden="true">${ic(e.icone)}</span>
       <span class="escolha-ic">${ic(e.icone)}</span>
-      <h2>${esc(e.titulo)}</h2>
-      <p class="escolha-frase">${esc(e.frase)}</p>
+      <h2>${esc(TX(e.titulo))}</h2>
+      <p class="escolha-frase">${esc(TX(e.frase))}</p>
       <span class="escolha-rec">
         ${rec ? `<span class="linha-ic">${ic('estrela')}<span>Recomendada: <b>${esc(nomeCurto(rec.nome))}</b></span></span>` : ''}
         ${tempo ? `<span class="linha-ic">${ic('relogio')}<span>${esc(tempo)}</span></span>` : ''}
@@ -1351,9 +1356,9 @@ function abrirGerador(rota) {
   if (E.trocando === null) E.trocando = false;
   $('#vGerador').className = 'vista gerador ' + R.tipo;
   $('#rotaIc').innerHTML = ic(R.icone);
-  $('#rotaTitulo').textContent = R.titulo;
-  $('#rotaSobre').textContent = R.sobre;
-  $('#tituloCriacoes').textContent = R.criacoes;
+  $('#rotaTitulo').textContent = TX(R.titulo);
+  $('#rotaSobre').textContent = TX(R.sobre);
+  $('#tituloCriacoes').textContent = TX(R.criacoes);
   restaurarCampos();
   if (!lista.length) {
     $('#iaAtual').innerHTML = '<p class="nota">Nenhuma IA disponível nesta seção.</p>';
@@ -1498,7 +1503,18 @@ function htmlCardIA(p, f) {
 // em espanhol e os cartoes so trocavam na proxima vez que a tela se redesenhasse sozinha -
 // o que, parado na mesma aba, podia nunca acontecer.
 document.addEventListener('idioma-mudou', () => {
-  try { renderIAs(); } catch (e) { /* tela que ainda nao tem cartao: nada a fazer */ }
+  // Cada um destes desenha um pedaco que o JavaScript escreve, e por isso nao e alcancado
+  // pelo data-i18n do HTML. Cada um no seu try: um que falhe nao pode derrubar os outros.
+  [renderIAs, renderEscolhas, renderCatalogo].forEach((f) => {
+    try { f(true); } catch (e) { /* secao que ainda nao existe nesta tela */ }
+  });
+  try { if (G.rota && ROTAS[G.rota]) {
+    const R = ROTAS[G.rota];
+    const a = $('#rotaTitulo'), b = $('#rotaSobre'), c = $('#tituloCriacoes');
+    if (a) a.textContent = TX(R.titulo);
+    if (b) b.textContent = TX(R.sobre);
+    if (c) c.textContent = TX(R.criacoes);
+  } } catch (e) { /* fora de uma secao de gerador */ }
 });
 function renderIAs() {
   const lista = presetsDa(G.rota), p = presetAtual();
@@ -2310,7 +2326,7 @@ function renderGaleria() {
     vazio.className = 'vazio ' + R.tipo;
     vazio.innerHTML = !G.jobsCarregado[rota] ? '<p>Carregando criações…</p>' : todos.length
       ? `${ic('busca')}<p>Nenhuma criação com esses filtros.</p><p style="margin-top:10px"><button type="button" class="bt-sec" id="limparFiltros">Limpar filtros</button></p>`
-      : `${ic(R.icone)}<p>${esc(R.vazio)}</p>`;
+      : `${ic(R.icone)}<p>${esc(TX(R.vazio))}</p>`;
   }
   const resta = vis.length - mostrar.length;
   $('#maisBox').hidden = resta <= 0;
