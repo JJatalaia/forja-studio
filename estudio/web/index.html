@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>JerS · Forja Studio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d7ff3a'/%3E%3Cpath d='M16 5l2.6 7.4L26 15l-7.4 2.6L16 25l-2.6-7.4L6 15l7.4-2.6z' fill='%230b0d12'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="estilo.css?v=20261112-rot">
+<link rel="stylesheet" href="estilo.css?v=20261112-abas">
 <link rel="stylesheet" href="voz.css?v=20261111-polir">
 <link rel="stylesheet" href="canal.css?v=20261111-polir">
 <link rel="stylesheet" href="plano.css?v=20261111-polir">
@@ -528,6 +528,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       <h2 class="fila-tit" data-i18n="tela.o-que-a-maquina-esta">O que a máquina está gerando agora</h2>
       <p class="nota" id="filaQuando"></p>
     </div>
+    <div class="fila-abas" id="filaAbas" role="tablist" aria-label="Tipo de trabalho"></div>
     <div class="fila-down" id="filaDown" hidden>
       <div class="fila-down-cab">
         <h2 class="fila-tit">Baixando IAs</h2>
@@ -984,6 +985,9 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 </main>
 
 <aside class="maq-lateral" id="maqLateral" aria-label="Sua máquina">
+  <button type="button" class="maq-recolher" id="maqRecolher" aria-expanded="true" aria-controls="maquina"
+          title="Recolher o painel Sua máquina"><span data-ic="dir"></span></button>
+  <span class="maq-faixa" aria-hidden="true">Sua máquina</span>
   <section class="bloco-inicio maquina" id="maquina" aria-labelledby="maqTitulo">
     <div class="bloco-cab">
       <h2 id="maqTitulo" data-i18n="tela.sua-maquina">Sua máquina</h2>
@@ -1050,9 +1054,9 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261111-nome"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
-<script src="app.js?v=20261112-gpumem2"></script>
+<script src="app.js?v=20261112-recolher"></script>
 <script src="voz.js?v=20261112-instalar"></script>
-<script src="fila.js?v=20261112-hist"></script>
+<script src="fila.js?v=20261112-abas"></script>
 <script src="configuracoes.js?v=20261112-ias"></script>
 <script src="canal.js?v=20261030-canal"></script>
 <script src="plano.js?v=20261102-molde2"></script>
