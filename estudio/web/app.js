@@ -1409,7 +1409,14 @@ function chips(el, valores, atual, aoEscolher, rotulo = rot) {
 function faixaInstalar(id) {
   const e = (G.ias || {})[id];
   if (!e || !e.conhecida || e.instalada) return '';
-  const pr = (G.iasProgresso || {}).baixando;
+  // 11/11/2026: ate hoje o erro do download era GUARDADO e nunca mostrado. O LTX 2.5
+  // parava com 401 (o repositorio da Lightricks pede conta) e o cartao so voltava a
+  // dizer "Falta instalar", sem uma palavra. Falha calada e pior que erro na cara.
+  const pg = G.iasProgresso || {};
+  if (pg.erro && pg.erro_ia === id && !pg.baixando) {
+    return `<p class="ia-falta sem-link" role="alert">${ic('alerta')}<span>${esc(pg.erro)}</span></p>`;
+  }
+  const pr = pg.baixando;
   if (pr && pr.ia === e.nome) {
     const pc = pr.total ? Math.floor((pr.baixados / pr.total) * 100) : 0;
     return `<div class="ia-baixando"><div class="ia-barra"><i style="width:${pc}%"></i></div>

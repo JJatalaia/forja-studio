@@ -54,9 +54,26 @@ Depois de aceitar a licença, crie um **token de leitura** em
 curl -L -H "Authorization: Bearer SEU_TOKEN" -o ltx-2.5-video-vae-bf16.safetensors "https://huggingface.co/Lightricks/LTX-2.5/resolve/main/vae/ltx-2.5-video-vae-bf16.safetensors"
 ```
 
-> **O botão de instalar dentro do painel ainda não manda o token.** Ele baixa sem
-> identificação, então nestes dois arquivos ele leva 401 e para. Enquanto isso não mudar, a
-> saída é o navegador ou a linha de comando acima.
+### O caminho mais simples: deixar o painel baixar
+
+Desde **11/11/2026** o botão **"Falta instalar"** resolve isso sozinho, se você der o token
+a ele:
+
+1. aceite a licença na página do repositório (passo 2 acima);
+2. crie um **token de leitura** em
+   [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens);
+3. salve o token, sozinho na primeira linha, no arquivo **`API\huggingface.txt`** dentro da
+   pasta do projeto;
+4. clique em instalar de novo.
+
+> **O token só é mandado para o `huggingface.co`.** Para qualquer outro endereço o download
+> sai sem identificação nenhuma — segredo não se entrega a quem não é dono dele.
+
+Se preferir, dá no mesmo definir a variável de ambiente `HF_TOKEN`.
+
+**E se você não puser token nenhum?** Nada quebra: os outros 18 repositórios continuam
+baixando normalmente, e **só estes dois** param — agora com um recado que explica o que
+fazer, em vez do número 401 sozinho.
 
 ### E se eu não quiser aceitar a licença?
 
