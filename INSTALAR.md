@@ -131,6 +131,9 @@ importante, **a pasta em que ele tem que cair** dentro de `ComfyUI/models/`.
 
 ### 🔑 Dois arquivos pedem login
 
+> Tudo sobre isto — e de qual repositório vem cada arquivo do projeto — está em
+> **[REPOSITORIOS.md](REPOSITORIOS.md)**.
+
 Os dois arquivos do **LTX 2.5** que vêm do repositório oficial da Lightricks estão atrás de um
 portão: você precisa estar logado no Hugging Face e **aceitar a licença** na página do
 repositório antes de baixar. Clicar no link sem isso devolve erro 401.

@@ -145,6 +145,11 @@ Em dois passos: **baixar os modelos** e **aplicar a configuração**.
 - [INSTALAR-COM-IA.md](INSTALAR-COM-IA.md) — **o texto para colar no Claude Code, no Codex ou
   no Gemini CLI e deixar a IA baixar e conferir tudo para você**
 
+**De onde vem cada coisa — todas as IAs e todos os repositórios — está em
+[REPOSITORIOS.md](REPOSITORIOS.md).** São 19 repositórios no Hugging Face e 4 no GitHub;
+**18 dos 19 abrem direto**, e só o `Lightricks/LTX-2.5` pede conta e aceitar a licença —
+que é a causa do erro **401** no LTX 2.5.
+
 Os links de download de todos os modelos estão em [IAS-INSTALADAS.md](IAS-INSTALADAS.md), com
 o tamanho exato de cada arquivo e a pasta em que ele tem que cair.
 
