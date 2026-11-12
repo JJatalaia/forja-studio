@@ -249,9 +249,9 @@ def conferir_o_lugar():
             cuidado(m)
     else:
         print("  (funciona assim mesmo; o padrao e so para a documentacao bater)")
-    print("\n       Para mudar de lugar depois: feche o estudio, mova a pasta inteira,")
-    print("       e clique em 'Criar o icone na Area de Trabalho.bat' - o icone guarda")
-    print("       o caminho antigo e precisa ser refeito.")
+    print("\n       Para ir para o lugar padrao: clique em 'IR PARA O LUGAR PADRAO.bat'.")
+    print("       Ele copia (nao move) e refaz o icone. Numa instalacao pesada ele")
+    print("       recusa e explica como mover a mao - 270 GB nao se copia as cegas.")
 
 
 # ------------------------------------------------------------------ 6. o atalho
@@ -271,6 +271,7 @@ def criar_atalho(comfy):
         return None
     print(OK + "%-29s abre o painel (espera ficar pronto antes)" % "Forja Studio.bat")
     for extra, oque in (("Criar o icone na Area de Trabalho.bat", "poe o icone na sua mesa"),
+                        ("IR PARA O LUGAR PADRAO.bat", "leva tudo para C:\\ForjaStudio"),
                         ("Ligar com o Windows.bat", "abre sozinho quando voce entra no PC"),
                         ("Nao ligar com o Windows.bat", "desfaz o de cima"),
                         ("Desligar o estudio.bat", "fecha tudo e libera a placa de video")):

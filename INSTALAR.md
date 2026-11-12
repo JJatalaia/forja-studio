@@ -79,9 +79,13 @@ Criar essa pasta **não pede administrador** (medido).
 ComfyUI e os modelos, e o `setup.py` pergunta onde você quer eles — pode ser outro disco.
 A escolha fica no `caminhos.bat`, e os botões de abrir leem esse arquivo.
 
-Se você já instalou noutro lugar: feche o estúdio, mova a pasta inteira, e clique em
-**`Criar o icone na Area de Trabalho.bat`** — o ícone guarda o caminho antigo e precisa
-ser refeito.
+**Se você já instalou noutro lugar**, clique em **`IR PARA O LUGAR PADRAO.bat`**. Ele
+copia a pasta para `C:\ForjaStudio` e refaz o ícone sozinho.
+
+Ele é cuidadoso de propósito: **copia e não move** (o original fica até você conferir),
+**recusa** se `C:\ForjaStudio` já tiver coisa dentro, e **recusa** se a pasta pesar mais de
+500 MB — aí a ComfyUI e os modelos já estão lá dentro, e copiar 270 GB às cegas seria uma
+violência com o seu disco. Nesse caso ele explica como mover à mão.
 
 ---
 
