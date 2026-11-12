@@ -42,6 +42,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+import plataforma
+
 AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent
 
@@ -60,7 +62,7 @@ def _achar_catalogo():
 
 
 CATALOGO = _achar_catalogo()
-MODELOS = RAIZ / "ComfyUI_windows_portable" / "ComfyUI" / "models"
+MODELOS = plataforma.comfy_dir(RAIZ) / "models"
 
 # Quanto o arquivo no disco pode diferir do catalogo e ainda contar como completo.
 # Zero seria rigido demais: o mesmo modelo as vezes e republicado com metadado diferente.
