@@ -130,6 +130,11 @@ $a.Description      = "Abre o Forja Studio. So a pagina: as IAs voce liga la den
 '''
     if icone.is_file():
         script += f'$a.IconLocation = "{esc(icone)},0"\n'
+    else:
+        # Sem isto, o atalho nasce com a CARA DO PYTHON em vez da nossa - e ninguem
+        # entende por que o icone "nao e igual ao daqui". Falhava calado.
+        print(f"  ATENCAO: nao achei {icone}. O atalho vai ficar com o icone do Python,")
+        print("           nao com o nosso. Baixe o pacote de novo para ter o icone certo.")
     script += "$a.Save()\n"
 
     ok, saida = _ps(script)
@@ -161,8 +166,85 @@ def tirar(mesa=None):
     return tirou
 
 
+def conferir(mesa=None):
+    r"""Conta tudo sobre o atalho que EXISTE, para quem esta longe poder mandar o texto.
+
+    Nasceu em 12/11/2026: o icone apareceu com a cara errada numa maquina de teste e nao
+    abria, e daqui nao havia como saber por que. Adivinhar de longe custa um dia; uma tela
+    de diagnostico custa um minuto.
+    """
+    mesa = Path(mesa) if mesa else _area_de_trabalho()
+    print("=" * 64)
+    print("  CONFERENCIA DO ICONE DO FORJA STUDIO")
+    print("=" * 64)
+    print(f"  pasta do estudio   : {RAIZ}")
+    print(f"  Area de Trabalho   : {mesa}")
+
+    abrir = AQUI / "abrir.py"
+    icone = AQUI / "icone.ico"
+    print(f"  estudio\\abrir.py   : {'esta la' if abrir.is_file() else 'FALTANDO'}")
+    print(f"  estudio\\icone.ico  : "
+          f"{str(icone.stat().st_size) + ' bytes' if icone.is_file() else 'FALTANDO'}")
+
+    comfy = RAIZ / "ComfyUI_windows_portable" / "python_embeded" / "python.exe"
+    print(f"  Python da ComfyUI  : {'esta la' if comfy.is_file() else 'nao instalada'}")
+    print(f"  Python deste setup : {sys.executable}")
+    escolhido = _pythonw()
+    print(f"  o atalho usaria    : {escolhido}")
+    if not Path(escolhido).is_file():
+        print("                       ^^^ ESSE ARQUIVO NAO EXISTE - o atalho nao abriria")
+
+    if not mesa:
+        print("\n  Sem Area de Trabalho, nao da para conferir o atalho.")
+        return 1
+
+    alvo = mesa / f"{NOME}.lnk"
+    print(f"\n  {NOME}.lnk        : {'existe' if alvo.is_file() else 'NAO EXISTE'}")
+    if (mesa / f"{NOME}.bat").exists():
+        print(f"  {NOME}.bat        : existe tambem (e o atalho ANTIGO; pode apagar)")
+    if not alvo.is_file():
+        print("\n  Rode 'Criar o icone na Area de Trabalho.bat' para criar.")
+        return 1
+
+    ok, saida = _ps(
+        '$a = (New-Object -ComObject WScript.Shell).CreateShortcut("%s");'
+        '"alvo=" + $a.TargetPath; "args=" + $a.Arguments;'
+        '"pasta=" + $a.WorkingDirectory; "icone=" + $a.IconLocation'
+        % str(alvo).replace('"', '""'))
+    if not ok:
+        print("  nao consegui ler o atalho:", saida)
+        return 1
+    dados = {}
+    for linha in saida.splitlines():
+        if "=" in linha:
+            k, _, v = linha.partition("=")
+            dados[k.strip()] = v.strip()
+            print(f"    {k.strip():6}: {v.strip()}")
+
+    problemas = []
+    destino = dados.get("alvo", "")
+    if destino and not Path(destino).is_file():
+        problemas.append(f"o alvo '{destino}' NAO EXISTE nesta maquina - por isso nao abre")
+    ico = (dados.get("icone") or "").rsplit(",", 1)[0]
+    if not ico or ico == "," or not Path(ico).is_file():
+        problemas.append("o atalho nao tem o NOSSO icone (por isso a carinha esta diferente)")
+    if "abrir.py" not in (dados.get("args") or ""):
+        problemas.append("o atalho nao aponta para o estudio\\abrir.py - foi feito a mao?")
+
+    print()
+    if problemas:
+        for x in problemas:
+            print("  [X] " + x)
+        print("\n  Conserto: clique em 'Criar o icone na Area de Trabalho.bat'.")
+        return 1
+    print("  [OK] o atalho esta certo: aponta para o estudio e usa o nosso icone.")
+    return 0
+
+
 def main():
     mesa = _area_de_trabalho()
+    if "--conferir" in sys.argv:
+        return conferir(mesa)
     if "--onde" in sys.argv:
         print(f"  Area de Trabalho: {mesa}")
         return 0

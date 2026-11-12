@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 rem ============================================================================
 rem  Cria o icone "Forja Studio" na sua Area de Trabalho.
 rem
