@@ -1431,6 +1431,90 @@ async def api_chave_nuvem(req):
                                           f"na lista, com o símbolo de nuvem."})
 
 
+# ---------------------------------------------------------------- as chaves de API, numa tela só
+# 11/11/2026: antes cada chave morava num canto. A do ElevenLabs ficava escondida dentro da
+# aba Narração, e o token do Hugging Face só existia como arquivo - quem instalasse o pacote
+# não tinha como saber que ele existia, nem onde criar um. Agora os dois ficam no mesmo
+# lugar, com o endereço de onde se cria cada um.
+#
+# A REGRA DAS DUAS: o GET diz SE existe uma chave, NUNCA qual é. Devolver um segredo que o
+# próprio navegador mandou não serve para nada e só aumenta a chance de ele vazar num log,
+# num print de tela ou no histórico de uma aba aberta.
+CHAVES_DE_API = {
+    "elevenlabs": {
+        "nome": "ElevenLabs",
+        "para_que": "vozes na nuvem, na aba Narração. Sem ela, a narração continua "
+                    "funcionando com as vozes locais, de graça.",
+        "onde_criar": "https://elevenlabs.io/app/settings/api-keys",
+        "paga": True,
+    },
+    "huggingface": {
+        "nome": "Hugging Face",
+        "para_que": "baixar o LTX 2.5. Dos 19 repositórios de modelos, 18 abrem sem nada; "
+                    "só o Lightricks/LTX-2.5 pede conta e aceitar a licença.",
+        "onde_criar": "https://huggingface.co/settings/tokens",
+        "antes": [
+            ("Crie uma conta (é de graça)", "https://huggingface.co/join"),
+            ("Aceite a licença nesta página", "https://huggingface.co/Lightricks/LTX-2.5"),
+            ("Crie um token de LEITURA e cole aqui", "https://huggingface.co/settings/tokens"),
+        ],
+        "paga": False,
+    },
+}
+
+
+def _estado_das_chaves():
+    fora = []
+    for cid, info in CHAVES_DE_API.items():
+        tem = elevenlabs.tem_chave() if cid == "elevenlabs" else ias.tem_token()
+        arq = elevenlabs.CHAVE_ARQ if cid == "elevenlabs" else ias.TOKEN_ARQ
+        fora.append(dict(info, id=cid, tem=bool(tem), arquivo=str(arq)))
+    return fora
+
+
+async def api_chaves(req):
+    """Lista o estado das chaves (GET) ou guarda uma (POST {id, valor})."""
+    if req.method == "GET":
+        return web.json_response({"chaves": _estado_das_chaves()})
+    b = await req.json()
+    cid = (b.get("id") or "").strip()
+    if cid not in CHAVES_DE_API:
+        raise web.HTTPBadRequest(text="Não conheço esta chave.")
+    valor = (b.get("valor") or "").strip()
+    if cid == "huggingface":
+        ok, recado = await asyncio.to_thread(ias.guardar_token, valor)
+        if not ok:
+            raise web.HTTPBadRequest(text=recado)
+        return web.json_response({"ok": True, "tem": ias.tem_token(), "mensagem": recado})
+    # ElevenLabs: reaproveita o caminho que já existia, para não haver dois jeitos de
+    # guardar a mesma chave e um deles ficar para trás.
+    arq = elevenlabs.CHAVE_ARQ
+    if not valor:
+        try:
+            arq.unlink()
+        except FileNotFoundError:
+            pass
+        elevenlabs.esquecer()
+        return web.json_response({"ok": True, "tem": False,
+                                  "mensagem": "Chave removida. A narração continua "
+                                              "funcionando com a voz local."})
+    if len(valor) > 300 or any(c.isspace() for c in valor):
+        raise web.HTTPBadRequest(text="Isso não parece uma chave. Cole só a chave, "
+                                      "sem espaços nem quebra de linha.")
+    arq.parent.mkdir(parents=True, exist_ok=True)
+    arq.write_text(valor + "\n", encoding="utf-8")
+    elevenlabs.esquecer()
+    vs = await asyncio.to_thread(elevenlabs.vozes, True)
+    if not vs:
+        return web.json_response({"ok": False, "tem": True,
+                                  "mensagem": "Guardei a chave, mas o ElevenLabs não "
+                                              "respondeu com nenhuma voz. Confira se ela "
+                                              "está certa e se a conta tem saldo."})
+    return web.json_response({"ok": True, "tem": True,
+                              "mensagem": "Pronto: %d vozes da sua conta apareceram na "
+                                          "lista, com o símbolo de nuvem." % len(vs)})
+
+
 async def api_voz_salvar(req):
     b = await req.json()
     nome = (b.get("nome") or "").strip()
@@ -4902,6 +4986,8 @@ app.add_routes([
     web.post("/api/remover/{id}", api_remover), web.post("/api/limpar-lixeira", api_limpar_lixeira),
     web.get("/api/midia/{id}/{i}", api_midia),
     web.get("/api/vozes", api_vozes), web.get("/api/vozes11", api_vozes11), web.post("/api/vozes", api_voz_salvar),
+    web.get("/api/chaves", api_chaves),
+    web.post("/api/chaves", api_chaves),
     web.get("/api/chave-nuvem", api_chave_nuvem),
     web.post("/api/chave-nuvem", api_chave_nuvem),
     web.post("/api/vozes/remover/{id}", api_voz_remover),

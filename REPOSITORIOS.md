@@ -62,9 +62,13 @@ a ele:
 1. aceite a licença na página do repositório (passo 2 acima);
 2. crie um **token de leitura** em
    [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens);
-3. salve o token, sozinho na primeira linha, no arquivo **`API\huggingface.txt`** dentro da
+3. cole o token em **Configurações de API**, na tela de Início do próprio painel — ou,
+   se preferir, salve-o sozinho na primeira linha do arquivo **`API\huggingface.txt`** dentro da
    pasta do projeto;
 4. clique em instalar de novo.
+
+> A seção **Configurações de API** fica na tela de Início e guarda também a chave do
+> ElevenLabs. Ela **nunca mostra** o que já está guardado — só diz que existe.
 
 > **O token só é mandado para o `huggingface.co`.** Para qualquer outro endereço o download
 > sai sem identificação nenhuma — segredo não se entrega a quem não é dono dele.

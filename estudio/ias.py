@@ -66,6 +66,41 @@ def _token_hf():
         return ""   # pasta sem permissao: segue sem token, e o 401 explica o que fazer
 
 
+def tem_token():
+    """So diz SE existe um token, nunca qual e. A tela nao precisa saber o segredo."""
+    return bool(_token_hf())
+
+
+def guardar_token(valor):
+    """Grava (ou apaga, se vier vazio) o token do Hugging Face. Devolve (ok, recado).
+
+    Nao confere o token aqui de proposito: conferir pediria baixar alguma coisa, e o
+    unico jeito honesto de saber se ele vale e tentar instalar a IA que precisa dele.
+    O que da para conferir e a FORMA - token do Hugging Face comeca com "hf_" e nao tem
+    espaco. Colar a senha da conta por engano no lugar do token e o erro mais comum.
+    """
+    valor = (valor or "").strip()
+    if not valor:
+        try:
+            TOKEN_ARQ.unlink()
+        except FileNotFoundError:
+            pass
+        except OSError as exc:
+            return False, f"Não consegui apagar {TOKEN_ARQ}: {exc.strerror or exc}"
+        return True, "Token removido. Os 18 repositórios abertos continuam baixando normalmente."
+    if any(c.isspace() for c in valor) or len(valor) > 200:
+        return False, "Isso não parece um token. Cole só o token, sem espaço nem quebra de linha."
+    if not valor.startswith("hf_"):
+        return False, ("Token do Hugging Face começa com \"hf_\". Confira se você copiou o "
+                       "TOKEN (em Settings > Access Tokens) e não a senha da conta.")
+    try:
+        TOKEN_ARQ.parent.mkdir(parents=True, exist_ok=True)
+        TOKEN_ARQ.write_text(valor + "\n", encoding="utf-8")
+    except OSError as exc:
+        return False, f"Não consegui guardar em {TOKEN_ARQ}: {exc.strerror or exc}"
+    return True, "Token guardado. Agora clique em instalar o LTX 2.5 de novo."
+
+
 def _repo_do_link(url):
     """De https://huggingface.co/DONO/REPO/resolve/... tira "DONO/REPO"."""
     try:

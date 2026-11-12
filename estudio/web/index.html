@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>JerS · Forja Studio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d7ff3a'/%3E%3Cpath d='M16 5l2.6 7.4L26 15l-7.4 2.6L16 25l-2.6-7.4L6 15l7.4-2.6z' fill='%230b0d12'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="estilo.css?v=20261111-idioma">
+<link rel="stylesheet" href="estilo.css?v=20261111-chaves">
 <link rel="stylesheet" href="voz.css?v=20261103-nuvem">
 <link rel="stylesheet" href="canal.css?v=20261102-molde">
 <link rel="stylesheet" href="plano.css?v=20261102-molde2">
@@ -225,6 +225,18 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
         <p class="fraco" data-i18n="tela.clique-numa-ia-para-ver">Clique numa IA para ver a ficha completa.</p>
       </div>
       <div class="catalogo-grade" id="catalogo"></div>
+    </section>
+
+    <!-- 11/11/2026: as chaves de API, num lugar so. Antes a do ElevenLabs ficava escondida
+         dentro da aba Narracao e o token do Hugging Face só existia como arquivo — quem
+         instalava o pacote não tinha como saber que ele existia. O conteudo e desenhado
+         pelo app.js (renderChaves), a partir do que o /api/chaves conta. -->
+    <section class="bloco-inicio chaves" id="blocoChaves" aria-labelledby="chavesTitulo">
+      <div class="bloco-cab">
+        <h2 id="chavesTitulo" data-i18n="tela.configuracoes-de-api">Configurações de API</h2>
+        <p class="fraco" data-i18n="tela.sao-todas-opcionais-o-estudio">São todas opcionais: o estúdio funciona inteiro sem nenhuma. Cada uma destrava uma coisa a mais, e fica guardada só no seu computador.</p>
+      </div>
+      <div class="chaves-lista" id="chavesLista"></div>
     </section>
   </section>
 
@@ -967,11 +979,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
 <!-- idioma.js vem ANTES dos outros: ele troca o texto da casca assim que a tela existe,
      para a pessoa que escolheu inglês não ver o português piscar primeiro. -->
-<script src="idioma.js?v=20261111-401"></script>
+<script src="idioma.js?v=20261111-chaves"></script>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261103-conta2"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
-<script src="app.js?v=20261111-401"></script>
+<script src="app.js?v=20261111-chaves"></script>
 <script src="voz.js?v=20261109-selo"></script>
 <script src="fila.js?v=20261109-musica"></script>
 <script src="canal.js?v=20261030-canal"></script>

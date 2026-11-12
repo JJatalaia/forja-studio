@@ -1,0 +1,41 @@
+Configuracoes de API no painel: a pessoa cola a chave sem mexer em arquivo
+
+O pedido dele: um lugar na tela para a pessoa por as chaves que ela tem, com
+o endereco de onde se cria cada uma. "Deixa Eleven Labs e deixa essa IA ai."
+
+Entra uma secao na tela de Inicio, "Configuracoes de API", com um cartao por
+chave. Por enquanto duas, e as duas sao OPCIONAIS - o estudio funciona
+inteiro sem nenhuma, e o cartao diz isso ("nao tem nenhuma - e tudo bem").
+
+  ElevenLabs    vozes na nuvem. Sem ela, a narracao segue com as vozes
+                locais, de graca.
+  Hugging Face  baixar o LTX 2.5, e so ele: dos 19 repositorios, 18 abrem
+                sem nada.
+
+O cartao do Hugging Face leva os TRES PASSOS como links, na ordem: criar a
+conta, aceitar a licenca na pagina do Lightricks/LTX-2.5, criar o token de
+leitura. Sem isso a pessoa cria o token antes de aceitar a licenca e leva
+401 do mesmo jeito, sem entender.
+
+A REGRA DAS DUAS: a tela NUNCA mostra a chave guardada, nem a traz do
+servidor. Mostra so SE existe uma ("guardada"), com o campo em branco:
+escrever por cima troca, salvar em branco remove. Devolver ao navegador um
+segredo que ele mesmo mandou nao serve para nada e so aumenta a chance de
+vazar num print ou num log. Quem ja tem a chave salva nao precisa colar de
+novo - e o caso dele, com o ElevenLabs.
+
+O campo e type=password, e o valor e limpo da tela assim que salva.
+
+O servidor ganhou /api/chaves (GET lista o estado, POST guarda uma). O
+ias.py ganhou tem_token() e guardar_token(), que confere a FORMA e nao o
+valor: token do Hugging Face comeca com "hf_" e nao tem espaco. Colar a
+senha da conta no lugar do token e o erro mais comum, e agora ele avisa.
+Conferir se o token VALE pediria baixar alguma coisa - o jeito honesto de
+saber e tentar instalar a IA.
+
+Provado: guardar_token nos 5 caminhos (vazio, senha por engano, com espaco,
+formato certo, remover) numa pasta API de mentira - a pasta API de verdade
+nao foi tocada. E a tela desenhada pelo renderChaves de verdade, nas tres
+linguas, com a volta ao portugues igual.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
