@@ -1,19 +1,34 @@
+# ATENCAO: comentario NUNCA na mesma linha do padrao.
+# O git nao reconhece '#' no meio da linha: ele le a linha INTEIRA como
+# padrao, e um padrao com espacos e '#' nao casa com nada. Nove regras daqui
+# - inclusive API/ e **/segredos/ - ficaram sem valer nenhum por causa disso,
+# e sem dar nenhum aviso. Achado por lbrsilva no PR #1, conferido com
+# 'git check-ignore -v'.
 # --- o que NUNCA pode subir ---
-API/                    # as chaves (elevenlabs, civitai, huggingface, higgsfield, ...)
+# as chaves (elevenlabs, civitai, huggingface, higgsfield, ...)
+API/
 *.key
 *_api_key.txt
 .env
-contas/                 # o servidor de contas NAO faz parte do pacote
-**/segredos/            # chave privada da licenca, senha do admin, chave do cofre
-chave_presets.json      # abre o cofre dos presets: mora so no seu PC e na VPS
-chave_vps*              # a chave que entra na sua VPS
+# o servidor de contas NAO faz parte do pacote
+contas/
+# chave privada da licenca, senha do admin, chave do cofre
+**/segredos/
+# abre o cofre dos presets: mora so no seu PC e na VPS
+chave_presets.json
+# a chave que entra na sua VPS
+chave_vps*
 
 # --- dados de quem usa ---
-estudio/config.json      # pastas e ajustes da maquina de quem usa
+# pastas e ajustes da maquina de quem usa
+estudio/config.json
 estudio/historico.json
-estudio/licenca.json      # a licenca E o token de quem usa
-estudio/chave_presets.bin # a chave do cofre guardada nesta maquina (DPAPI)
-estudio/versao_config.json  # que versao de config esta nesta maquina
+# a licenca E o token de quem usa
+estudio/licenca.json
+# a chave do cofre guardada nesta maquina (DPAPI)
+estudio/chave_presets.bin
+# que versao de config esta nesta maquina
+estudio/versao_config.json
 estudio/*.bak_antes_da_atualizacao
 estudio/vozes/
 estudio/vozes.json
@@ -36,3 +51,4 @@ __pycache__/
 
 # arquivos temporarios de quem mantem o projeto
 _msg.txt
+
