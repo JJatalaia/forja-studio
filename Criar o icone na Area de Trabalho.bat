@@ -16,7 +16,10 @@ chcp 65001 >nul
 title Forja Studio - criar o icone
 cd /d "%~dp0"
 
-if exist "caminhos.bat" call "caminhos.bat"
+rem Pelo caminho ABSOLUTO: "caminhos.bat" sozinho depende da pasta atual, e ha
+rem ambiente de Windows que recusa rodar arquivo da pasta atual
+rem (NoDefaultCurrentDirectoryInExePath=1). Com %~dp0 nao depende de nada.
+if exist "%~dp0caminhos.bat" call "%~dp0caminhos.bat"
 
 rem O Python da ComfyUI, quando existe. Quem instalou so o painel (sem a ComfyUI)
 rem ainda nao tem essa pasta - ai vale o Python do proprio Windows.

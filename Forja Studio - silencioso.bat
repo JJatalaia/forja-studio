@@ -3,7 +3,10 @@ rem  Versao sem janela, usada pela abertura automatica do Windows.
 rem  Liga o estudio e NAO abre navegador: quem acabou de entrar no Windows nao
 rem  quer uma aba pulando na cara. A pagina fica esperando em 127.0.0.1:8194.
 cd /d "%~dp0"
-if exist "caminhos.bat" call "caminhos.bat"
+rem Pelo caminho ABSOLUTO: "caminhos.bat" sozinho depende da pasta atual, e ha
+rem ambiente de Windows que recusa rodar arquivo da pasta atual
+rem (NoDefaultCurrentDirectoryInExePath=1). Com %~dp0 nao depende de nada.
+if exist "%~dp0caminhos.bat" call "%~dp0caminhos.bat"
 rem ---------------------------------------------------------------------------
 rem  Qual Python roda o painel.
 rem
@@ -13,7 +16,14 @@ rem  nada. O painel nao precisa da ComfyUI para MOSTRAR a tela - ela e para gera
 rem  imagem e video. Entao: a da ComfyUI primeiro, e qualquer Python depois.
 rem ---------------------------------------------------------------------------
 set "PY="
-if exist "ComfyUI_windows_portable\python_embeded\python.exe" set "PY=ComfyUI_windows_portable\python_embeded\python.exe"
+rem A ComfyUI escolhida na instalacao pode estar noutro disco: o caminhos.bat guarda
+rem ESTUDIO_COMFY_DIR apontando para <algumlugar>\ComfyUI, e o python_embeded fica ao
+rem lado dela. Ate 12/11/2026 isto era ignorado e so se olhava a pasta daqui do lado.
+if defined ESTUDIO_COMFY_DIR (
+  for %%D in ("%ESTUDIO_COMFY_DIR%\..") do set "COMFYBASE=%%~fD"
+)
+if defined COMFYBASE if exist "%COMFYBASE%\python_embeded\python.exe" set "PY=%COMFYBASE%\python_embeded\python.exe"
+if not defined PY if exist "ComfyUI_windows_portable\python_embeded\python.exe" set "PY=ComfyUI_windows_portable\python_embeded\python.exe"
 if not defined PY (
   py -3 -c "import sys" >nul 2>&1
   if not errorlevel 1 set "PY=py -3"

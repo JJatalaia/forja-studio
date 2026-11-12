@@ -215,6 +215,45 @@ def conferir_configuracao():
                    "(apague a pasta .claude se nao usa)" % (s, a, m))
 
 
+# --------------------------------------------------------------- o lugar padrao
+#
+# 12/11/2026. Nao e uma exigencia: e o lugar que a gente recomenda, e que a documentacao
+# e o suporte assumem. Quem quiser outro, poe noutro - o estudio funciona igual. O que
+# nao da e a gente nao ter UM lugar para escrever nas instrucoes.
+LUGAR_PADRAO = r"C:\ForjaStudio"
+
+
+def conferir_o_lugar():
+    """Diz se o estudio esta no lugar recomendado, e por que o lugar importa."""
+    titulo(0, "Onde o estudio esta instalado")
+    atual = str(AQUI)
+    print("  aqui: %s" % atual)
+    if atual.lower().rstrip("\\") == LUGAR_PADRAO.lower():
+        print(OK + "e o lugar padrao")
+        return
+
+    print("  padrao recomendado: %s" % LUGAR_PADRAO)
+    motivos = []
+    if " " in atual:
+        motivos.append("tem ESPACO no nome, e caminho com espaco ja quebrou .bat aqui")
+    if "onedrive" in atual.lower():
+        motivos.append("esta dentro do OneDrive, que vai tentar SINCRONIZAR os modelos")
+    elif "\\documents" in atual.lower() or "\\documentos" in atual.lower():
+        motivos.append("esta no Documentos, que em muita maquina o OneDrive sincroniza - "
+                       "e ai ele tentaria subir os 270 GB de modelos")
+    if len(atual) > 60:
+        motivos.append("e longo, e o Windows corta caminho em 260 caracteres")
+
+    if motivos:
+        for m in motivos:
+            cuidado(m)
+    else:
+        print("  (funciona assim mesmo; o padrao e so para a documentacao bater)")
+    print("\n       Para mudar de lugar depois: feche o estudio, mova a pasta inteira,")
+    print("       e clique em 'Criar o icone na Area de Trabalho.bat' - o icone guarda")
+    print("       o caminho antigo e precisa ser refeito.")
+
+
 # ------------------------------------------------------------------ 6. o atalho
 def criar_atalho(comfy):
     """Os atalhos de abrir. Eles VEM prontos no pacote; aqui so conferimos e explicamos.
@@ -342,6 +381,7 @@ def main():
         print("  MODO CONFERENCIA: so olha, nao instala nem cria nada.")
     print("=" * 66)
     conferir_maquina()
+    conferir_o_lugar()
     # Onde guardar os 235 GB. So pergunta na PRIMEIRA vez: quem ja escolheu nao quer ser
     # perguntado de novo toda vez que roda o setup so para conferir alguma coisa.
     if "--conferir" not in sys.argv and not (AQUI / "caminhos.bat").is_file():

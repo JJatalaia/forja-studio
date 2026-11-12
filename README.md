@@ -141,7 +141,7 @@ caber. Comece pela trilha de imagem e vá subindo.
 
 Em dois passos: **baixar os modelos** e **aplicar a configuração**.
 
-- [INSTALAR.md](INSTALAR.md) — passo a passo, para fazer à mão
+- [INSTALAR.md](INSTALAR.md) — passo a passo, para fazer à mão. **O lugar padrão é `C:\ForjaStudio`:** `git clone https://github.com/JJatalaia/forja-studio.git C:\ForjaStudio`
 - [INSTALAR-COM-IA.md](INSTALAR-COM-IA.md) — **o texto para colar no Claude Code, no Codex ou
   no Gemini CLI e deixar a IA baixar e conferir tudo para você**
 

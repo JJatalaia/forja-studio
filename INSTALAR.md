@@ -52,6 +52,39 @@ mais devagar.
 
 ---
 
+## Onde instalar — o lugar padrão
+
+```
+C:\ForjaStudio
+```
+
+Baixe assim, e fica igual em toda máquina:
+
+```bash
+git clone https://github.com/JJatalaia/forja-studio.git C:\ForjaStudio
+```
+
+Não é obrigatório — o estúdio funciona em qualquer pasta. Mas é o lugar que esta
+documentação e o suporte assumem, e ele evita três problemas de verdade:
+
+| por quê | o que acontece fora dele |
+|---|---|
+| **sem espaço no nome** | caminho com espaço já quebrou `.bat` neste projeto mais de uma vez |
+| **fora do Documentos** | em muita máquina o Documentos é sincronizado com o OneDrive — que tentaria **subir os 270 GB de modelos** |
+| **curto** | o Windows corta caminho em 260 caracteres, e a ComfyUI tem pasta funda |
+
+Criar essa pasta **não pede administrador** (medido).
+
+**E os 270 GB?** Não precisam ficar no C:. O pacote em si tem **1,6 MB**; o que pesa é a
+ComfyUI e os modelos, e o `setup.py` pergunta onde você quer eles — pode ser outro disco.
+A escolha fica no `caminhos.bat`, e os botões de abrir leem esse arquivo.
+
+Se você já instalou noutro lugar: feche o estúdio, mova a pasta inteira, e clique em
+**`Criar o icone na Area de Trabalho.bat`** — o ícone guarda o caminho antigo e precisa
+ser refeito.
+
+---
+
 ## Antes de começar
 
 Confira a placa. Abra o Prompt de Comando e digite:
