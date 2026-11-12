@@ -33,3 +33,6 @@ modelos_texto/*.gguf
 *.bak*
 __pycache__/
 *.pyc
+
+# arquivos temporarios de quem mantem o projeto
+_msg.txt
