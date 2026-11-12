@@ -1,19 +1,28 @@
 # --- o que NUNCA pode subir ---
-API/                    # as chaves (elevenlabs, civitai, huggingface, higgsfield, ...)
+# as chaves (elevenlabs, civitai, huggingface, higgsfield, ...)
+API/
 *.key
 *_api_key.txt
 .env
-contas/                 # o servidor de contas NAO faz parte do pacote
-**/segredos/            # chave privada da licenca, senha do admin, chave do cofre
-chave_presets.json      # abre o cofre dos presets: mora so no seu PC e na VPS
-chave_vps*              # a chave que entra na sua VPS
+# o servidor de contas NAO faz parte do pacote
+contas/
+# chave privada da licenca, senha do admin, chave do cofre
+**/segredos/
+# abre o cofre dos presets: mora so no seu PC e na VPS
+chave_presets.json
+# a chave que entra na sua VPS
+chave_vps*
 
 # --- dados de quem usa ---
-estudio/config.json      # pastas e ajustes da maquina de quem usa
+# pastas e ajustes da maquina de quem usa
+estudio/config.json
 estudio/historico.json
-estudio/licenca.json      # a licenca E o token de quem usa
-estudio/chave_presets.bin # a chave do cofre guardada nesta maquina (DPAPI)
-estudio/versao_config.json  # que versao de config esta nesta maquina
+# a licenca E o token de quem usa
+estudio/licenca.json
+# a chave do cofre guardada nesta maquina (DPAPI)
+estudio/chave_presets.bin
+# que versao de config esta nesta maquina
+estudio/versao_config.json
 estudio/*.bak_antes_da_atualizacao
 estudio/vozes/
 estudio/vozes.json
@@ -23,6 +32,8 @@ saidas/
 # --- modelos: 388 GB, baixados pelo instalador ---
 ComfyUI_windows_portable/
 ComfyUI_mac/
+modelos_texto/
+_ferramentas/
 caminhos.sh
 caminhos.bat
 modelos_texto/*.gguf
@@ -36,3 +47,6 @@ modelos_texto/*.gguf
 *.bak*
 __pycache__/
 *.pyc
+# cache e historico da fila desta maquina
+_cache/
+estudio/fila_historico.json
