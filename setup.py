@@ -231,7 +231,8 @@ def criar_atalho(comfy):
                 "       ComfyUI_windows_portable\\python_embeded\\python.exe estudio\\server.py")
         return None
     print(OK + "%-29s abre o painel (espera ficar pronto antes)" % "Forja Studio.bat")
-    for extra, oque in (("Ligar com o Windows.bat", "abre sozinho quando voce entra no PC"),
+    for extra, oque in (("Criar o icone na Area de Trabalho.bat", "poe o icone na sua mesa"),
+                        ("Ligar com o Windows.bat", "abre sozinho quando voce entra no PC"),
                         ("Nao ligar com o Windows.bat", "desfaz o de cima"),
                         ("Desligar o estudio.bat", "fecha tudo e libera a placa de video")):
         if (AQUI / extra).is_file():
@@ -247,28 +248,90 @@ def criar_atalho(comfy):
     # ao Windows em vez de adivinhar "C:\Users\<nome>\Desktop" - quem usa OneDrive tem ela
     # redirecionada, e num Windows noutro idioma a pasta nem se chama "Desktop".
     if "--conferir" not in sys.argv and os.name == "nt":
-        try:
-            sys.path.insert(0, str(AQUI / "estudio"))
-            import atalho as _atalho
-            mesa = _atalho._area_de_trabalho()
-            if mesa and not (mesa / "Forja Studio.lnk").exists():
-                if input("\n   Quer o icone do Forja Studio na Area de Trabalho? (S/n): "
-                         ).strip().lower() != "n":
-                    feito = _atalho.criar(mesa)
-                    if feito:
-                        print(OK + "icone criado na Area de Trabalho")
-                        print("       Clicar nele abre SO a pagina - nenhuma janela preta e")
-                        print("       nenhuma IA ligada. As IAs voce liga pelos botoes la dentro,")
-                        print("       uma de cada vez, do jeito que o seu computador aguentar.")
-                    else:
-                        cuidado("nao consegui criar o icone. Da para abrir pelo"
-                                " 'Forja Studio.bat' aqui da pasta.")
-        except (OSError, EOFError, KeyboardInterrupt):
-            pass
-        except Exception as erro_icone:
-            cuidado("nao consegui criar o icone (%s). Da para abrir pelo"
-                    " 'Forja Studio.bat' aqui da pasta." % erro_icone)
+        _icone_na_area_de_trabalho()
     return principal
+
+
+def _de_novo_depois():
+    """A frase que diz como pedir o icone mais tarde. Numa constante porque aparece em
+    tres lugares, e tres copias de um texto viram tres textos diferentes com o tempo."""
+    print("       Da para pedir ele depois: clique em")
+    print("       'Criar o icone na Area de Trabalho.bat', aqui nesta pasta.")
+
+
+def _icone_na_area_de_trabalho():
+    r"""O icone do Forja Studio na Area de Trabalho.
+
+    12/11/2026 - POR QUE ISTO DEIXOU DE SER SO UMA PERGUNTA
+
+    O Jerffeson instalou numa maquina nova, pelo GitHub, e o icone nao apareceu. Nenhum
+    erro, em lugar nenhum. O trecho antigo pendurava o icone num `input()` e tinha, logo
+    abaixo, um `except (OSError, EOFError, KeyboardInterrupt): pass` - ou seja: numa
+    instalacao que nao consegue perguntar, o icone nao nascia E NINGUEM FICAVA SABENDO.
+
+    Perguntar continua sendo o certo quando da para perguntar: mexer na Area de Trabalho
+    dos outros sem avisar e falta de educacao. Mas nao conseguir perguntar nao e um "nao".
+    Ele pediu o icone; na duvida, o icone nasce - e se ele nao quiser, tira num clique.
+    """
+    try:
+        sys.path.insert(0, str(AQUI / "estudio"))
+        import atalho as _atalho
+    except Exception as exc:
+        cuidado("nao consegui carregar o criador de icone (%s)." % exc)
+        _de_novo_depois()
+        return
+
+    try:
+        mesa = _atalho._area_de_trabalho()
+    except Exception as exc:
+        mesa = None
+        cuidado("nao consegui achar a sua Area de Trabalho (%s)." % exc)
+
+    if not mesa:
+        cuidado("nao achei a sua Area de Trabalho, entao nao criei o icone.")
+        _de_novo_depois()
+        return
+
+    if (mesa / "Forja Studio.lnk").exists():
+        print(OK + "o icone do Forja Studio ja esta na Area de Trabalho")
+        return
+
+    quer = True
+    try:
+        quer = input("\n   Quer o icone do Forja Studio na Area de Trabalho? (S/n): "
+                     ).strip().lower() != "n"
+    except (EOFError, OSError):
+        # Instalacao que nao tem como perguntar. Criar e o que ele pediu.
+        print("\n   (nao deu para perguntar aqui - vou criar o icone; se nao quiser,"
+              " e so apagar)")
+    except KeyboardInterrupt:
+        print("\n   Tudo bem, sem icone.")
+        _de_novo_depois()
+        return
+
+    if not quer:
+        print("   Tudo bem, sem icone.")
+        _de_novo_depois()
+        return
+
+    try:
+        feito = _atalho.criar(mesa)
+    except Exception as exc:
+        feito = None
+        _atalho.ultimo_motivo = str(exc)
+
+    if feito:
+        print(OK + "icone criado na Area de Trabalho")
+        print("       Clicar nele abre SO a pagina - nenhuma janela preta e")
+        print("       nenhuma IA ligada. As IAs voce liga pelos botoes la dentro,")
+        print("       uma de cada vez, do jeito que o seu computador aguentar.")
+        return
+
+    # Falhar aqui nao pode mais ser mudo: o motivo vai para a tela, inteiro.
+    cuidado("nao consegui criar o icone.")
+    print("       " + (getattr(_atalho, "ultimo_motivo", None) or "Nao sei dizer o motivo."))
+    print("       Da para abrir o estudio pelo 'Forja Studio.bat', aqui da pasta.")
+    _de_novo_depois()
 
 
 def main():

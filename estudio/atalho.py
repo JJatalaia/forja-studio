@@ -21,6 +21,9 @@ AQUI = Path(__file__).resolve().parent          # ...\estudio
 RAIZ = AQUI.parent
 NOME = "Forja Studio"
 
+# Por que o ultimo `criar()` nao deu certo. Em portugues, para ir direto para a tela.
+ultimo_motivo = None
+
 
 def _area_de_trabalho():
     """Pergunta ao Windows onde fica a Area de Trabalho DESTA pessoa.
@@ -88,11 +91,21 @@ def _ps(script):
 
 
 def criar(mesa=None):
-    """Cria o atalho. Devolve o caminho dele, ou None."""
+    """Cria o atalho. Devolve o caminho dele, ou None.
+
+    Quando devolve None, o PORQUE fica em `ultimo_motivo` - em portugues, pronto para ir
+    para a tela. Ver o cabecalho do arquivo: este era o ponto onde o icone sumia calado.
+    """
+    global ultimo_motivo
+    ultimo_motivo = None
     if os.name != "nt":
+        ultimo_motivo = "O icone na Area de Trabalho so existe no Windows."
         return None
     mesa = Path(mesa) if mesa else _area_de_trabalho()
     if not mesa or not mesa.is_dir():
+        ultimo_motivo = ("Nao achei a sua Area de Trabalho. Se ela estiver no OneDrive e "
+                         "ele ainda nao tiver terminado de sincronizar, espere e tente "
+                         "de novo.")
         return None
 
     alvo = mesa / f"{NOME}.lnk"
@@ -100,6 +113,8 @@ def criar(mesa=None):
     abrir = AQUI / "abrir.py"
     icone = AQUI / "icone.ico"
     if not abrir.is_file():
+        ultimo_motivo = (f"Falta o arquivo {abrir} na pasta do estudio. Baixe o pacote "
+                         "de novo.")
         return None
 
     # o .lnk guarda o caminho; aspas duplas dentro do PowerShell viram ""
@@ -120,8 +135,12 @@ $a.Description      = "Abre o Forja Studio. So a pagina: as IAs voce liga la den
     ok, saida = _ps(script)
     if ok and alvo.is_file():
         return alvo
-    if saida:
-        print("  (o Windows disse:", saida, ")")
+    if not ok:
+        ultimo_motivo = ("O Windows nao deixou criar o atalho. Costuma ser o antivirus ou "
+                         "a politica de scripts do PowerShell. " + (saida or "")).strip()
+    else:
+        ultimo_motivo = (f"O PowerShell nao reclamou, mas o arquivo {alvo.name} nao "
+                         "apareceu na Area de Trabalho. " + (saida or "")).strip()
     return None
 
 
@@ -155,7 +174,9 @@ def main():
         print(f"    aponta para: {_pythonw().name} {AQUI / 'abrir.py'}")
         print("    clicar nele NAO abre janela preta e NAO acende a placa de video")
         return 0
-    print("  nao consegui criar o icone (Area de Trabalho nao encontrada?)")
+    print("  nao consegui criar o icone.")
+    print("  " + (ultimo_motivo or "Nao sei dizer o motivo."))
+    print("\n  Enquanto isso, da para abrir pelo 'Forja Studio.bat' na pasta do estudio.")
     return 1
 
 

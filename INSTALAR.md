@@ -262,3 +262,19 @@ então ela pode estar segurando memória mesmo com a fila vazia.
 
 **Falta um complemento.** O erro da ComfyUI diz o nome do nó que faltou; procure pelo nome na
 tabela do Passo 0.
+
+**O ícone não apareceu na Área de Trabalho.** Clique em
+**`Criar o icone na Area de Trabalho.bat`**, na pasta do Forja Studio. Ele cria o ícone na
+hora e, se não conseguir, **diz o motivo na tela** em vez de falhar calado. Dá para clicar
+quantas vezes quiser: ele refaz o mesmo ícone, não duplica.
+
+Até 12/11/2026 o ícone só nascia durante a instalação, e só se você respondesse uma pergunta
+na janela preta — quem instalou pelo GitHub, ou fechou a janela antes, ficava sem ícone e sem
+saber por quê.
+
+**"Não consegui identificar esta máquina", na tela de criar conta.** Atualize o Forja Studio.
+Antes de 12/11/2026 as três características do equipamento eram lidas todas pela mesma chamada
+de PowerShell: quando ela falhava — máquina virtual, Windows recém-instalado, serviço do WMI
+parado — as três sumiam juntas e não dava para criar conta. Agora são **cinco características,
+de dois caminhos independentes** (PowerShell e registro do Windows), e basta um dos caminhos
+responder. A tela também passou a dizer **qual** característica não deu.
