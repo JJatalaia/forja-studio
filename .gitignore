@@ -52,3 +52,10 @@ __pycache__/
 # arquivos temporarios de quem mantem o projeto
 _msg.txt
 
+# Lixo de execucao do abrir.py (12/11/2026). Nascem quando o estudio nao consegue
+# abrir, para a pessoa poder LER o motivo - antes disso o erro ia para DEVNULL.
+# Comentario na linha de cima, nunca na mesma linha do padrao: o git le a linha
+# inteira como padrao e a regra nao vale (ver o cabecalho deste arquivo).
+estudio/nao_abriu.txt
+estudio/servidor_saida.txt
+estudio/web/nao_abriu.html
