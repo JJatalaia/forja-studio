@@ -39,6 +39,7 @@ import os
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -48,6 +49,26 @@ RAIZ = AQUI.parent
 # A pasta API fica AO LADO da pasta estudio (mesmo lugar da chave do ElevenLabs).
 _API_DIR = Path(os.environ.get("ESTUDIO_API_DIR") or RAIZ / "API")
 TOKEN_ARQ = _API_DIR / "huggingface.txt"
+
+
+class _SemTokenEmOutroHost(urllib.request.HTTPRedirectHandler):
+    """Tira o Authorization assim que o redirect troca de host.
+
+    O urllib REENVIA o cabeçalho ao seguir um redirect, e o Hugging Face responde 302
+    mandando para o CDN (medido em 12/11/2026: us.aws.cdn.hf.co). O token não tem nada que
+    fazer lá - a URL do CDN já vem assinada - e mandar segredo para um host que não é o
+    dono dele é justamente o que a gente evita no resto do projeto.
+
+    Achado por lbrsilva, no PR #1 do macOS.
+    """
+
+    def redirect_request(self, req, fp, code, msg, headers, novaurl):
+        novo = super().redirect_request(req, fp, code, msg, headers, novaurl)
+        de = urllib.parse.urlparse(req.full_url).hostname
+        para = urllib.parse.urlparse(novaurl).hostname
+        if novo is not None and para != de:
+            novo.remove_header("Authorization")
+        return novo
 
 
 def _token_hf():
@@ -250,7 +271,8 @@ def _baixar_arquivo(nome, info):
     pedido = urllib.request.Request(info["fonte"], headers={"User-Agent": "ForjaStudio/1.0"})
     # So manda o token para o Hugging Face: token e segredo, e nao se entrega segredo a
     # um servidor que nao e o dono dele.
-    token = _token_hf() if "huggingface.co/" in info["fonte"] else ""
+    # Host exato, não "contém": "huggingface.co.exemplo.com" não é o Hugging Face.
+    token = _token_hf() if urllib.parse.urlparse(info["fonte"]).hostname == "huggingface.co" else ""
     if token:
         pedido.add_header("Authorization", "Bearer " + token)
     if ja:
@@ -259,7 +281,7 @@ def _baixar_arquivo(nome, info):
         pedido.add_header("Range", f"bytes={ja}-")
 
     try:
-        conexao = urllib.request.urlopen(pedido, timeout=60)
+        conexao = urllib.request.build_opener(_SemTokenEmOutroHost).open(pedido, timeout=60)
     except urllib.error.HTTPError as e:
         # 401/403 aqui quase sempre e portao de licenca, nao defeito. Sem este trecho a
         # pessoa via "HTTP Error 401: Unauthorized" - quando via, porque a tela nem
