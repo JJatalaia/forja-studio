@@ -26,6 +26,8 @@ import subprocess
 import time
 from pathlib import Path
 
+import plataforma
+
 AQUI = Path(__file__).resolve().parent
 ARQUIVO = AQUI / "licenca.json"
 CHAVE_PUBLICA = AQUI / "chave_publica.pem"
@@ -127,7 +129,7 @@ def impressao(recarregar=False):
     global _impressao
     if _impressao is not None and not recarregar:
         return _impressao
-    cru = _ler_maquina_windows()
+    cru = plataforma.maquina_mac() if plataforma.MAC else _ler_maquina_windows()
     _impressao = {campo: (_resumir(bom) if (bom := _vale(cru.get(campo))) else None)
                   for campo in ("placa_uuid", "placa_serie", "disco_serie")}
     return _impressao
