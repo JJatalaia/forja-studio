@@ -48,6 +48,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import unicodedata
 import urllib.parse
@@ -5020,5 +5021,59 @@ app.add_routes([
     web.get("/", estatico), web.get("/{caminho:.+}", estatico),
 ])
 
+# ------------------------------------------------------- o icone, na primeira subida
+MARCA_DO_ICONE = AQUI / "icone_feito.json"
+
+
+def _icone_na_primeira_subida():
+    r"""Poe o icone do Forja Studio na Area de Trabalho, uma unica vez.
+
+    POR QUE AQUI, e nao so no setup.py (12/11/2026)
+
+    Instalaram o estudio numa maquina por uma IA: ela fez `pip install` e rodou o
+    `server.py`, sem passar pelo `setup.py`. O painel subiu redondo e o icone nao
+    existia - porque ele so nascia em dois lugares que da para pular: dentro do setup,
+    e num .bat que alguem precisa clicar.
+
+    Subir o estudio e a unica coisa que ninguem pula. Entao e daqui que ele nasce.
+
+    UMA VEZ SO: depois da primeira tentativa fica o `icone_feito.json` e nunca mais se
+    mexe na Area de Trabalho de ninguem. Se a pessoa apagar o icone, apagar e a
+    resposta dela - recriar toda vez seria teimosia, nao ajuda.
+    """
+    try:
+        if os.name != "nt" or MARCA_DO_ICONE.exists():
+            return
+        sys.path.insert(0, str(AQUI))
+        import atalho
+
+        mesa = atalho._area_de_trabalho()
+        if mesa and (mesa / "Forja Studio.lnk").exists():
+            feito, motivo = str(mesa / "Forja Studio.lnk"), "ja existia"
+        else:
+            caminho = atalho.criar(mesa)
+            feito = str(caminho) if caminho else None
+            motivo = None if caminho else (atalho.ultimo_motivo or "sem motivo conhecido")
+
+        MARCA_DO_ICONE.write_text(json.dumps(
+            {"quando": int(time.time()), "icone": feito, "motivo": motivo},
+            ensure_ascii=False, indent=1), encoding="utf-8")
+
+        if feito:
+            print(f"[estudio] icone do Forja Studio na Area de Trabalho: {feito}",
+                  flush=True)
+        else:
+            print(f"[estudio] nao criei o icone na Area de Trabalho: {motivo}", flush=True)
+            print("[estudio]   para tentar de novo: apague estudio\\icone_feito.json e "
+                  "clique em 'Criar o icone na Area de Trabalho.bat'", flush=True)
+    except Exception as exc:
+        # O icone e um conforto, nao o produto: ele nunca pode derrubar o estudio.
+        print(f"[estudio] tropecei ao criar o icone ({exc.__class__.__name__}: {exc}); "
+              "o estudio segue normalmente", flush=True)
+
+
 if __name__ == "__main__":
+    # Em segundo plano para nao atrasar a primeira tela: a leitura da Area de Trabalho
+    # e o PowerShell do atalho levam cerca de meio segundo juntos.
+    threading.Thread(target=_icone_na_primeira_subida, daemon=True).start()
     web.run_app(app, host="127.0.0.1", port=PORTA)

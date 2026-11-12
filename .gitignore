@@ -59,3 +59,7 @@ _msg.txt
 estudio/nao_abriu.txt
 estudio/servidor_saida.txt
 estudio/web/nao_abriu.html
+
+# A marca de que o estudio ja tentou por o icone na Area de Trabalho (12/11/2026).
+# E de cada maquina, nao do projeto.
+estudio/icone_feito.json
