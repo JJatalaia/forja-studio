@@ -59,6 +59,30 @@ def python_do_projeto():
     return semjanela if semjanela.is_file() else atual
 
 
+def mostrar(endereco):
+    """Abre um endereco no navegador. Devolve True se ALGUEM aceitou abrir.
+
+    O `webbrowser.open()` devolve True/False e a gente ignorava o retorno. Quando ele
+    devolve False nao abre nada - e, sob `pythonw.exe`, isso vira "cliquei no icone e nao
+    aconteceu nada", sem erro nenhum em lugar nenhum. Era o sintoma exato de 12/11/2026.
+
+    Por isso ha um segundo caminho: o `os.startfile`, que e o proprio Windows abrindo o
+    endereco com o programa padrao. Se os dois recusarem, quem chamou avisa a pessoa.
+    """
+    try:
+        if webbrowser.open(endereco):
+            return True
+    except Exception:
+        pass
+    if os.name == "nt":
+        try:
+            os.startfile(endereco)      # noqa: S606 - e o Windows abrindo, nao um shell
+            return True
+        except (OSError, ValueError, AttributeError):
+            pass
+    return False
+
+
 REGISTRO = AQUI / "nao_abriu.txt"
 PAGINA_DE_ERRO = AQUI / "web" / "nao_abriu.html"
 
@@ -104,7 +128,7 @@ def contar_o_problema(titulo, detalhe, como_resolver):
     try:
         PAGINA_DE_ERRO.parent.mkdir(parents=True, exist_ok=True)
         PAGINA_DE_ERRO.write_text(html, encoding="utf-8")
-        webbrowser.open(PAGINA_DE_ERRO.as_uri())
+        mostrar(PAGINA_DE_ERRO.as_uri())
     except OSError:
         pass
     return 1
@@ -166,9 +190,19 @@ def main():
     #    Se por algum motivo o arquivo nao estiver aqui, vai direto no endereco: pior
     #    experiencia, mas nunca um clique que nao faz nada.
     if ESPERA.is_file():
-        webbrowser.open(ESPERA.as_uri() + f"?porta={PORTA}")
+        tela, onde = ESPERA.as_uri() + f"?porta={PORTA}", ENDERECO
     else:
-        webbrowser.open(ENDERECO)
+        tela, onde = ENDERECO, ENDERECO
+    if not mostrar(tela):
+        # Nenhum navegador aceitou. Antes disto a funcao terminava com codigo 0 e a
+        # pessoa ficava achando que o icone estava quebrado - sem nada para ler.
+        return contar_o_problema(
+            "Nao consegui abrir o seu navegador",
+            "Pedi ao Windows para abrir:\n  %s\n\ne ele nao abriu. Isto costuma ser "
+            "navegador padrao nao definido neste usuario do Windows." % tela,
+            "Abra o seu navegador na mao e va em:\n  %s\n\nPara resolver de vez: "
+            "Configuracoes do Windows > Aplicativos > Aplicativos padrao, e escolha um "
+            "navegador." % onde)
 
     # 2) ja estava ligado? entao nao liga em dobro - a tela de espera entra sozinha.
     if no_ar():
