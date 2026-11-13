@@ -67,11 +67,13 @@ def _area_de_trabalho():
 
 def _pythonw():
     """O Python SEM console. Com ele, clicar no icone nao pisca janela preta nenhuma."""
-    base = RAIZ / "ComfyUI_windows_portable" / "python_embeded"
-    for nome in ("pythonw.exe", "python.exe"):
-        p = base / nome
-        if p.is_file():
-            return p
+    # O Python proprio do Forja (o que o instalador .exe traz) vem primeiro: e o unico
+    # que a gente sabe que tem as bibliotecas. Depois, o da ComfyUI.
+    for base in (RAIZ / "python", RAIZ / "ComfyUI_windows_portable" / "python_embeded"):
+        for nome in ("pythonw.exe", "python.exe"):
+            p = base / nome
+            if p.is_file():
+                return p
     atual = Path(sys.executable)
     sem = atual.with_name("pythonw.exe")
     return sem if sem.is_file() else atual

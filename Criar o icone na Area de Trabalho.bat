@@ -23,13 +23,18 @@ if exist "%~dp0caminhos.bat" call "%~dp0caminhos.bat"
 
 rem O Python da ComfyUI, quando existe. Quem instalou so o painel (sem a ComfyUI)
 rem ainda nao tem essa pasta - ai vale o Python do proprio Windows.
-set "PY=ComfyUI_windows_portable\python_embeded\python.exe"
-if not exist "%PY%" set "PY=py -3"
+set "PYARG="
+set "PY=%~dp0python\python.exe"
+if not exist "%PY%" set "PY=ComfyUI_windows_portable\python_embeded\python.exe"
+if not exist "%PY%" (
+  set "PY=py"
+  set "PYARG=-3"
+)
 
 echo.
 echo   Criando o icone do Forja Studio na Area de Trabalho...
 echo.
-%PY% "estudio\atalho.py"
+"%PY%" %PYARG% "estudio\atalho.py"
 if errorlevel 1 goto deuerrado
 
 echo.

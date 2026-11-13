@@ -48,11 +48,13 @@ def no_ar(porta=PORTA, segundos=0.6):
 
 def python_do_projeto():
     """O python.exe que roda o estudio. Sem console: pythonw.exe quando existir."""
-    base = RAIZ / "ComfyUI_windows_portable" / "python_embeded"
-    for nome in ("pythonw.exe", "python.exe"):
-        p = base / nome
-        if p.is_file():
-            return p
+    # O Python proprio do Forja (o que o instalador .exe traz) vem primeiro: e o unico
+    # que a gente sabe que tem as bibliotecas. Depois, o da ComfyUI.
+    for base in (RAIZ / "python", RAIZ / "ComfyUI_windows_portable" / "python_embeded"):
+        for nome in ("pythonw.exe", "python.exe"):
+            p = base / nome
+            if p.is_file():
+                return p
     # fora do pacote (a maquina de desenvolvimento), vale o python que esta rodando isto
     atual = Path(sys.executable)
     semjanela = atual.with_name("pythonw.exe")

@@ -29,17 +29,24 @@ rem  nada. O painel nao precisa da ComfyUI para MOSTRAR a tela - ela e para gera
 rem  imagem e video. Entao: a da ComfyUI primeiro, e qualquer Python depois.
 rem ---------------------------------------------------------------------------
 set "PY="
+set "PYARG="
+rem O Python PROPRIO do Forja, que o instalador .exe traz ja com as bibliotecas. Vem
+rem primeiro porque e o unico que a gente sabe que esta completo.
+if exist "%~dp0python\python.exe" set "PY=%~dp0python\python.exe"
 rem A ComfyUI escolhida na instalacao pode estar noutro disco: o caminhos.bat guarda
 rem ESTUDIO_COMFY_DIR apontando para <algumlugar>\ComfyUI, e o python_embeded fica ao
 rem lado dela. Ate 12/11/2026 isto era ignorado e so se olhava a pasta daqui do lado.
 if defined ESTUDIO_COMFY_DIR (
   for %%D in ("%ESTUDIO_COMFY_DIR%\..") do set "COMFYBASE=%%~fD"
 )
-if defined COMFYBASE if exist "%COMFYBASE%\python_embeded\python.exe" set "PY=%COMFYBASE%\python_embeded\python.exe"
+if not defined PY if defined COMFYBASE if exist "%COMFYBASE%\python_embeded\python.exe" set "PY=%COMFYBASE%\python_embeded\python.exe"
 if not defined PY if exist "ComfyUI_windows_portable\python_embeded\python.exe" set "PY=ComfyUI_windows_portable\python_embeded\python.exe"
 if not defined PY (
   py -3 -c "import sys" >nul 2>&1
-  if not errorlevel 1 set "PY=py -3"
+  if not errorlevel 1 (
+    set "PY=py"
+    set "PYARG=-3"
+  )
 )
 if not defined PY (
   python -c "import sys" >nul 2>&1
@@ -71,7 +78,7 @@ if not errorlevel 1 (
 )
 
 echo   Ligando o estudio...
-start "Forja Studio" /min "%PY%" -s "estudio\server.py"
+start "Forja Studio" /min "%PY%" %PYARG% -s "estudio\server.py"
 
 echo   Esperando ele responder (ate 60 segundos)...
 set TENTATIVA=0
