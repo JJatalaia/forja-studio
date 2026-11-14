@@ -13,6 +13,11 @@ do texto é o detalhe deles.
   3. Você NÃO pode redistribuir, republicar, revender, nem usar a configuração
      deste programa em outro lugar.
 
+  É PROIBIDO VENDER. O Forja Studio é gratuito e tem que continuar gratuito para
+  quem o recebe. Ninguém pode cobrar por ele — nem pelo programa, nem pelo
+  instalador, nem por conta, licença ou acesso. Se alguém cobrou de você por ele,
+  você foi enganado: na origem ele é de graça. O detalhe está no item 2(b).
+
 
 --------------------------------------------------------------------------------
 1. O QUE VOCÊ PODE FAZER
@@ -46,8 +51,26 @@ a) REDISTRIBUIR. Não republique, não espelhe, não hospede cópias, não inclu
    outro pacote, não compartilhe o instalador. Quem quiser o programa pega na
    origem.
 
-b) VENDER. Não venda, alugue, licencie nem sublicencie este programa, nem como
-   parte de outro produto ou serviço.
+b) VENDER. A VENDA É EXPRESSAMENTE PROIBIDA. Este programa é gratuito, e ninguém
+   além do autor pode cobrar por ele, sob nenhuma forma. Em especial, é proibido:
+
+     - vender, alugar, licenciar ou sublicenciar o programa, inteiro ou em parte,
+       modificado ou não;
+     - cobrar pelo instalador, pelo download, por uma cópia ou por um link para
+       ele;
+     - vender, alugar ou ceder em troca de pagamento contas, licenças, chaves ou
+       qualquer forma de acesso ao programa;
+     - vender a configuração do Forja (presets, workflows, parâmetros), junta ou
+       separada do programa;
+     - incluir o programa em produto, curso, pacote, assinatura ou serviço pago,
+       ou oferecê-lo como brinde ou bônus de algo pago;
+     - cobrar para "liberar", "ativar" ou "desbloquear" o que o programa já
+       entrega de graça.
+
+   O que NÃO é venda do programa: vender o que você PRODUZIU com ele (item 1(c)),
+   e cobrar pelo seu próprio trabalho — por exemplo, um técnico que instala para
+   um cliente —, desde que o cliente baixe da origem, use a conta dele e saiba
+   que o programa é gratuito.
 
 c) FAZER OBRA DERIVADA PARA DISTRIBUIR. Modificar para uso próprio pode (1(f));
    distribuir a versão modificada, não.
@@ -108,9 +131,12 @@ depois disso.
 6. QUER FAZER ALGO QUE A LICENÇA NÃO PERMITE?
 --------------------------------------------------------------------------------
 
-Pergunte. Permissão por escrito do autor libera qualquer item da seção 2. Revenda,
-distribuição, uso em sala de aula, integração em outro produto — tudo é conversável.
-O "não" acima quer dizer "não sem combinar", e não "nunca".
+Pergunte. Permissão por escrito do autor pode liberar os itens da seção 2:
+distribuição, uso em sala de aula, integração em outro produto — isso é conversável.
+Para esses, o "não" acima quer dizer "não sem combinar", e não "nunca".
+
+A exceção é a VENDA (item 2(b)): o programa é gratuito e não existe licença de
+revenda.
 
 
 --------------------------------------------------------------------------------
@@ -138,6 +164,11 @@ required. Everything you create with it is yours, with no claim from the author.
 You may NOT redistribute, mirror, resell, sublicense, distribute modified versions,
 circumvent the account/licensing system, or extract and reuse the program's
 encrypted configuration (presets and workflows).
+
+SELLING IS EXPRESSLY FORBIDDEN. The program is free and must stay free: nobody but
+the author may charge for it in any form - not for the program, the installer, a
+copy, an account, a license or access to it, nor bundle it into a paid product,
+course or service. What you create with it is yours to sell.
 
 Third-party programs and AI models keep their own licenses - see NOTICE.
 

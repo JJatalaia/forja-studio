@@ -219,6 +219,10 @@ completo está em [LICENSE](LICENSE)):
 - **Precisa** criar uma conta gratuita. É condição de uso.
 - **Não pode** redistribuir, revender, nem usar a configuração do Forja em outro lugar.
 
+**É proibido vender.** O Forja é gratuito: ninguém pode cobrar pelo programa, pelo
+instalador, por conta, licença ou acesso, nem colocá-lo dentro de curso ou pacote pago.
+Se alguém cobrou de você por ele, você foi enganado.
+
 **O que você produzir aqui é seu.** Imagens, vídeos, áudios e textos: o autor não
 reivindica nada, não cobra participação e não precisa ser citado.
 

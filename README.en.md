@@ -220,6 +220,10 @@ running inside your machine. No local server protects against that.
 - **You must** create a free account. That is a condition of use.
 - **You may not** redistribute, resell, or use the Forja configuration anywhere else.
 
+**Selling is forbidden.** Forja is free: nobody may charge for the program, the
+installer, an account, a license or access to it, nor bundle it into a paid course or
+package. If someone charged you for it, you were misled.
+
 **Whatever you produce here is yours.** Images, videos, audio and text: the author claims
 nothing, takes no cut and does not need to be credited.
 
