@@ -7,6 +7,13 @@
    A porta cobre a pagina inteira enquanto nao houver conta. Quando o estudio esta liberado,
    o conta.js tira o [hidden] do corpo e esta folha nao pinta mais nada. */
 
+/* Enquanto o estudio confere a conta, nada aparece (so o fundo): acaba o painel piscando
+   atras do login ao atualizar. Com o login na frente, a pagina de baixo nao rola - era ela
+   que deixava a barra lateral ali. */
+html.conferindo { background: #0b0d12; }
+html.conferindo body { visibility: hidden; }
+html:has(body.sem-conta), body.sem-conta { overflow: hidden; }
+
 .porta {
   position: fixed; inset: 0; z-index: 90; display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

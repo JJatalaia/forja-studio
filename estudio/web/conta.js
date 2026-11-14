@@ -344,6 +344,12 @@
 
   // ------------------------------------------------------------------ comeco
   async function comecar() {
+    // a pagina nasce escondida (marca "conferindo" no index.html) e so aparece aqui, ja com a
+    // porta no lugar certo - aconteca o que acontecer la dentro.
+    try { await preparar(); } finally { document.documentElement.classList.remove('conferindo'); }
+  }
+
+  async function preparar() {
     let estado = null;
     try {
       estado = await pedir('/api/conta/estado');

@@ -10,7 +10,11 @@
 <link rel="stylesheet" href="voz.css?v=20261103-nuvem">
 <link rel="stylesheet" href="canal.css?v=20261102-molde">
 <link rel="stylesheet" href="plano.css?v=20261102-molde2">
-<link rel="stylesheet" href="conta.css?v=20261114-porta3">
+<link rel="stylesheet" href="conta.css?v=20261114-porta4">
+<!-- Ate saber se a pessoa entrou, a pagina fica escondida: sem isto, ao atualizar, o painel
+     aparecia meio segundo antes da tela de login. O conta.js tira a marca; se ele falhar, ela
+     sai sozinha em 4 s, para ninguem ficar preso numa tela vazia. -->
+<script>document.documentElement.classList.add('conferindo');setTimeout(function(){document.documentElement.classList.remove('conferindo');},4000);</script>
 </head>
 <body>
 <a class="pular" id="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -1043,7 +1047,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
      para a pessoa que escolheu inglês não ver o português piscar primeiro. -->
 <script src="idioma.js?v=20261114-musica"></script>
 <script src="icones.js?v=20260924-desligar2"></script>
-<script src="conta.js?v=20261103-conta2"></script>
+<script src="conta.js?v=20261114-conta3"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
 <script src="app.js?v=20261114-musica"></script>
 <script src="voz.js?v=20261109-selo"></script>
