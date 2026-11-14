@@ -602,13 +602,46 @@ def estimativa_por_trecho(job):
     return t + (3 if ULTIMO_PRESET["id"] == job["preset"] else sum(carga) / len(carga))
 
 
+_LTX23 = {"quando": 0.0, "tem": False}
+
+
+def ltx23_instalado():
+    """Os modelos que o LTX-2.3 do Apresentador pede estao TODOS no disco?
+
+    Sem esta pergunta, o "Automatico" mandava todo audio de ate 15 s para o LTX-2.3 - que
+    quem instalou o Apresentador pelo botao NAO tem: os 40 GB dele nao fazem parte do
+    Apresentador no catalogo. O painel dizia "instalada" e o primeiro video curto falhava.
+    A resposta fica guardada 20 s: a estimativa de tempo pergunta isto a toda hora.
+    """
+    agora = time.time()
+    if agora - _LTX23["quando"] < 20:
+        return _LTX23["tem"]
+    tem = False
+    try:
+        base = cofre.ler_json("presets/ltx23_ia2v.api.json")
+        nomes = set(re.findall(r"[\w.\-]+\.(?:safetensors|gguf)", json.dumps(base)))
+        cat = ias.catalogo()
+        tem = bool(nomes)
+        for nome in nomes:
+            info = cat.get(nome)
+            ok = ias.esta_completo(nome, info) if info else any((COMFY_DIR / "models").glob("*/" + nome))
+            if not ok:
+                tem = False
+                break
+    except Exception:
+        tem = False
+    _LTX23.update({"quando": agora, "tem": tem})
+    return tem
+
+
 def estimativa_apresentador(job):
     """~150 s por trecho de 3,2 s (medido: 8 s em 3 trechos), + voz, + carga se o modelo não estiver na memória."""
     seg = job.get("segundos_audio") or max(4.0, len(job.get("prompt") or "") / 18.0)
     voz_s = 0 if job.get("audio") else 30 + 8 * len(voz.dividir(job.get("prompt") or "x"))
     carga = 0 if ULTIMO_PRESET["id"] == "apresentador" else 240
     motor = job.get("motor_usado") or job.get("motor") or "Automático"
-    if motor.startswith("LTX") or (sem_acento(motor).startswith("automatico") and seg <= apresentador.LTX_MAX_S):
+    if motor.startswith("LTX") or (sem_acento(motor).startswith("automatico")
+                                   and seg <= apresentador.LTX_MAX_S and ltx23_instalado()):
         return 25 * seg + 60 + voz_s + carga  # medido: 8 s em ~436 s com carga do HD
     n = apresentador.num_trechos(int(seg * apresentador.FPS))
     return 150 * n + voz_s + carga
@@ -1993,8 +2026,15 @@ async def processar_apresentador(job):
             with Image.open(entrada / job["imagem"]) as im:
                 tam_foto = im.size
             motor = job.get("motor") or "Automático"
-            usar_ltx = motor.startswith("LTX") or (sem_acento(motor).startswith("automatico")
-                                                   and dur <= apresentador.LTX_MAX_S)
+            automatico = sem_acento(motor).startswith("automatico")
+            usar_ltx = motor.startswith("LTX") or (automatico and dur <= apresentador.LTX_MAX_S)
+            if usar_ltx and not ltx23_instalado():
+                # 13/11/2026: o Automatico so vai de LTX-2.3 se ele ESTIVER instalado. Quem
+                # instalou o Apresentador pelo botao tem o InfiniteTalk, e e com ele que vai.
+                if not automatico:
+                    raise RuntimeError("O motor LTX-2.3 não está instalado nesta máquina. "
+                                       "Escolha o motor Automático ou InfiniteTalk.")
+                usar_ltx = False
             cena = job.get("cena") or CENA_APRESENTADOR
             if usar_ltx:
                 if dur > apresentador.LTX_MAX_S + 5:
