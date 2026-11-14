@@ -83,7 +83,7 @@
     "full_encoder_small_decoder.safetensors": {
       "pasta": "vae",
       "bytes": 249519092,
-      "fonte": "",
+      "fonte": "https://huggingface.co/black-forest-labs/FLUX.2-small-decoder/resolve/main/full_encoder_small_decoder.safetensors",
       "usado_por": [
         "FLUX.2 dev"
       ]
@@ -124,7 +124,7 @@
     "h3-realism-people-t2v-i2v-r2v.safetensors": {
       "pasta": "loras",
       "bytes": 131229656,
-      "fonte": "",
+      "fonte": "https://huggingface.co/fal/MiniMax-H3-Realism-People-LoRA/resolve/main/h3-realism-people-t2v-i2v-r2v.safetensors",
       "usado_por": [
         "Imagem pelo H3 (referencias)",
         "Senhor em outro lugar (ficha + cenário)"
