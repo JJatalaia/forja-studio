@@ -10,6 +10,14 @@
       "texto": "A parte do meio da tela de Início mudou. Cada motor agora é um cartão com uma chave de verdade: imagem e vídeo, música, a IA de texto e a memória da placa. Ligado fica aceso em ciano; ligando, em laranja. Os cartões de criar (Imagem, Vídeo, Pessoa falando, Música) ganharam a mesma chave, então dá para ligar e desligar o motor direto dali. E a fila saiu do meio: ficou numa faixa própria, logo abaixo, com o que está gerando agora e o atalho para a aba Fila."
     },
     {
+      "id": "2026-11-14-voz-com-chave-e-desligar",
+      "data": "2026-11-14",
+      "etiqueta": "aviso",
+      "destaque": false,
+      "titulo": "A voz ganhou chave, e o Desligar foi consertado: reinstale se instalou antes de 14/11",
+      "texto": "Duas coisas. A voz local (VoiceStudio) agora aparece em Motores e no cartão Narração com a mesma chave de ligar e desligar dos outros. E um conserto importante: no instalador publicado até 14/11 faltava uma peça, e Desligar qualquer motor respondia com erro. Ligar e gerar funcionavam normalmente. Quem instalou antes disso precisa baixar o ForjaStudio-Instalador.exe de novo e instalar por cima; as IAs que você já baixou continuam no lugar e não são baixadas de novo."
+    },
+    {
       "id": "2026-11-14-cara-do-canal",
       "data": "2026-11-14",
       "etiqueta": "novidade",
