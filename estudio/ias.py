@@ -280,6 +280,10 @@ def progresso():
                 "erros": dict(_erros)}
 
 
+class _Portao(OSError):
+    """O servidor pediu conta/licenca (401/403). So ESTE arquivo espera; o resto da IA baixa."""
+
+
 class _Lento(Exception):
     """A conexao da vez esta muito abaixo do que esta internet ja mostrou: vale pedir outra."""
 
@@ -333,7 +337,7 @@ def _baixar_arquivo(nome, info, religadas=0):
         # pessoa via "HTTP Error 401: Unauthorized" - quando via, porque a tela nem
         # mostrava o erro.
         if e.code in (401, 403):
-            raise OSError(_recado_do_portao(info["fonte"], nome, bool(token))) from e
+            raise _Portao(_recado_do_portao(info["fonte"], nome, bool(token))) from e
         raise
     with conexao as r:
         # 206 = "aqui esta o resto", 200 = "toma o arquivo inteiro". O segundo caso
@@ -426,6 +430,7 @@ def _baixar_uma_ia(ia, cat):
     arquivos = arquivos_da(ia, cat)
     ia_total = sum(v.get("bytes") or 0 for v in arquivos.values())
     ia_antes = sum(v.get("bytes") or 0 for n, v in arquivos.items() if esta_completo(n, v))
+    portao = None       # o primeiro arquivo que pediu token: avisa so no fim
     for numero, (nome, info) in enumerate(arquivos.items(), 1):
         if _parar:
             raise InterruptedError("parado por quem pediu")
@@ -443,6 +448,9 @@ def _baixar_uma_ia(ia, cat):
             try:
                 _baixar_arquivo(nome, info, religadas)
                 break
+            except _Portao as exc:
+                portao = portao or exc      # segue para os outros arquivos desta IA
+                break
             except _Lento as lento:
                 religadas += 1
                 print(f"[estúdio] {nome}: conexão lenta ({lento}); pedindo outra "
@@ -451,7 +459,10 @@ def _baixar_uma_ia(ia, cat):
                 with _trava:
                     if _agora:
                         _agora["religadas"] = religadas
-        ia_antes += info.get("bytes") or 0
+        if esta_completo(nome, info):
+            ia_antes += info.get("bytes") or 0
+    if portao:
+        raise portao
 
 
 def instalar(ia):
