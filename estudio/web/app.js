@@ -708,8 +708,8 @@ async function musicasDireto() {
 // ComfyUI. Cartão com serviço desligado ganha um aviso pequeno que liga na hora (o cartão continua abrindo).
 // A Narração não depende de nenhum serviço que o estúdio ligue: quem liga o VoiceStudio é a
 // própria tela dela (lista vazia = nunca mostra aviso de "desligado" no cartão do Início).
-const SERV_DO_CARTAO = { imagem: ['video'], video: ['video'], apresentador: ['video'], voz: [], canal: [], plano: ['video'], musica: ['painel_musica', 'video'] };
-const ACAO_DO_SERV = { video: 'video', painel_musica: 'musica', hermes: 'hermes', telegram: 'telegram' };
+const SERV_DO_CARTAO = { imagem: ['video'], video: ['video'], apresentador: ['video'], voz: ['voz'], canal: [], plano: ['video'], musica: ['painel_musica', 'video'] };
+const ACAO_DO_SERV = { voz: 'voz', video: 'video', painel_musica: 'musica', hermes: 'hermes', telegram: 'telegram' };
 function estadoDoGrupo(chaves) {
   const S = servicosDe(G.inicio);
   const est = chaves.map((k) => S.find((s) => s.chave === k)).filter(Boolean);
@@ -725,9 +725,9 @@ function estadoDoGrupo(chaves) {
 function avisoCartao(e) {
   const g = estadoDoGrupo(SERV_DO_CARTAO[e.rota]);
   if (!g) return '';
-  const musica = e.rota === 'musica';
-  const acao = musica ? 'musica' : 'video';
-  const quem = musica ? 'a música' : 'o motor de imagem e vídeo';
+  const musica = e.rota === 'musica', voz = e.rota === 'voz';
+  const acao = musica ? 'musica' : voz ? 'voz' : 'video';
+  const quem = musica ? 'a música' : voz ? 'a voz local' : 'o motor de imagem e vídeo';
   if (g.estado === 'ligando') {
     return `<span class="escolha-aviso ligando">${ic('relogio')}<span>Ligando… <span data-desde="${esc(g.desde)}">${esc(fmt(agoraServidor() - g.desde))}</span></span></span>`;
   }
@@ -739,7 +739,7 @@ function avisoCartao(e) {
   const ligado = g.estado === 'ligado';
   const rot = ligado ? 'ligado' : g.parcial ? 'parte desligada' : 'desligado';
   if (!podeLigar(acao) || (G.inicio && G.inicio.legado)) return `<span class="escolha-aviso ${ligado ? 'lig' : 'desligado'}"><span>${rot}</span></span>`;
-  const attr = ligado ? `data-desligar="${musica ? 'painel' : 'video'}"` : `data-ligar="${acao}"`;
+  const attr = ligado ? `data-desligar="${musica ? 'painel' : voz ? 'voz' : 'video'}"` : `data-ligar="${acao}"`;
   return `<span class="escolha-aviso ${ligado ? 'lig' : 'desligado'}"><span>${rot}</span>`
     + `<button type="button" class="chave${ligado ? ' on' : ''}" role="switch" aria-checked="${ligado}" ${attr} `
     + `aria-label="${esc(e.titulo)}: ${ligado ? 'desligar' : 'ligar'} ${esc(quem)}"><span class="sr-only">${ligado ? 'Desligar' : 'Ligar'}</span></button></span>`;
@@ -1075,8 +1075,8 @@ function renderSemResposta() {
 
 // ---------------------------------------------------------------- serviços: "Ligar" em cada um e "Ligar tudo"
 const agoraServidor = () => Date.now() / 1000 + (G.relogioDif || 0);
-const ORDEM_SERV = ['video', 'painel_musica', 'hermes', 'telegram'];
-const NOME_SERV = { video: 'Imagem e vídeo (ComfyUI)', painel_musica: 'Painel de música', hermes: 'Hermes (IA que conversa)', telegram: 'Telegram do Hermes (avisos no celular)' };
+const ORDEM_SERV = ['video', 'painel_musica', 'voz', 'hermes', 'telegram'];
+const NOME_SERV = { voz: 'Voz e clone de voz (VoiceStudio)', video: 'Imagem e vídeo (ComfyUI)', painel_musica: 'Painel de música', hermes: 'Hermes (IA que conversa)', telegram: 'Telegram do Hermes (avisos no celular)' };
 const LEGADO_MSG = 'Esta versão do servidor do estúdio ainda não liga os serviços pelo Início. Feche o estúdio pelo atalho “Desligar Estúdio” (com nada gerando) e abra de novo para ativar os botões.';
 // [{chave, nome, estado, desde, mensagem, lento, porta}] do /api/inicio; servidor antigo: só ligado/desligado
 function servicosDe(I) {
@@ -1096,7 +1096,7 @@ function podeLigar(acao) {
   if (!I.legado) return true;
   return acao === 'musica' && ((I.sistema || {}).servicos || {}).painel_musica === false;
 }
-const ICONE_DO_MOTOR = { video: 'video', painel_musica: 'musica', comfy_musica: 'musica', ace: 'musica', hermes: 'servidor', telegram: 'enviar' };
+const ICONE_DO_MOTOR = { voz: 'onda', video: 'video', painel_musica: 'musica', comfy_musica: 'musica', ace: 'musica', hermes: 'servidor', telegram: 'enviar' };
 function linhaServico(s) {
   const acao = ACAO_DO_SERV[s.chave] || 'video';
   const legado = G.inicio && G.inicio.legado;
@@ -1149,7 +1149,7 @@ function renderServicos() {
   }
   // "Ligar tudo" só quando algum dos serviços está desligado (a IA de texto tem o próprio "Ligar agora"; em espera
   // ela não conta, senão o botão aparecia com tudo ligado, logo depois de o dono desligá-la de propósito)
-  const off = lista.some((s) => !['hermes', 'telegram'].includes(s.chave) && (s.estado === 'desligado' || s.estado === 'erro'));
+  const off = lista.some((s) => !['hermes', 'telegram', 'voz'].includes(s.chave) && (s.estado === 'desligado' || s.estado === 'erro'));
   $('#btLigarTudo').hidden = I.legado || !off;
   // atalhos por grupo: "Ligar imagem e vídeo" (ComfyUI) e "Ligar música" (o painel de música + a mesma ComfyUI)
   const est = (k) => (lista.find((s) => s.chave === k) || {}).estado;
@@ -1159,7 +1159,7 @@ function renderServicos() {
   $('#btLigarVideo').hidden = !verVideo;
   $('#btLigarMusicaGrupo').hidden = !verMusica;
   $('#maqGrupos').hidden = !(verVideo || verMusica);
-  const algumLigado = lista.some((s) => s.estado === 'ligado' && !['painel_musica', 'hermes', 'telegram'].includes(s.chave))
+  const algumLigado = lista.some((s) => s.estado === 'ligado' && !['painel_musica', 'hermes', 'telegram', 'voz'].includes(s.chave))
     || ((I.texto || {}).simples || {}).estado === 'pronta';
   $('#btDesligarTudo').hidden = I.legado || !algumLigado;
   const nota = $('#maqServNota');
@@ -1167,9 +1167,9 @@ function renderServicos() {
   nota.textContent = nota.hidden ? '' : TX(LEGADO_MSG);
 }
 const LIGANDO_CLIQUE = new Set();  // trava contra dois cliques (o servidor também não liga em dobro)
-const FRASE_LIGAR = { video: 'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…', musica: 'Ligando a música (o painel e a ComfyUI)…',
+const FRASE_LIGAR = { voz: 'Ligando a voz local (uns 30 segundos)…', video: 'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…', musica: 'Ligando a música (o painel e a ComfyUI)…',
   texto: 'Ligando a IA de texto no processador…', hermes: 'Ligando o Hermes (painel web, uns 6 s)…', telegram: 'Ligando o Telegram do Hermes (uns 20 s)…', tudo: 'Ligando o que estava desligado…' };
-const ALVO_DESLIGAR = { video: 'video', painel_musica: 'painel', hermes: 'hermes' };
+const ALVO_DESLIGAR = { voz: 'voz', video: 'video', painel_musica: 'painel', hermes: 'hermes' };
 async function desligarServico(alvo, bt) {
   if (alvo === 'tudo' && !confirm(TX('Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)'))) return;
   const antes = bt ? bt.innerHTML : null;

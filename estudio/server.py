@@ -3444,7 +3444,64 @@ async def estados_servicos():
             else:
                 e["estado"] = "desligado"
         res[k] = e
+    voz = estado_voz()
+    if voz:
+        res["voz"] = voz
     return res
+
+
+# ---- a VOZ como motor (14/11/2026). O VoiceStudio e um programa de terceiros: o estudio nao o
+# instala nem o gerencia como os outros servicos - so sobe o motor dele sem janela (voz_studio.ligar)
+# e o encerra pela porta. Quem nao tem o VoiceStudio nao ve este motor.
+VOZ_LIGANDO = {}
+
+
+def estado_voz():
+    """O estado da voz local para a lista de motores, ou None se o VoiceStudio nao existe aqui."""
+    porta = _porta_url(voz_studio.URL) or 3900
+    e = {"nome": "Voz e clone de voz (VoiceStudio)", "porta": porta}
+    if porta_aberta(porta):
+        VOZ_LIGANDO.clear()
+        e["estado"] = "ligado"
+    elif VOZ_LIGANDO and time.time() - VOZ_LIGANDO.get("desde", 0) < 120:
+        e.update(estado="ligando", desde=VOZ_LIGANDO["desde"])
+    elif VOZ_LIGANDO.get("erro"):
+        e.update(estado="erro", mensagem=VOZ_LIGANDO["erro"])
+    elif voz_studio.achar_backend() is not None:
+        if VOZ_LIGANDO:     # passou de 2 minutos e a porta nao abriu
+            VOZ_LIGANDO.clear()
+            VOZ_LIGANDO["erro"] = "O motor de voz não respondeu em 2 minutos. Tente de novo; se repetir, abra o VoiceStudio uma vez."
+            e.update(estado="erro", mensagem=VOZ_LIGANDO["erro"])
+        else:
+            e["estado"] = "desligado"
+    else:
+        return None
+    return e
+
+
+def _encerrar_voz():
+    """Encerra o motor de voz que escuta na porta dele. So mata processo que seja mesmo o VoiceStudio."""
+    import psutil
+    porta = _porta_url(voz_studio.URL) or 3900
+    n = 0
+    for c in psutil.net_connections(kind="tcp"):
+        if not (c.laddr and c.laddr.port == porta and c.status == psutil.CONN_LISTEN and c.pid):
+            continue
+        try:
+            proc = psutil.Process(c.pid)
+            linha = " ".join(proc.cmdline()).lower()
+            if not ("voicestudio" in linha or "omnivoice" in linha or ("backend" in linha and "main.py" in linha)):
+                print(f"[estúdio] porta {porta}: não é o VoiceStudio ({linha[:120]}); não mexi.", flush=True)
+                continue
+            proc.terminate()
+            try:
+                proc.wait(8)
+            except psutil.TimeoutExpired:
+                proc.kill()
+            n += 1
+        except (psutil.NoSuchProcess, psutil.AccessDenied) as exc:
+            print(f"[estúdio] não consegui encerrar a voz: {exc}", flush=True)
+    return n
 
 
 async def gpu_nvidia_smi():
@@ -3682,6 +3739,22 @@ async def api_servicos_ligar(req):
         return web.json_response({"ok": True, "ligando": ["hermes"], "mensagem": "Ligando o Hermes…",
                                   "servicos": {**(await estados_servicos()), "hermes": estado_hermes(), "telegram": estado_telegram()},
                                   "texto": TEXTO.estado_simples()})
+    if alvo == "voz":
+        if estado_voz() is None:
+            return web.json_response({"erro": "O VoiceStudio não está instalado nesta máquina. Marque "
+                                              "\"Voz e clone de voz\" em IAs aprovadas, na tela inicial."}, status=404)
+        ligando = []
+        if not porta_aberta(_porta_url(voz_studio.URL) or 3900):
+            ok, recado = await asyncio.to_thread(voz_studio.ligar, VOZ_SAIDA)
+            if not ok:
+                VOZ_LIGANDO.clear()
+                VOZ_LIGANDO["erro"] = recado
+                return web.json_response({"erro": recado}, status=400)
+            VOZ_LIGANDO.clear()
+            VOZ_LIGANDO["desde"] = time.time()
+            ligando = ["voz"]
+        return web.json_response({"ok": True, "ligando": ligando, "servicos": await estados_servicos(),
+                                  "texto": TEXTO.estado_simples()})
     # "musica" = o painel + a ComfyUI: desde 14/11/2026 a música gera na MESMA ComfyUI da imagem e do vídeo, então
     # ligar só o painel deixaria a primeira música esperando alguém ligar a ComfyUI.
     grupos = {"video": ("video",), "musica": ("video", "painel_musica"), "painel": ("painel_musica",),
@@ -3810,6 +3883,11 @@ async def api_servicos_desligar(req):
         return web.json_response({"ok": True, "mensagem": "Hermes desligado.",
                                   "servicos": {**(await estados_servicos()), "hermes": estado_hermes(), "telegram": estado_telegram()},
                                   "texto": TEXTO.estado_simples()})
+    if alvo == "voz":
+        VOZ_LIGANDO.clear()
+        n = await asyncio.to_thread(_encerrar_voz)
+        return web.json_response({"ok": True, "mensagem": "Voz local desligada." if n else "A voz já estava desligada.",
+                                  "servicos": await estados_servicos(), "texto": TEXTO.estado_simples()})
     grupos = {"video": ["video"], "musica": ["painel_musica"], "painel": ["painel_musica"], "texto": ["texto"],
               "tudo": ["video", "texto"]}
     if alvo not in grupos:
