@@ -1829,7 +1829,11 @@ function renderAprovadas() {
   }).join('');
 
   const comToken = [], comErro = [], comErroX = [];
-  const linhas = ids.map((id) => {
+  // 14/11/2026, pedido do dono: toda IA que tem preset no painel tem de poder ser baixada
+  // por aqui. As aprovadas em cima; as que o projeto ainda nao testou a fundo, embaixo.
+  const outras = Object.keys(ias).filter((i) => !ids.includes(i) && ias[i].conhecida !== false)
+    .sort((a, b) => (ias[b].da_para_baixar ? 1 : 0) - (ias[a].da_para_baixar ? 1 : 0));
+  const linha = (id) => {
     const e = ias[id], pr = pg.baixando;
     let estado, marcavel = false;
     if (e.instalada) estado = `<span class="aprov-ok">${ic('ok')}${esc(TX('instalada'))}</span>`;
@@ -1846,13 +1850,16 @@ function renderAprovadas() {
       estado = token ? `<span class="aprov-token">${ic('alerta')}falta o token</span>`
         : `<span class="aprov-erro">${ic('alerta')}não baixou</span>`;
     }
-    else if (!e.da_para_baixar) estado = `<span class="aprov-erro">${esc(T('ia.faltaMao', 'Falta instalar — {gb} GB, baixar à mão', { gb: e.gb_falta }))}</span>`;
+    else if (!e.da_para_baixar) estado = `<span class="aprov-breve">${esc(num(e.gb_falta, 1))} GB · baixar à mão</span>`;
     else { estado = `<span class="aprov-falta">${esc(T('aprov.falta', 'falta baixar {gb} GB', { gb: e.gb_falta }))}</span>`; marcavel = true; }
     if (!marcavel) G.aprovSel.delete(id);
     return `<label class="aprov-linha${marcavel ? '' : ' travada'}">
       <input type="checkbox" data-aprov="${esc(id)}" ${G.aprovSel.has(id) ? 'checked' : ''} ${marcavel && !ocupado ? '' : 'disabled'}>
       <span class="aprov-nome">${esc(nomeCurto(e.nome))}</span>${estado}</label>`;
-  }).join('');
+  };
+  const linhas = ids.map(linha).join('');
+  const linhasO = outras.map(linha).join('');
+  const todos = ids.concat(outras);
 
   // os recados, uma vez so e na largura toda
   const recados = [];
@@ -1890,13 +1897,14 @@ function renderAprovadas() {
       <b>${esc(x.nome)} não baixou</b><p>${esc(msg)}</p></div></div>`));
   const marcadasX = extras.filter((x) => G.extraSel.has(x.id));
 
-  const marcadas = ids.filter((i) => G.aprovSel.has(i));
+  const marcadas = todos.filter((i) => G.aprovSel.has(i));
   const soma = marcadas.reduce((s, i) => s + (ias[i].gb_falta || 0), 0) + marcadasX.reduce((s, x) => s + (x.gb || 0), 0);
   const nMarcadas = marcadas.length + marcadasX.length;
   const disco = (d.discos || []).find((k) => k.unidade === d.unidade);
   const livre = disco ? disco.livre_gb : null;
   const naoCabe = livre != null && soma + 2 > livre;
   const faltam = ids.filter((i) => !ias[i].instalada && ias[i].da_para_baixar).length;
+  const faltamO = outras.filter((i) => !ias[i].instalada && ias[i].da_para_baixar).length;
 
   onde.innerHTML = `
     <div class="aprov-passo"><h3>${esc(TX('1. Em que disco ficam as IAs'))}</h3>
@@ -1908,6 +1916,9 @@ function renderAprovadas() {
     <div class="aprov-passo"><h3>${esc(TX('2. Quais você quer'))}</h3>
       <div class="aprov-lista">${linhas}</div>
       ${linhasX ? `<h4 class="aprov-sub">Voz e texto</h4><div class="aprov-lista">${linhasX}</div>` : ''}
+      ${linhasO ? `<h4 class="aprov-sub">Ainda não testadas a fundo pelo projeto</h4>
+        <p class="nota aprov-sub-nota">Têm preset no painel e podem funcionar bem, mas foram pouco usadas: baixe sabendo disso. A que diz “baixar à mão” não tem endereço público conhecido.</p>
+        <div class="aprov-lista">${linhasO}</div>` : ''}
       ${recados.join('')}
       ${faltam > 1 && !ocupado ? `<button type="button" class="aprov-todas" data-marcar-todas>${esc(marcadas.length === faltam ? TX('Desmarcar todas') : TX('Marcar todas'))}</button>` : ''}
     </div>
@@ -1916,7 +1927,7 @@ function renderAprovadas() {
         ? esc(T('aprov.total', '{n} marcada(s): {gb} GB para baixar', { n: nMarcadas, gb: num(soma, 1) }))
           + (livre != null ? ' · ' + esc(T('aprov.livreNo', '{gb} GB livres no {u}:', { gb: num(livre, 0), u: d.unidade })) : '')
           + (naoCabe ? ' — ' + esc(TX('não cabe neste disco')) : '')
-        : esc(faltam || extras.some((x) => x.pode && !x.instalada) ? TX('Marque o que você quer baixar.') : TX('Tudo que dá para instalar por aqui já está instalado.'))}</p>
+        : esc(faltam || faltamO || extras.some((x) => x.pode && !x.instalada) ? TX('Marque o que você quer baixar.') : TX('Tudo que dá para instalar por aqui já está instalado.'))}</p>
       ${ocupado
         ? `<button type="button" class="bt-sec" data-parar-download>${esc(TX('Parar o download'))}</button>`
         : `<button type="button" class="gerar aprov-instalar" data-instalar-aprovadas ${nMarcadas && !naoCabe ? '' : 'disabled'}>${ic('baixar')}<span>${esc(TX('3. Instalar as marcadas'))}</span></button>`}
@@ -1942,7 +1953,7 @@ async function trocarDisco(unidade) {
   } catch (e) { aviso('Não consegui falar com o estúdio.', 'erro'); }
 }
 async function instalarAprovadas() {
-  const ias = G.ias || {}, ids = (G.aprovadasIds || []).filter((i) => G.aprovSel && G.aprovSel.has(i));
+  const ias = G.ias || {}, ids = Object.keys(ias).filter((i) => G.aprovSel && G.aprovSel.has(i));
   const extras = ((G.requisitos || {}).extras || []).filter((x) => G.extraSel && G.extraSel.has(x.id));
   if (!ids.length && !extras.length) return;
   const soma = ids.reduce((s, i) => s + (ias[i].gb_falta || 0), 0) + extras.reduce((s, x) => s + (x.gb || 0), 0);
