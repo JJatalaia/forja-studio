@@ -1558,3 +1558,15 @@ details.nov.destaque, details.nov.destaque[open] { background: none; border-colo
 .fila-abrir { height: 28px; padding: 0 13px; display: inline-flex; align-items: center; font-weight: 600; font-size: 12px; }
 @media (max-width: 720px) { .bancada > .motores { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 460px) { .bancada > .motores { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- o idioma em TRÊS BOTÕES à vista: PT · EN · ES (14/11/2026). Antes era uma caixinha de
+   escolher que só mostrava "PT", e ninguém percebia que era ali que se trocava. ---- */
+.idioma-canto { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--fundo-2);
+  border: 1px solid var(--borda); }
+.idioma-bt { min-width: 24px; height: 24px; padding: 0 4px; border: 0; border-radius: 999px; background: none;
+  color: var(--fraco); font-size: 11.5px; font-weight: 700; letter-spacing: .03em; cursor: pointer;
+  transition: background .15s ease, color .15s ease; }
+.idioma-bt:hover { color: var(--texto); }
+.idioma-bt[aria-pressed="true"] { background: var(--acento); color: var(--acento-texto); }
+.idioma-bt:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+@media (min-width: 981px) { .idioma-canto { align-self: center; } }

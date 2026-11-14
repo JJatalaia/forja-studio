@@ -1263,8 +1263,7 @@
     } catch (e) { /* sem armazenamento: vale só para esta aba */ }
     // O seletor também é tela: se alguém trocar por fora (I18N.trocar), ele tem de
     // mostrar o idioma de verdade, e não o de antes.
-    var sel = document.getElementById('idiomaSel');
-    if (sel && sel.value !== novo) sel.value = novo;
+    marcarSeletor(novo);
     aplicar();
     // Quem desenha conteúdo por JavaScript escuta isto para redesenhar. Hoje ninguém
     // escuta ainda - fica pronto para quando as outras telas forem traduzidas.
@@ -1275,14 +1274,27 @@
   function montarSeletor() {
     var canto = document.getElementById('idiomaCanto');
     if (!canto) return;
-    canto.innerHTML =
-      '<label class="sr-only" for="idiomaSel" data-i18n="idioma.rotulo">Idioma</label>'
-      + '<select id="idiomaSel" class="idioma-sel" title="Idioma / Language">'
-      + '<option value="pt">PT</option><option value="en">EN</option>'
-      + '<option value="es">ES</option></select>';
-    var sel = document.getElementById('idiomaSel');
-    sel.value = atual;
-    sel.addEventListener('change', function () { trocar(sel.value); });
+    // 14/11/2026: era uma caixinha de escolher mostrando so "PT" - o dono perguntou "cade os
+    // botoes de portugues, ingles e espanhol?". Agora sao tres botoes a vista, e o do idioma
+    // em uso fica aceso.
+    var nomes = { pt: 'Português', en: 'English', es: 'Español' };
+    canto.setAttribute('role', 'group');
+    canto.setAttribute('aria-label', 'Idioma / Language');
+    canto.innerHTML = ['pt', 'en', 'es'].map(function (c) {
+      return '<button type="button" class="idioma-bt" data-idioma-bt="' + c + '" title="' + nomes[c]
+        + '" aria-label="' + nomes[c] + '">' + c.toUpperCase() + '</button>';
+    }).join('');
+    canto.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('[data-idioma-bt]') : null;
+      if (b) trocar(b.getAttribute('data-idioma-bt'));
+    });
+    marcarSeletor(atual);
+  }
+  function marcarSeletor(qual) {
+    var bts = document.querySelectorAll('#idiomaCanto [data-idioma-bt]');
+    for (var i = 0; i < bts.length; i++) {
+      bts[i].setAttribute('aria-pressed', String(bts[i].getAttribute('data-idioma-bt') === qual));
+    }
   }
 
   function comecar() {
