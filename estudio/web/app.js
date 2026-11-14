@@ -1548,14 +1548,162 @@ async function lerIAs() {
     if (!r.ok) return;
     const d = await r.json();
     G.ias = d.ias || {};
+    G.aprovadasIds = d.aprovadas || [];
     G.iasProgresso = d.progresso || {};
     if (G.iasProgresso.baixando) {
       clearTimeout(G.iasTimer);
       G.iasTimer = setTimeout(lerIAs, 1500);   // só fica perguntando enquanto baixa
     }
+    // O bloco das aprovadas PRIMEIRO, e protegido: o renderIAs() desenha os cartoes das
+    // abas e estoura quando a pessoa esta na tela inicial (nao ha aba aberta). Com ele na
+    // frente, o bloco nunca se redesenhava depois de trocar o disco nem durante o download.
+    try { renderAprovadas(); } catch (e) { /* bloco ausente nesta tela */ }
     renderIAs();
   } catch (e) { /* sem rota: servidor antigo. A tela funciona, só sem o aviso. */ }
 }
+
+// ================================================= IAs aprovadas + onde instalar (13/11/2026)
+// Tres passos na mesma caixa, na ordem em que a pessoa pensa: EM QUE DISCO, QUAIS, INSTALAR.
+// O que ela marca fica em G.aprovSel: a tela se redesenha a cada 1,5 s enquanto baixa, e
+// sem guardar a marcacao as caixinhas desmarcariam sozinhas no meio da escolha.
+async function lerDestino() {
+  try {
+    const r = await fetch('/api/ias/destino');
+    if (!r.ok) return;
+    G.destino = await r.json();
+    renderAprovadas();
+  } catch (e) { /* servidor antigo, sem esta rota: o bloco simplesmente nao aparece */ }
+}
+function renderAprovadas() {
+  const onde = $('#aprovadas'), bloco = $('#blocoAprovadas');
+  if (!onde || !bloco) return;
+  const d = G.destino, ias = G.ias || {}, ids = (G.aprovadasIds || []).filter((i) => ias[i]);
+  bloco.hidden = !d || !ids.length;
+  if (bloco.hidden) return;
+  if (!G.aprovSel) G.aprovSel = new Set();
+  const pg = G.iasProgresso || {}, ocupado = !!(pg.baixando || (pg.fila || []).length);
+  const noPainel = (d.pasta_do_painel || '').slice(0, 1).toUpperCase();
+
+  const discos = (d.discos || []).map((k) => {
+    const sel = k.unidade === d.unidade;
+    return `<button type="button" class="disco${sel ? ' sel' : ''}" data-disco="${esc(k.unidade)}" aria-pressed="${sel}"
+      ${d.por_ambiente || ocupado ? 'disabled' : ''}>
+      <b>${esc(k.unidade)}:</b><span>${esc(T('aprov.livres', '{gb} GB livres', { gb: num(k.livre_gb, 0) }))}</span>
+      <small>${esc(T('aprov.deTotal', 'de {gb} GB', { gb: num(k.total_gb, 0) }))}${k.unidade === noPainel ? ' · ' + esc(TX('onde o painel está')) : ''}</small></button>`;
+  }).join('');
+
+  const linhas = ids.map((id) => {
+    const e = ias[id], pr = pg.baixando;
+    let estado, marcavel = false;
+    if (e.instalada) estado = `<span class="aprov-ok">${ic('ok')}${esc(TX('instalada'))}</span>`;
+    else if (pr && pr.ia === e.nome) {
+      const pc = pr.total ? Math.floor((pr.baixados / pr.total) * 100) : 0;
+      estado = `<span class="aprov-baixando">${esc(T('ia.baixando', 'Baixando… {pc}%', { pc }))}</span>`;
+    } else if ((pg.fila || []).includes(e.nome)) estado = `<span class="aprov-baixando">${esc(TX('na fila'))}</span>`;
+    else if (pg.erro && pg.erro_ia === id) estado = `<span class="aprov-erro" role="alert">${esc(pg.erro)}</span>`;
+    else if (!e.da_para_baixar) estado = `<span class="aprov-erro">${esc(T('ia.faltaMao', 'Falta instalar — {gb} GB, baixar à mão', { gb: e.gb_falta }))}</span>`;
+    else { estado = `<span class="aprov-falta">${esc(T('aprov.falta', 'falta baixar {gb} GB', { gb: e.gb_falta }))}</span>`; marcavel = true; }
+    if (!marcavel) G.aprovSel.delete(id);
+    return `<label class="aprov-linha${marcavel ? '' : ' travada'}">
+      <input type="checkbox" data-aprov="${esc(id)}" ${G.aprovSel.has(id) ? 'checked' : ''} ${marcavel && !ocupado ? '' : 'disabled'}>
+      <span class="aprov-nome">${esc(nomeCurto(e.nome))}</span>${estado}</label>`;
+  }).join('');
+
+  const marcadas = ids.filter((i) => G.aprovSel.has(i));
+  const soma = marcadas.reduce((s, i) => s + (ias[i].gb_falta || 0), 0);
+  const disco = (d.discos || []).find((k) => k.unidade === d.unidade);
+  const livre = disco ? disco.livre_gb : null;
+  const naoCabe = livre != null && soma + 2 > livre;
+  const faltam = ids.filter((i) => !ias[i].instalada && ias[i].da_para_baixar).length;
+
+  onde.innerHTML = `
+    <div class="aprov-passo"><h3>${esc(TX('1. Em que disco ficam as IAs'))}</h3>
+      <div class="discos">${discos}</div>
+      <p class="fraco aprov-onde">${esc(TX('As IAs ficam em'))} <code>${esc(d.modelos)}</code></p>
+      ${d.por_ambiente ? `<p class="fraco">${esc(TX('Esta pasta está definida no arquivo caminhos.bat. Para escolher por aqui, apague a linha ESTUDIO_COMFY_DIR de lá.'))}</p>` : ''}
+      ${d.motor_instalado ? '' : `<p class="aprov-aviso" role="status">${ic('alerta')}<span>${esc(TX('O motor (a ComfyUI) ainda não está nesta pasta. Os modelos podem ser baixados agora, mas para gerar é preciso instalar a ComfyUI aqui — veja o Passo 0 do INSTALAR.md.'))}</span></p>`}
+    </div>
+    <div class="aprov-passo"><h3>${esc(TX('2. Quais você quer'))}</h3>
+      <div class="aprov-lista">${linhas}</div>
+      ${faltam > 1 && !ocupado ? `<button type="button" class="aprov-todas" data-marcar-todas>${esc(marcadas.length === faltam ? TX('Desmarcar todas') : TX('Marcar todas'))}</button>` : ''}
+    </div>
+    <div class="aprov-passo aprov-fim">
+      <p class="aprov-total${naoCabe ? ' nao-cabe' : ''}">${marcadas.length
+        ? esc(T('aprov.total', '{n} marcada(s): {gb} GB para baixar', { n: marcadas.length, gb: num(soma, 1) }))
+          + (livre != null ? ' · ' + esc(T('aprov.livreNo', '{gb} GB livres no {u}:', { gb: num(livre, 0), u: d.unidade })) : '')
+          + (naoCabe ? ' — ' + esc(TX('não cabe neste disco')) : '')
+        : esc(faltam ? TX('Marque as IAs que você quer baixar.') : TX('Todas as aprovadas já estão instaladas.'))}</p>
+      ${ocupado
+        ? `<button type="button" class="bt-sec" data-parar-download>${esc(TX('Parar o download'))}</button>`
+        : `<button type="button" class="gerar aprov-instalar" data-instalar-aprovadas ${marcadas.length && !naoCabe ? '' : 'disabled'}>${ic('baixar')}<span>${esc(TX('3. Instalar as marcadas'))}</span></button>`}
+    </div>`;
+  pintarIcones(onde);
+}
+async function trocarDisco(unidade) {
+  const d = G.destino || {};
+  if (unidade === d.unidade) return;
+  const noPainel = (d.pasta_do_painel || '').slice(0, 1).toUpperCase();
+  try {
+    const r = await fetch('/api/ias/destino', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      // o disco onde o painel ja esta = o padrao: os modelos ficam dentro da pasta dele
+      body: JSON.stringify(unidade === noPainel ? { padrao: true } : { unidade }),
+    });
+    const resp = await r.json().catch(() => ({}));
+    if (!r.ok) { aviso(resp.erro || 'Não deu para trocar o disco.', 'erro', 9000); return; }
+    G.destino = resp;
+    renderAprovadas();
+    aviso(resp.recado || T('aprov.trocou', 'Pronto: as IAs passam a ficar no disco {u}:', { u: resp.unidade }), resp.recado ? 'aviso' : 'ok', resp.recado ? 12000 : 5500);
+    lerIAs();   // o que esta "instalado" depende do disco: perguntar de novo
+  } catch (e) { aviso('Não consegui falar com o estúdio.', 'erro'); }
+}
+async function instalarAprovadas() {
+  const ias = G.ias || {}, ids = (G.aprovadasIds || []).filter((i) => G.aprovSel && G.aprovSel.has(i));
+  if (!ids.length) return;
+  const soma = ids.reduce((s, i) => s + (ias[i].gb_falta || 0), 0);
+  // confirmar: sao dezenas de GB de internet de alguem
+  if (!confirm(T('aprov.confirma', 'Baixar {n} IA(s)?\n\nSão {gb} GB no disco {u}:. Dá para usar o estúdio enquanto baixa, e se parar no meio continua de onde parou.',
+      { n: ids.length, gb: num(soma, 1), u: (G.destino || {}).unidade || '' }))) return;
+  let entrou = 0, recusa = '';
+  for (const id of ids) {
+    try {
+      const r = await fetch('/api/ias/instalar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }),
+      });
+      const resp = await r.json().catch(() => ({}));
+      if (r.ok) entrou += 1; else if (!recusa) recusa = resp.mensagem || '';
+    } catch (e) { recusa = recusa || 'Não consegui falar com o estúdio.'; }
+  }
+  G.aprovSel.clear();
+  if (recusa) aviso(recusa, 'erro', 12000);
+  else aviso(T('aprov.comecou', '{n} IA(s) na fila. A primeira já começou a baixar.', { n: entrou }));
+  lerIAs();
+  lerDestino();
+}
+document.addEventListener('click', (ev) => {
+  const alvo = ev.target.closest ? ev.target : null;
+  if (!alvo) return;
+  const disco = alvo.closest('[data-disco]');
+  if (disco && !disco.disabled) { trocarDisco(disco.dataset.disco); return; }
+  if (alvo.closest('[data-instalar-aprovadas]')) { instalarAprovadas(); return; }
+  if (alvo.closest('[data-marcar-todas]')) {
+    const ias = G.ias || {}, podem = (G.aprovadasIds || []).filter((i) => ias[i] && !ias[i].instalada && ias[i].da_para_baixar);
+    const todas = podem.every((i) => G.aprovSel.has(i));
+    podem.forEach((i) => (todas ? G.aprovSel.delete(i) : G.aprovSel.add(i)));
+    renderAprovadas();
+    return;
+  }
+  if (alvo.closest('[data-parar-download]')) {
+    fetch('/api/ias/parar', { method: 'POST' }).then(() => { aviso('Download parado. O que já baixou fica guardado.'); lerIAs(); });
+  }
+});
+document.addEventListener('change', (ev) => {
+  const c = ev.target && ev.target.dataset && ev.target.dataset.aprov;
+  if (!c) return;
+  if (!G.aprovSel) G.aprovSel = new Set();
+  if (ev.target.checked) G.aprovSel.add(c); else G.aprovSel.delete(c);
+  renderAprovadas();
+});
 
 // ---------------------------------------------------------------- seletor de IA em cards
 function badgeCarregada(p) {
@@ -1598,7 +1746,7 @@ function htmlCardIA(p, f) {
 document.addEventListener('idioma-mudou', () => {
   // Cada um destes desenha um pedaco que o JavaScript escreve, e por isso nao e alcancado
   // pelo data-i18n do HTML. Cada um no seu try: um que falhe nao pode derrubar os outros.
-  [renderIAs, renderEscolhas, renderCatalogo, renderChaves].forEach((f) => {
+  [renderIAs, renderEscolhas, renderCatalogo, renderChaves, renderAprovadas].forEach((f) => {
     try { f(true); } catch (e) { /* secao que ainda nao existe nesta tela */ }
   });
   try { if (G.rota && ROTAS[G.rota]) {
@@ -3040,6 +3188,7 @@ function esconderAbasSemIA() {
   esconderAbasSemIA();
   await Promise.all([carregarFichas(), carregarVozes(), carregarNovidades()]);
   lerIAs();   // quais IAs estao no disco e quanto falta baixar (nao segura a tela)
+  lerDestino();   // em que disco elas ficam, e quanto ha livre em cada um
   // (o cabeçalho continua "verificando…" até o 1º pulso completo: sem a fila do estúdio ele poderia dizer "Livre" à toa)
   try { G.sistema = await api('/api/sistema', { timeout: 9000 }); } catch (e) { /* o pulso tenta de novo */ }
   if (G.rota === 'inicio' && rotaDoHash() === 'inicio' && !G.irDepois) {

@@ -1049,3 +1049,40 @@ dialog::backdrop { background: rgba(5, 6, 9, .72); backdrop-filter: blur(3px); }
 .chave-campo { flex: 1 1 180px; min-width: 0; }
 .chave-onde { margin-top: 8px; font-size: 11px; opacity: .8; }
 .chave-onde code { font-size: 11px; word-break: break-all; }
+
+/* ---------------- IAs aprovadas + onde instalar (13/11/2026) ---------------- */
+.aprov-passo { margin-top: 14px; }
+.aprov-passo:first-child { margin-top: 0; }
+.aprov-passo h3 { font-size: 13.5px; font-weight: 700; margin: 0 0 8px; color: var(--texto); }
+.discos { display: flex; gap: 10px; flex-wrap: wrap; }
+.disco { display: grid; gap: 2px; text-align: left; min-width: 150px; padding: 10px 14px; cursor: pointer;
+  background: var(--fundo-2); border: 1px solid var(--borda); border-radius: 12px; color: var(--texto); font: inherit; }
+.disco b { font-size: 17px; }
+.disco span { font-size: 13px; color: var(--ok); }
+.disco small { font-size: 11.5px; color: var(--fraco); }
+.disco:hover:not(:disabled) { border-color: var(--borda-forte); }
+.disco.sel { border-color: var(--acento); background: var(--acento-suave); box-shadow: inset 0 0 0 1px var(--acento-borda); }
+.disco:disabled { cursor: default; opacity: .6; }
+.disco:focus-visible, .aprov-todas:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.aprov-onde { margin-top: 8px; font-size: 12px; }
+.aprov-onde code { font-size: 12px; word-break: break-all; }
+.aprov-aviso { display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; padding: 9px 12px; font-size: 12.5px;
+  color: var(--aviso); background: rgba(251, 191, 36, .08); border: 1px solid rgba(251, 191, 36, .3); border-radius: 10px; }
+.aprov-aviso svg { width: 16px; height: 16px; flex: none; margin-top: 1px; }
+.aprov-lista { display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.aprov-linha { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer;
+  background: var(--fundo-2); border: 1px solid var(--borda); border-radius: 10px; font-size: 13.5px; }
+.aprov-linha.travada { cursor: default; }
+.aprov-linha input { width: 17px; height: 17px; flex: none; accent-color: var(--acento); }
+.aprov-nome { flex: 1; min-width: 0; font-weight: 600; }
+.aprov-ok { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ok); white-space: nowrap; }
+.aprov-ok svg { width: 14px; height: 14px; }
+.aprov-falta { font-size: 12px; color: var(--fraco); white-space: nowrap; }
+.aprov-baixando { font-size: 12px; color: var(--brasa); white-space: nowrap; }
+.aprov-erro { font-size: 12px; color: var(--erro); text-align: right; }
+.aprov-todas { margin-top: 8px; background: none; border: 0; padding: 2px 0; color: var(--info); font: inherit; font-size: 12.5px; cursor: pointer; text-decoration: underline; }
+.aprov-fim { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.aprov-total { margin: 0; font-size: 13.5px; color: var(--texto); }
+.aprov-total.nao-cabe { color: var(--erro); }
+.aprov-instalar { display: inline-flex; align-items: center; gap: 8px; width: auto; padding: 10px 18px; }
+.aprov-instalar svg { width: 17px; height: 17px; }

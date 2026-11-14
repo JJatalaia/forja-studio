@@ -219,6 +219,17 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
       </div>
     </section>
 
+    <!-- 13/11/2026: as IAs que o projeto ja usou e aprova, com a escolha do DISCO. Antes o
+         painel baixava tudo dentro da propria pasta, sem perguntar - e quem nao tinha
+         espaco no C: nao tinha o que fazer. Desenhado pelo app.js (renderAprovadas). -->
+    <section class="bloco-inicio aprovadas" id="blocoAprovadas" aria-labelledby="aprovTitulo" hidden>
+      <div class="bloco-cab">
+        <h2 id="aprovTitulo" data-i18n="tela.ias-aprovadas">IAs aprovadas pelo projeto</h2>
+        <p class="fraco" data-i18n="tela.ias-aprovadas-sub">As que já foram usadas de verdade para fazer vídeo e funcionam. Escolha o disco, marque as que quer e instale.</p>
+      </div>
+      <div id="aprovadas"></div>
+    </section>
+
     <section class="bloco-inicio catalogo" aria-labelledby="catTitulo">
       <div class="bloco-cab">
         <h2 id="catTitulo" data-i18n="tela.conheca-as-ias-do-estudio">Conheça as IAs do estúdio</h2>

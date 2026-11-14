@@ -36,6 +36,7 @@ Daqui saem as duas contas que importam:
 """
 import json
 import os
+import shutil
 import threading
 import time
 import urllib.error
@@ -165,7 +166,26 @@ def _achar_catalogo():
 
 
 CATALOGO = _achar_catalogo()
-MODELOS = RAIZ / "ComfyUI_windows_portable" / "ComfyUI" / "models"
+# Onde os modelos ficam. O server.py troca este valor (ias.MODELOS = ...) quando a pessoa
+# escolhe outro disco na tela; sozinho, este modulo respeita o ESTUDIO_COMFY_DIR.
+# Ate 13/11/2026 era fixo na pasta do painel - o download ia para o C: mesmo sem espaco.
+MODELOS = (Path(os.environ["ESTUDIO_COMFY_DIR"]) if os.environ.get("ESTUDIO_COMFY_DIR")
+           else RAIZ / "ComfyUI_windows_portable" / "ComfyUI") / "models"
+
+
+def espaco_livre():
+    """Bytes livres no disco dos modelos, ou None se nao der para medir.
+
+    A pasta pode nao existir ainda: sobe ate achar um pedaco do caminho que exista.
+    """
+    p = Path(MODELOS)
+    for pasta in [p] + list(p.parents):
+        if pasta.exists():
+            try:
+                return shutil.disk_usage(str(pasta)).free
+            except OSError:
+                return None
+    return None
 
 # Quanto o arquivo no disco pode diferir do catalogo e ainda contar como completo.
 # Zero seria rigido demais: o mesmo modelo as vezes e republicado com metadado diferente.
@@ -370,6 +390,18 @@ def instalar(ia):
     if est["sem_link"]:
         return False, ("Não sei de onde baixar " + str(len(est["sem_link"])) +
                        " arquivo(s) desta IA. Veja IAS-INSTALADAS.md e baixe à mão.")
+    # Conferir o espaco ANTES: sem isto o download enchia o disco e morria no meio, depois
+    # de gastar horas de internet. Conta tambem o que ja esta na fila na frente desta.
+    livre = espaco_livre()
+    if livre is not None:
+        with _trava:
+            na_frente = list(_fila)
+        preciso = est["gb_falta"] + sum((estado_de(n).get("gb_falta") or 0) for n in na_frente)
+        livre_gb = livre / 1024 ** 3
+        if preciso + 2 > livre_gb:      # 2 GB de folga: disco cheio ate a tampa trava o Windows
+            return False, ("Não cabe: faltam %.1f GB para baixar e o disco de %s tem %.1f GB "
+                           "livres. Escolha outro disco no bloco \"IAs aprovadas\", na tela "
+                           "inicial." % (preciso, Path(MODELOS).anchor or MODELOS, livre_gb))
     with _trava:
         if ia in _fila:
             return False, "Esta IA já está na fila."

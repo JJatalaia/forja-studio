@@ -79,8 +79,29 @@ for _tipo, _ext in (("text/javascript", ".js"), ("text/css", ".css"), ("font/wof
 
 AQUI = Path(__file__).resolve().parent
 ROOT = AQUI.parent
-COMFY_DIR = Path(os.environ["ESTUDIO_COMFY_DIR"]) if os.environ.get("ESTUDIO_COMFY_DIR") else \
-    ROOT / "ComfyUI_windows_portable" / "ComfyUI"
+NOME_PASTA_IAS = "ForjaStudio-IAs"      # a pasta criada no disco que a pessoa escolher
+
+
+def _comfy_dir_inicial():
+    """Onde esta (ou vai ficar) a ComfyUI com os modelos. UMA fonte para o painel inteiro.
+
+    1. ESTUDIO_COMFY_DIR  - o caminhos.bat de quem configurou a mao: manda em tudo;
+    2. "pasta_ias" do config.json - o disco que a pessoa escolheu na tela inicial;
+    3. a pasta do proprio painel - o padrao de sempre.
+    """
+    if os.environ.get("ESTUDIO_COMFY_DIR"):
+        return Path(os.environ["ESTUDIO_COMFY_DIR"])
+    try:
+        cfg = Path(os.environ.get("ESTUDIO_DADOS") or AQUI) / "config.json"
+        base = (json.loads(cfg.read_text(encoding="utf-8")).get("pasta_ias") or "").strip()
+    except (OSError, ValueError, AttributeError):
+        base = ""
+    raiz = Path(base) if base else ROOT
+    return raiz / "ComfyUI_windows_portable" / "ComfyUI"
+
+
+COMFY_DIR = _comfy_dir_inicial()
+ias.MODELOS = COMFY_DIR / "models"      # o download vai para o MESMO lugar que o motor le
 # Instância de TESTE: ESTUDIO_DADOS aponta para uma CÓPIA dos dados (histórico/tempos/vozes) e ESTUDIO_WEB para a
 # pasta da interface em desenvolvimento, para testar sem mexer no estúdio de produção (8194).
 DADOS = Path(os.environ["ESTUDIO_DADOS"]) if os.environ.get("ESTUDIO_DADOS") else AQUI
@@ -2872,7 +2893,9 @@ def contar_musicas():
 LOGS_DIR = Path(os.environ["ESTUDIO_LOGS"]) if os.environ.get("ESTUDIO_LOGS") else ROOT / "outputs"
 LIMITE_LOG = 20 * 1024 * 1024
 LANCADOR = ROOT / "Abrir Estudio.ps1"
-PY_VIDEO = ROOT / "ComfyUI_windows_portable" / "python_embeded" / "python.exe"
+# Sai do COMFY_DIR, e nao da pasta do painel: ate 13/11/2026 o botao "Ligar" procurava o
+# Python da ComfyUI sempre dentro do painel, mesmo com a ComfyUI apontada para outro disco.
+PY_VIDEO = COMFY_DIR.parent / "python_embeded" / "python.exe"
 PY_YUE2 = ROOT / "python_yue2" / "python.exe"
 ACE_DIR = ROOT / "ACE-Step-1.5"
 # a linha que o lançador usa (se não der para ler o lançador, esta cópia vale)
@@ -2905,7 +2928,7 @@ _NVSMI = {"t": 0.0, "d": None}
 CONFIG = DADOS / "config.json"
 # "canal_dir": a pasta do canal da aba Canal automático. Vazio = a padrão do canal.py.
 # É um ajuste de propósito: a esteira serve a qualquer canal, não só ao de quem a escreveu.
-PREF_PADRAO = {"texto_sempre_ligada": False, "canal_dir": "", "hermes_dir": ""}  # economia de memória (pedido do dono): liga sozinha ao usar
+PREF_PADRAO = {"texto_sempre_ligada": False, "canal_dir": "", "hermes_dir": "", "pasta_ias": ""}  # economia de memória (pedido do dono): liga sozinha ao usar
 try:
     AUTO_TEXTO_S = float(os.environ.get("ESTUDIO_TEXTO_AUTO_S") or 20)
 except ValueError:
@@ -2983,7 +3006,7 @@ def servico_def(chave):
     """Como ligar e conferir cada serviço (as mesmas linhas de comando do lançador e do painel de música)."""
     if chave == "video":
         d = {"nome": "A ComfyUI de vídeo", "url": COMFY + "/system_stats", "porta": _porta_url(COMFY), "limite": 480,
-             "cmd": f'"{PY_VIDEO}" {args_comfy_video()}', "cwd": ROOT / "ComfyUI_windows_portable", "exe": PY_VIDEO,
+             "cmd": f'"{PY_VIDEO}" {args_comfy_video()}', "cwd": COMFY_DIR.parent, "exe": PY_VIDEO,
              "saida": "comfy_video_stdout.log", "erro": "comfy_video_stderr.log", "log_novo": True,
              "console_escondido": True, "extra_env": None, "porta_real": 8188}
     elif chave == "painel_musica":
@@ -3923,9 +3946,105 @@ async def api_ias(req):
         for p in lista:
             if p.get("desligado") or not p.get("nome"):
                 continue
-            fora[p["id"]] = dict(ias.estado_de(p["nome"], cat), nome=p["nome"])
+            fora[p["id"]] = dict(ias.estado_de(p["nome"], cat), nome=p["nome"],
+                                 aprovada=p["id"] in APROVADAS, aba=aba)
     return web.json_response({"ok": True, "tem_catalogo": bool(cat), "ias": fora,
+                              "aprovadas": [i for i in APROVADAS if i in fora],
                               "progresso": ias.progresso()})
+
+
+# As IAs que o projeto ja usou de verdade e aprova. Contado no historico do estudio de
+# origem em 13/11/2026 (2.452 trabalhos, de 21/09 a 13/11), na ordem de uso:
+#   krea2 743 | minimax_h3_r2v 640 | apresentador 551 | qwen_image_2512 156 |
+#   ltx25_i2v 138 | fasth3 88 | ltx25_t2v 48 | krea2_img2img 29
+# As outras do catalogo tem 13 usos ou menos cada. Nao estao quebradas: so nao tem estrada.
+APROVADAS = ("krea2", "minimax_h3_r2v", "apresentador", "qwen_image_2512",
+             "ltx25_i2v", "fasth3", "ltx25_t2v", "krea2_img2img")
+
+
+def _discos():
+    """Os discos FIXOS desta maquina, com o espaco de cada um. Pendrive e rede ficam fora."""
+    fora = []
+    if os.name != "nt":
+        return fora
+    import ctypes
+    import string
+    for letra in string.ascii_uppercase:
+        raiz = letra + ":\\"
+        try:
+            if ctypes.windll.kernel32.GetDriveTypeW(raiz) != 3:      # 3 = disco fixo
+                continue
+            uso = shutil.disk_usage(raiz)
+        except OSError:
+            continue
+        fora.append({"unidade": letra, "livre_gb": round(uso.free / 1024 ** 3, 1),
+                     "total_gb": round(uso.total / 1024 ** 3, 1)})
+    return fora
+
+
+def _estado_do_destino(recado=None):
+    pref = (ler_pref().get("pasta_ias") or "").strip()
+    por_ambiente = bool(os.environ.get("ESTUDIO_COMFY_DIR"))
+    return {"ok": True, "recado": recado,
+            "modelos": str(COMFY_DIR / "models"),
+            "unidade": (COMFY_DIR.anchor or "")[:1].upper(),
+            "padrao": not pref and not por_ambiente,
+            "por_ambiente": por_ambiente,
+            "motor_instalado": (COMFY_DIR / "main.py").is_file(),
+            "pasta_do_painel": str(ROOT),
+            "nome_da_pasta": NOME_PASTA_IAS,
+            "discos": _discos()}
+
+
+async def api_ias_destino(req):
+    """Onde as IAs sao instaladas. GET conta; POST {"unidade": "E"} ou {"padrao": true} troca.
+
+    Trocar NAO move nada: o que ja foi baixado no lugar antigo fica la. A tela avisa.
+    """
+    global COMFY_DIR, PY_VIDEO
+    if req.method != "POST":
+        return web.json_response(_estado_do_destino())
+    if os.environ.get("ESTUDIO_COMFY_DIR"):
+        return web.json_response({"erro": "A pasta da ComfyUI está definida no arquivo caminhos.bat "
+                                  "(ESTUDIO_COMFY_DIR). Para escolher pela tela, apague essa linha "
+                                  "do caminhos.bat e abra o estúdio de novo."}, status=409)
+    pg = ias.progresso()
+    if pg.get("baixando") or pg.get("fila"):
+        return web.json_response({"erro": "Há um download em andamento. Espere terminar, ou pare o "
+                                  "download, antes de trocar o disco."}, status=409)
+    try:
+        b = await req.json()
+    except ValueError:
+        b = {}
+    if b.get("padrao"):
+        base = ""
+    else:
+        unidade = str(b.get("unidade") or "").strip().upper().rstrip(":\\/")
+        if not re.fullmatch(r"[A-Z]", unidade):
+            return web.json_response({"erro": "Escolha um dos discos da lista."}, status=400)
+        if unidade not in {d["unidade"] for d in _discos()}:
+            return web.json_response({"erro": f"Não achei o disco {unidade}: nesta máquina."}, status=400)
+        base = f"{unidade}:\\{NOME_PASTA_IAS}"
+        # provar que da para escrever ANTES de gravar a escolha: disco protegido ou cheio
+        # apareceria so no meio do primeiro download, horas depois.
+        try:
+            Path(base).mkdir(parents=True, exist_ok=True)
+            teste = Path(base) / ".forja_teste_de_escrita"
+            teste.write_text("ok", encoding="ascii")
+            teste.unlink()
+        except OSError as exc:
+            return web.json_response({"erro": f"Não consegui escrever em {base}: {exc.strerror or exc}. "
+                                      "Escolha outro disco."}, status=400)
+    antiga = COMFY_DIR / "models"
+    gravar_pref({"pasta_ias": base})
+    COMFY_DIR = _comfy_dir_inicial()
+    PY_VIDEO = COMFY_DIR.parent / "python_embeded" / "python.exe"
+    ias.MODELOS = COMFY_DIR / "models"
+    recado = None
+    if antiga != ias.MODELOS and antiga.is_dir() and any(antiga.rglob("*.safetensors")):
+        recado = (f"As IAs que você já baixou continuam em {antiga}. Elas não foram movidas: "
+                  "o painel passa a procurar e a baixar no lugar novo.")
+    return web.json_response(_estado_do_destino(recado))
 
 
 async def api_ias_instalar(req):
@@ -4971,6 +5090,7 @@ app = web.Application(client_max_size=1024 ** 3, middlewares=[portao, cors_paine
 app.cleanup_ctx.append(ciclo)
 app.add_routes([
     web.get("/api/ias", api_ias), web.post("/api/ias/instalar", api_ias_instalar),
+    web.get("/api/ias/destino", api_ias_destino), web.post("/api/ias/destino", api_ias_destino),
     web.get("/api/ias/progresso", api_ias_progresso),
     web.post("/api/ias/parar", api_ias_parar),
     web.get("/api/presets", api_presets), web.get("/api/fichas", api_fichas),
