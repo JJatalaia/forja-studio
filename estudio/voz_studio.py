@@ -99,8 +99,15 @@ def achar_backend():
     if os.environ.get("ESTUDIO_VOZ_DIR"):
         tentativas.insert(0, Path(os.environ["ESTUDIO_VOZ_DIR"]))
     for p in tentativas:
-        if (p / ".venv" / "Scripts" / "python.exe").is_file() and (p / "backend" / "main.py").is_file():
-            return p
+        # O Windows pode RECUSAR olhar um caminho (WinError 448, "ponto de montagem nao
+        # confiavel") quando a pasta e um atalho de pasta (junction) e o painel foi aberto
+        # pelo instalador. Em 14/11/2026 isso derrubava a lista de motores inteira e nenhum
+        # ligava. Caminho que nao da para olhar = caminho que nao serve; segue para o proximo.
+        try:
+            if (p / ".venv" / "Scripts" / "python.exe").is_file() and (p / "backend" / "main.py").is_file():
+                return p
+        except OSError:
+            continue
     return None
 
 

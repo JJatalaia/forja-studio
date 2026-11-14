@@ -3454,7 +3454,11 @@ async def estados_servicos():
             else:
                 e["estado"] = "desligado"
         res[k] = e
-    voz = estado_voz()
+    try:        # a voz e de terceiros: um defeito nela nao pode impedir os outros motores de ligar
+        voz = estado_voz()
+    except Exception as exc:
+        print(f"[estúdio] não consegui ler o estado da voz: {exc!r}", flush=True)
+        voz = None
     if voz:
         res["voz"] = voz
     return res
