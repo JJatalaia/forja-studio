@@ -724,19 +724,25 @@ function estadoDoGrupo(chaves) {
 }
 function avisoCartao(e) {
   const g = estadoDoGrupo(SERV_DO_CARTAO[e.rota]);
-  if (!g || g.estado === 'ligado') return '';
-  const acao = e.rota === 'musica' ? 'musica' : 'video';
-  const quem = e.rota === 'musica' ? 'a música (painel e ComfyUI)' : 'a ComfyUI de imagem e vídeo';
+  if (!g) return '';
+  const musica = e.rota === 'musica';
+  const acao = musica ? 'musica' : 'video';
+  const quem = musica ? 'a música' : 'o motor de imagem e vídeo';
   if (g.estado === 'ligando') {
     return `<span class="escolha-aviso ligando">${ic('relogio')}<span>Ligando… <span data-desde="${esc(g.desde)}">${esc(fmt(agoraServidor() - g.desde))}</span></span></span>`;
   }
-  if (!podeLigar(acao)) {
-    return `<span class="escolha-aviso desligado" title="Esta versão do servidor ainda não liga pelo Início. Reinicie o estúdio para ativar o botão Ligar.">${ic('ligar')}<span>${g.parcial ? 'Parte desligada' : 'Desligado'}</span></span>`;
-  }
-  if (g.estado === 'erro') {
+  if (g.estado === 'erro' && podeLigar(acao)) {
     return `<button type="button" class="escolha-aviso erro" data-ligar="${acao}" title="${esc(g.mensagem || '')}" aria-label="${esc(e.titulo)}: ${esc(quem)} não ligou. Clique para tentar de novo.">${ic('alerta')}<span>Não ligou. Tentar de novo</span></button>`;
   }
-  return `<button type="button" class="escolha-aviso desligado" data-ligar="${acao}" aria-label="${esc(e.titulo)}: ${esc(quem)} está ${g.parcial ? 'em parte ' : ''}desligada. Clique para ligar.">${ic('ligar')}<span>${g.parcial ? 'Parte desligada' : 'Desligado'}</span><b>Ligar</b></button>`;
+  // 14/11/2026: a chave fica SEMPRE no cartão. Antes só aparecia um aviso quando estava
+  // desligado; ligado, não havia como desligar por aqui.
+  const ligado = g.estado === 'ligado';
+  const rot = ligado ? 'ligado' : g.parcial ? 'parte desligada' : 'desligado';
+  if (!podeLigar(acao) || (G.inicio && G.inicio.legado)) return `<span class="escolha-aviso ${ligado ? 'lig' : 'desligado'}"><span>${rot}</span></span>`;
+  const attr = ligado ? `data-desligar="${musica ? 'painel' : 'video'}"` : `data-ligar="${acao}"`;
+  return `<span class="escolha-aviso ${ligado ? 'lig' : 'desligado'}"><span>${rot}</span>`
+    + `<button type="button" class="chave${ligado ? ' on' : ''}" role="switch" aria-checked="${ligado}" ${attr} `
+    + `aria-label="${esc(e.titulo)}: ${ligado ? 'desligar' : 'ligar'} ${esc(quem)}"><span class="sr-only">${ligado ? 'Desligar' : 'Ligar'}</span></button></span>`;
 }
 /* Qual IA da seção é a mais RÁPIDA e qual é a mais CAPRICHADA (notas 1 a 5 da ficha).
    Empate desempata pela outra nota. Quando a mesma IA ganha nas duas, sai uma linha só —
@@ -1043,7 +1049,7 @@ function renderMaquina() {
   if (S.fila_comfy) extras.push(`ComfyUI com ${S.fila_comfy} na fila`);
   if (F.musica_ocupada === true) extras.push('música gerando agora (a placa está ocupada)');
   if (F.musica_ocupada === false && I.tem_musica !== false) extras.push('música livre');
-  const filaHtml = linhaMaq('fila', 'Fila', '', fila + (extras.length ? `<p class="nota" style="margin-top:6px">${esc(extras.join(' · '))}</p>` : ''));
+  const filaHtml = '<a class="fila-abrir" href="#/fila">Abrir a fila</a>' + linhaMaq('fila', 'Fila', '', fila + (extras.length ? `<p class="nota" style="margin-top:6px">${esc(extras.join(' · '))}</p>` : ''));
   if (filaHtml !== renderMaquina.fila) { $('#maqFila').innerHTML = filaHtml; renderMaquina.fila = filaHtml; }
   const ocupado = !!F.rodando || +F.na_fila > 0;
   const bl = $('#btLiberar');
@@ -1052,8 +1058,8 @@ function renderMaquina() {
   $('#maqParcial').hidden = !I.parcial;
   $('#liberarTextoNota').hidden = !!I.legado;
   const auto = +I.liberar_memoria_min || 0;
-  $('#maqAuto').textContent = I.memoria_liberada ? 'A memória já está liberada (nenhum modelo carregado agora).'
-    : auto > 0 ? `O estúdio também libera sozinho depois de ${num(auto, 0)} min sem gerar nada.` : '';
+  $('#maqAuto').textContent = I.memoria_liberada ? 'Já liberada: nenhum modelo carregado.'
+    : auto > 0 ? `Libera sozinho após ${num(auto, 0)} min sem gerar.` : '';
 }
 // aviso discreto quando o estúdio não responde: a tela continua com o que já tinha e tenta de novo sozinha
 function renderSemResposta() {
@@ -1090,35 +1096,37 @@ function podeLigar(acao) {
   if (!I.legado) return true;
   return acao === 'musica' && ((I.sistema || {}).servicos || {}).painel_musica === false;
 }
+const ICONE_DO_MOTOR = { video: 'video', painel_musica: 'musica', comfy_musica: 'musica', ace: 'musica', hermes: 'servidor', telegram: 'enviar' };
 function linhaServico(s) {
   const acao = ACAO_DO_SERV[s.chave] || 'video';
-  const nome = `<span class="servico-nome"${s.porta ? ` title="${esc(TX('porta'))} ${esc(s.porta)}"` : ''}>${esc(TX(s.nome))}</span>`;
+  const legado = G.inicio && G.inicio.legado;
+  const cab = (cls, estado, direita, msg = '') => `<div class="servico motor ${cls}">
+      <span class="motor-ic">${ic(ICONE_DO_MOTOR[s.chave] || 'servidor')}</span>
+      <div class="motor-txt"><b class="servico-nome"${s.porta ? ` title="${esc(TX('porta'))} ${esc(s.porta)}"` : ''}>${esc(TX(s.nome))}</b>
+        <small class="servico-estado">${estado}</small></div>
+      <span class="motor-acao">${direita}</span>${msg}</div>`;
+  const chave = (ligado, attr, rotulo) => `<button type="button" class="chave${ligado ? ' on' : ''}" role="switch" aria-checked="${ligado}" ${attr}
+      aria-label="${esc(rotulo)}: ${esc(TX(s.nome))}"><span class="sr-only">${esc(rotulo)}</span></button>`;
   if (s.estado === 'ligado') {
     const alvoD = ALVO_DESLIGAR[s.chave];
-    const btD = alvoD && !(G.inicio && G.inicio.legado)
-      ? `<button type="button" class="bt-desligar" data-desligar="${alvoD}" aria-label="${esc(TX('Desligar'))}: ${esc(TX(s.nome))}" title="${esc(TX('Desliga para liberar memória; liga de novo pelo botão Ligar'))}">${ic('ligar')}<span>${esc(TX('Desligar'))}</span></button>` : '';
+    const btD = alvoD && !legado ? chave(true, `data-desligar="${alvoD}" title="${esc(TX('Desliga para liberar memória; liga de novo pelo botão Ligar'))}"`, TX('Desligar')) : '';
     const abrir = s.chave === 'hermes'
       ? `<a class="bt-ligar" href="${esc(s.url || 'http://127.0.0.1:9119/?profile=default')}" target="_blank" rel="noopener" aria-label="${esc(TX('Abrir o Hermes no navegador'))}" title="${esc(TX('Abrir o painel do Hermes'))}">${ic('seta')}<span>${esc(TX('Abrir'))}</span></a>` : '';
-    return `<div class="servico"><i class="ponto on" aria-hidden="true"></i>${nome}<span class="servico-lado"><span class="servico-estado ok">${s.lento ? 'ligado (respondendo devagar)' : 'ligado'}</span>${abrir}${btD}</span></div>`;
+    return cab('on', s.lento ? 'ligado, respondendo devagar' : 'ligado', abrir + btD);
   }
   if (s.estado === 'ligando') {
     const d = +s.desde || agoraServidor();
     const demora = s.demorando && s.mensagem ? `<p class="servico-msg demora">${ic('relogio')}<span>${esc(s.mensagem)}</span></p>` : '';
-    return `<div class="servico"><i class="ponto ocupado" aria-hidden="true"></i>${nome}<span class="servico-estado aviso">ligando… <span data-desde="${esc(d)}">${esc(fmt(agoraServidor() - d))}</span></span></div>${demora}`;
+    return cab('ligando', `ligando… <span data-desde="${esc(d)}">${esc(fmt(agoraServidor() - d))}</span>`,
+      '<span class="chave on ocupada" aria-hidden="true"></span>', demora);
   }
   const erro = s.estado === 'erro';
-  const bt = podeLigar(acao)
-    ? `<button type="button" class="bt-ligar" data-ligar="${acao}" data-servico="${esc(s.chave)}" aria-label="${erro ? 'Tentar ligar de novo' : 'Ligar'}: ${esc(s.nome)}">${ic('ligar')}<span>${erro ? 'Tentar de novo' : 'Ligar'}</span></button>`
-    : '';
+  const bt = podeLigar(acao) ? chave(false, `data-ligar="${acao}" data-servico="${esc(s.chave)}"`, erro ? 'Tentar ligar de novo' : 'Ligar') : '';
   if (s.estado === 'em espera') {  // economia de memória: liga sozinho quando precisa (não é defeito)
-    return `<div class="servico"><i class="ponto parado" aria-hidden="true"></i>${nome}<span class="servico-lado"><span class="servico-estado">em espera</span>${bt}</span></div>
-      <p class="servico-msg em-espera">${ic('relogio')}<span>${esc(s.mensagem || 'Liga sozinho quando precisar.')}</span></p>`;
+    return cab('espera', 'em espera', bt, `<p class="servico-msg em-espera">${ic('relogio')}<span>${esc(s.mensagem || 'Liga sozinho quando precisar.')}</span></p>`);
   }
-  if (erro) {
-    return `<div class="servico"><i class="ponto off" aria-hidden="true"></i>${nome}<span class="servico-lado">${bt || '<span class="servico-estado s-erro">não ligou</span>'}</span></div>
-      <p class="servico-msg">${ic('alerta')}<span>${esc(s.mensagem || 'Não ligou.')}</span></p>`;
-  }
-  return `<div class="servico"><i class="ponto parado" aria-hidden="true"></i>${nome}<span class="servico-lado"><span class="servico-estado">desligado</span>${bt}</span></div>`;
+  if (erro) return cab('erro', 'não ligou', bt, `<p class="servico-msg">${ic('alerta')}<span>${esc(s.mensagem || 'Não ligou.')}</span></p>`);
+  return cab('off', 'desligado', bt);
 }
 function renderServicos() {
   const I = G.inicio, lista = servicosDe(I);
@@ -1241,6 +1249,7 @@ function renderTextoMaq() {
   const naoInst = T.instalado === false;
   $('#btTextoInstalar').hidden = !naoInst;
   $('#textoDetalhes').hidden = naoInst;
+  $('#textoOpcoes').hidden = naoInst;
   if (naoInst) {
     if (renderTextoMaq.sig === 'nao-instalada') return;
     renderTextoMaq.sig = 'nao-instalada';
@@ -1361,36 +1370,35 @@ function montarMaquina() {
     <div class="maq-linha" id="maqServLinha" hidden>
       <span class="ic-caixa">${ic('servidor')}</span>
       <div>
-        <div class="maq-rot maq-rot-bt"><span>${esc(TX('Serviços'))}</span>
+        <div class="maq-rot maq-rot-bt"><span>Motores</span>
           <button type="button" class="bt-ligar bt-ligar-tudo" id="btLigarTudo" data-ligar="tudo" hidden aria-label="${esc(TX('Ligar tudo o que está desligado'))}">${ic('ligar')}<span>${esc(TX('Ligar tudo'))}</span></button><button type="button" class="bt-desligar bt-desligar-tudo" id="btDesligarTudo" data-desligar="tudo" hidden aria-label="${esc(TX('Desligar todas as IAs para liberar memória'))}">${ic('ligar')}<span>${esc(TX('Desligar tudo'))}</span></button></div>
         <div class="servicos-grupos" id="maqGrupos" hidden><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarVideo" data-ligar="video" hidden aria-label="${esc(TX('Ligar a IA de imagem e vídeo (ComfyUI)'))}">${ic('ligar')}<span>${esc(TX('Ligar imagem e vídeo'))}</span></button><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarMusicaGrupo" data-ligar="musica" hidden aria-label="${esc(TX('Ligar a música (o painel de música e a ComfyUI)'))}">${ic('ligar')}<span>${esc(TX('Ligar música'))}</span></button></div>
         <div class="servicos" id="maqServ"></div>
         <p class="nota" id="maqServNota" hidden></p>
       </div>
     </div>
-    <div class="maq-linha" id="maqTextoLinha" hidden>
-      <span class="ic-caixa">${ic('texto')}</span>
-      <div class="maq-texto">
-        <div class="maq-rot"><span>IA de texto</span></div>
-        <p class="texto-status" id="textoStatus"></p>
-        <p class="texto-extra nota" id="textoExtra" hidden></p>
-        <div class="texto-acoes" id="textoAcoes">
-          <button type="button" class="bt-sec" id="btTextoLigar" hidden>${ic('ligar')}<span>Ligar agora</span></button>
-          <button type="button" class="bt-sec" id="btTextoDesligar" hidden>${ic('parar')}<span>${esc(TX('Desligar'))}</span></button>
-          <button type="button" class="bt-sec" id="btTextoInstalar" data-prep-ir="blocoPreparar" hidden>${ic('baixar')}<span>Ver como instalar</span></button>
-        </div>
+    <div class="maq-linha motor motor-texto" id="maqTextoLinha" hidden>
+      <span class="motor-ic">${ic('texto')}</span>
+      <div class="motor-txt"><b>IA de texto</b><small class="texto-status" id="textoStatus"></small></div>
+      <span class="motor-acao texto-acoes" id="textoAcoes">
+        <button type="button" class="chave" role="switch" aria-checked="false" id="btTextoLigar" hidden aria-label="Ligar a IA de texto"><span class="sr-only">Ligar agora</span></button>
+        <button type="button" class="chave on" role="switch" aria-checked="true" id="btTextoDesligar" hidden aria-label="Desligar a IA de texto"><span class="sr-only">${esc(TX('Desligar'))}</span></button>
+        <button type="button" class="bt-sec" id="btTextoInstalar" data-prep-ir="blocoPreparar" hidden>${ic('baixar')}<span>Instalar</span></button>
+      </span>
+      <p class="texto-extra nota" id="textoExtra" hidden></p>
+      <details class="mini-ajuda" id="textoOpcoes"><summary>Opções</summary>
         <p class="nota" id="textoNotaRam">Fica na memória do computador, uns 8 GB, sem ocupar a placa de vídeo.</p>
         <label class="marcar" id="textoSempreRot" hidden><input type="checkbox" id="chkTextoSempre"><span>Deixar sempre ligada ao abrir o estúdio</span></label>
         <details class="maq-detalhes" id="textoDetalhes"><summary>Detalhes</summary><div class="maq-det-corpo" id="textoDet"></div></details>
-      </div>
+      </details>
     </div>
     <div id="maqFila"></div>
-    <div class="liberar">
-      <div class="maq-rot"><span>Memória</span></div>
-      <button type="button" class="bt-sec" id="btLiberar">${ic('raio')}Liberar memória</button>
-      <p class="nota" id="maqAuto"></p>
+    <div class="liberar motor">
+      <span class="motor-ic">${ic('raio')}</span>
+      <div class="motor-txt"><b>Memória da placa</b><small id="maqAuto"></small></div>
+      <span class="motor-acao"><button type="button" class="bt-sec" id="btLiberar">Liberar</button></span>
       <details class="mini-ajuda"><summary>O que isso faz</summary>
-        <p class="nota">Tira os modelos da placa de vídeo e da RAM. Use antes de gerar música, quando o PC estiver lento ou ao terminar uma série. Só funciona com nada gerando; a próxima geração carrega o modelo de novo (demora mais).<span id="liberarTextoNota"> A IA de texto “Pronta” continua ligada (para tirar, use Desligar nela).</span></p>
+        <p class="nota">Tira os modelos da placa de vídeo e da RAM. Use antes de gerar música, quando o PC estiver lento ou ao terminar uma série. Só funciona com nada gerando; a próxima geração carrega o modelo de novo (demora mais).<span id="liberarTextoNota"> A IA de texto “Pronta” continua ligada (para tirar, use a chave dela).</span></p>
         <p class="nota" id="maqParcial" hidden>Algumas informações (RAM, discos, serviços da música) aparecem quando o servidor do estúdio for atualizado.</p>
       </details>
     </div>`;
@@ -1402,7 +1410,10 @@ function montarMaquina() {
   // 14/11/2026 (inicio v3): IA de texto, fila e memoria descem para a mesma bancada. Movidas,
   // nao copiadas - os ids continuam os mesmos e todo o resto do codigo nem percebe.
   const bancada = $('#bancada');
-  if (bancada) ['#maqTextoLinha', '#maqFila', '#maqCorpo .liberar'].forEach((s) => { const no = $(s); if (no) bancada.appendChild(no); });
+  // v3.2: IA de texto e memória viram cartões da grade de motores; a fila vai para a faixa dela
+  const motores = $('#motores') || bancada, faixa = $('#filaFaixa') || bancada;
+  if (motores) ['#maqTextoLinha', '#maqCorpo .liberar'].forEach((s) => { const no = $(s); if (no) motores.appendChild(no); });
+  if (faixa) { const no = $('#maqFila'); if (no) faixa.appendChild(no); }
   $('#btLiberar').onclick = liberarMemoria;
   $('#btTextoLigar').onclick = () => textoAcao('ligar');
   $('#btTextoDesligar').onclick = () => textoAcao('desligar');

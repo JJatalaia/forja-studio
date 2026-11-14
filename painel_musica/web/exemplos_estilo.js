@@ -596,3 +596,15 @@ window.yue2StyleExamples = [
     "prompt": "Genre: Jazz-Pop,Swing,Comedy Music Style: Whimsical,playful,upbeat,vintage,comedic,reminiscent of a silent film era soundtrack,with a touch of musical theater. Similar to the playful energy of \"Mr. Sandman\" by The Chordettes or the style of \"特大号鞋子\". Instrumentation: Upright bass (slap bass),light and crisp drums (brush strokes),playful piano,trumpet stabs,clarinet,xylophone,sound effects (slide whistle,bicycle horn,quirky footsteps). Structure: The song follows a clear structure: [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Bridge] [Chorus] [Outro]. Description: A male vocalist with a charismatic,smiling,and slightly theatrical voice,half-singing half-speaking the lyrics with a lot of character and playful exaggeration. The mood is lighthearted,humorous,and rebellious against boredom through absurdity. The tempo is upbeat and bouncy."
   }
 ];
+
+// 14/11/2026 - DICAS DO FORJA: estilos que a gente usa por aqui, escritos por nós. Entram ANTES dos
+// exemplos originais do YuE2 (que continuam todos aí embaixo). A fórmula que funciona: gênero + BPM +
+// instrumentos + tipo de voz + clima + como é a mixagem. Em inglês, porque é o que a IA entende melhor.
+window.yue2StyleExamples.unshift(
+  {"id": "forja_01", "genre": "Dica do Forja · Sertanejo", "language": "Portuguese", "prompt": "Brazilian sertanejo universitario, 92 BPM, bright acoustic guitar strumming, accordion fills, warm male lead vocal with close duo harmonies, punchy kick and snare, singalong chorus, clean modern radio mix."},
+  {"id": "forja_02", "genre": "Dica do Forja · Pagode", "language": "Portuguese", "prompt": "Brazilian pagode, 96 BPM, cavaquinho and nylon guitar, pandeiro and tantan groove, relaxed male vocal, group backing vocals on the chorus, warm live roda de samba feeling, light and danceable."},
+  {"id": "forja_03", "genre": "Dica do Forja · Forró", "language": "Portuguese", "prompt": "Brazilian forro pe de serra, 120 BPM, accordion lead, zabumba and triangle driving the rhythm, cheerful male vocal, call and response chorus, festive and danceable, dry natural mix."},
+  {"id": "forja_04", "genre": "Dica do Forja · Trap BR", "language": "Portuguese", "prompt": "Brazilian trap, 140 BPM half-time, deep sliding 808 bass, crisp hi-hat rolls, dark minor piano loop, confident melodic rap vocal with light autotune, wide ad-libs, heavy modern mix."},
+  {"id": "forja_05", "genre": "Dica do Forja · Louvor", "language": "Portuguese", "prompt": "Brazilian contemporary worship ballad, 72 BPM, soft piano intro, swelling pads and strings, emotional female lead vocal, choir joining in the chorus, slow build to a big final refrain, spacious reverb."},
+  {"id": "forja_06", "genre": "Dica do Forja · Trilha de vídeo", "language": "Instrumental", "prompt": "Cinematic instrumental underscore for narration, 85 BPM, low strings and soft piano motif, subtle percussion pulse, steady and unobtrusive, leaves room for a voice-over, gentle rise in the last third."}
+);

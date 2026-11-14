@@ -1407,3 +1407,111 @@ details.nov.destaque, details.nov.destaque[open] { background: none; border-colo
 .aprov-breve { flex: none; font-size: 12px; color: var(--fraco); padding: 2px 9px; border-radius: 999px;
   border: 1px solid var(--borda-forte); white-space: nowrap; }
 .aprov-sub-nota { margin: -2px 0 10px; max-width: 80ch; }
+
+/* ================================================================================
+   INÍCIO v3.2 (14/11/2026): os MOTORES e a FILA.
+   O dono: "a parte de baixo tá bonita, a de cima mais ou menos e a do meio esquisita.
+   Quero o botão de ligar e desligar. Quero a fila separada."
+   A faixa do meio vira uma grade de cartões, um por motor, cada um com uma chave de
+   verdade; a fila sai dali e ganha uma faixa só dela.
+   ================================================================================ */
+
+/* ---- a chave (role=switch): ligar e desligar com cara de interruptor ---- */
+.chave { position: relative; flex: none; display: inline-block; width: 48px; height: 28px; padding: 0; border-radius: 999px;
+  border: 1px solid var(--borda-forte); background: #080a0e; cursor: pointer; vertical-align: middle;
+  transition: background .22s ease, border-color .22s ease; }
+.chave::before { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+  background: #6f7890; box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  transition: transform .22s cubic-bezier(.2, .8, .2, 1), background .22s ease, width .15s ease; }
+.chave:hover { border-color: var(--acento); }
+.chave:hover::before { background: #aeb6c8; }
+.chave:active::before { width: 24px; }
+.chave.on { background: rgba(64, 206, 232, .2); border-color: var(--acento); }
+.chave.on::before { transform: translateX(20px); background: var(--acento); }
+.chave.on:active::before { transform: translateX(16px); }
+.chave:disabled, .chave[aria-busy="true"] { cursor: progress; opacity: .75; }
+.chave.ocupada, .chave[aria-busy="true"] { border-color: var(--brasa); background: var(--brasa-suave); }
+.chave.ocupada::before, .chave[aria-busy="true"]::before { background: var(--brasa); animation: pulsar 1.2s infinite; }
+.chave:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; border-radius: 999px; }
+
+/* ---- a grade de motores ---- */
+.bancada > .motores { flex: 1 1 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px; padding: 18px 20px 20px; background: #0e1016; align-items: start; }
+/* as embalagens antigas (linha, coluna, lista) somem: os cartões e o título viram itens da grade */
+.motores > .forja-fornos, .motores #maqServLinha, .motores #maqServLinha > div, .motores #maqServ { display: contents; }
+.motores .ic-caixa, .motores #maqGrupos { display: none !important; }
+.motores .maq-rot, .bancada .motores .forja-fornos .maq-rot { grid-column: 1 / -1; display: flex; align-items: center;
+  justify-content: flex-start; gap: 10px; min-height: 0; margin: 0 0 2px; font-size: 13px; font-weight: 600;
+  letter-spacing: 0; text-transform: none; color: var(--fraco); }
+.motores .maq-rot > span:first-child { margin-right: auto; }
+.motores .maq-rot .bt-ligar, .motores .maq-rot .bt-desligar { margin: 0; padding: 4px 12px; border-radius: 999px; font-size: 12px; }
+.motores #maqServNota { grid-column: 1 / -1; }
+
+.motor, .bancada .motores .maq-linha.motor, .bancada .motores .liberar.motor, .bancada .motores .forja-fornos .servico.motor {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 12px; align-items: center;
+  margin: 0; padding: 14px 14px 14px 16px; white-space: normal;
+  background: var(--painel); border: 1px solid var(--borda); border-radius: 12px;
+  transition: border-color .2s ease, background .2s ease; }
+.motor.on { border-color: rgba(64, 206, 232, .4); background: linear-gradient(180deg, rgba(64, 206, 232, .07), transparent 70%), var(--painel); }
+.motor.ligando { border-color: var(--brasa-borda); }
+.motor.erro { border-color: rgba(248, 113, 113, .45); }
+.motor-ic { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; color: var(--fraco);
+  background: var(--painel-2); border: 1px solid var(--borda); }
+.motor-ic .ic { width: 19px; height: 19px; }
+.motor.on .motor-ic { color: var(--acento); background: var(--acento-suave); border-color: var(--acento-borda); }
+.motor.ligando .motor-ic { color: var(--brasa); background: var(--brasa-suave); border-color: var(--brasa-borda); }
+.motor-txt { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.motor-txt b { font-size: 14px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.motor-txt small, .motor .servico-estado, .motor .texto-status { margin: 0; font-size: 12px; line-height: 1.4;
+  color: var(--fraco); font-variant-numeric: tabular-nums; white-space: normal; }
+.motor.on .servico-estado { color: var(--ok); }
+.motor.ligando .servico-estado { color: var(--brasa); }
+.motor.erro .servico-estado { color: var(--erro); }
+.motor .texto-status { display: block; }
+.motor .texto-status .ponto { display: none; }
+.motor .texto-status b { font-size: 12px; font-weight: 600; color: var(--texto); }
+.motor .texto-status .t-ok { color: var(--ok); }
+.motor-acao { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+.motor > .servico-msg, .motor > .texto-extra, .motor > .mini-ajuda, .bancada .motores .forja-fornos .motor > .servico-msg {
+  grid-column: 1 / -1; order: 0; flex-basis: auto; margin: 0; font-size: 12px; }
+.motor > .texto-extra { display: block; }
+.motor .mini-ajuda .marcar { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12.5px; }
+.motor .maq-detalhes { margin-top: 8px; }
+.bancada .motores .liberar.motor .bt-sec { width: auto; padding: 7px 14px; }
+.motor #maqAuto:empty::before { content: "Tira os modelos da placa e da RAM."; }
+
+/* ---- a fila, na faixa dela ---- */
+.fila-faixa:empty { display: none; }
+.fila-faixa { position: relative; background: var(--painel); border: 1px solid var(--borda); border-radius: 18px; padding: 14px 18px; }
+.fila-faixa .maq-linha { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 14px; align-items: center;
+  padding: 0; border: 0; }
+.fila-faixa .ic-caixa { width: 38px; height: 38px; border-radius: 10px; color: var(--acento); background: var(--acento-suave); }
+.fila-faixa .maq-linha > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; min-width: 0; padding-right: 110px; }
+.fila-faixa .maq-rot { display: block; font-size: 14px; font-weight: 600; }
+.fila-faixa .maq-rot span { color: var(--texto); }
+.fila-faixa .maq-rot b:empty { display: none; }
+.fila-faixa .fila-box { flex: 1 1 260px; margin: 0; padding: 0; background: none; border: 0; }
+.fila-faixa .fila-box p { font-size: 13.5px; color: var(--fraco); }
+.fila-faixa .fila-box p b { color: var(--texto); }
+.fila-faixa .fila-box .barra { margin-top: 6px; max-width: 520px; }
+.fila-faixa .nota { margin: 0 !important; flex: none; }
+.fila-abrir { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); z-index: 1; padding: 6px 12px;
+  border-radius: 999px; border: 1px solid var(--borda); color: var(--fraco); font-size: 12.5px; text-decoration: none;
+  transition: border-color .15s, color .15s; }
+.fila-abrir:hover { color: var(--texto); border-color: var(--borda-forte); }
+
+/* ---- a chave nos cartões de criar ---- */
+.inicio .escolha-aviso { padding: 3px 4px 3px 11px; gap: 8px; font-weight: 600; font-size: 11.5px; color: var(--fraco); }
+.inicio .escolha-aviso.lig { color: var(--ok); border-color: rgba(52, 211, 153, .3); }
+.inicio .escolha-aviso .chave { width: 40px; height: 24px; }
+.inicio .escolha-aviso .chave::before { width: 16px; height: 16px; }
+.inicio .escolha-aviso .chave.on::before { transform: translateX(16px); }
+.inicio .escolha-aviso .chave:active::before { width: 19px; }
+.inicio .escolha-aviso.ligando, .inicio .escolha-aviso.erro { padding: 5px 10px; }
+
+@media (max-width: 720px) {
+  .bancada > .motores { padding: 14px 14px 16px; grid-template-columns: minmax(0, 1fr); }
+  .fila-faixa .maq-linha > div { padding-right: 0; }
+  .fila-abrir { position: static; transform: none; display: inline-block; margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .chave, .chave::before { transition: none; animation: none; } }

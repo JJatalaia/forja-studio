@@ -2,10 +2,26 @@
   "_sobre": "As notícias que aparecem na página inicial do Forja Studio. Uma por bloco, a mais nova em cima. Campos: id (nunca repetir), data (AAAA-MM-DD), etiqueta (novidade | ias | dica | aviso), titulo, texto. O 'destaque' deixa a primeira em evidência. Quando o servidor de contas entrar no ar, este arquivo passa a vir de lá — e todo mundo recebe a mesma notícia sem baixar nada de novo.",
   "novidades": [
     {
+      "id": "2026-11-14-motores-com-chave",
+      "data": "2026-11-14",
+      "etiqueta": "novidade",
+      "destaque": true,
+      "titulo": "Motores com chave de ligar e desligar, e a fila numa faixa só dela",
+      "texto": "A parte do meio da tela de Início mudou. Cada motor agora é um cartão com uma chave de verdade: imagem e vídeo, música, a IA de texto e a memória da placa. Ligado fica aceso em ciano; ligando, em laranja. Os cartões de criar (Imagem, Vídeo, Pessoa falando, Música) ganharam a mesma chave, então dá para ligar e desligar o motor direto dali. E a fila saiu do meio: ficou numa faixa própria, logo abaixo, com o que está gerando agora e o atalho para a aba Fila."
+    },
+    {
+      "id": "2026-11-14-cara-do-canal",
+      "data": "2026-11-14",
+      "etiqueta": "novidade",
+      "destaque": false,
+      "titulo": "O painel com a cara do canal Forja IA",
+      "texto": "As cores mudaram para as da abertura do canal: o ciano do chip “Ai” no lugar da lima, junto com a brasa da forja. A placa de vídeo na bigorna, da abertura, agora aparece no alto da tela de Início e na tela de login, que antes mostrava só um círculo. Os medidores da sua máquina (memória da placa, RAM e os discos) ficaram numa fileira logo abaixo da foto."
+    },
+    {
       "id": "2026-11-14-musica-no-painel",
       "data": "2026-11-14",
       "etiqueta": "ias",
-      "destaque": true,
+      "destaque": false,
       "titulo": "Música no painel: YuE2 INT8 e Stable Audio 3",
       "texto": "A aba Música entrou no estúdio. São dois motores: o YuE2 INT8 faz música com letra cantada e cover guiado pela melodia, e o Stable Audio 3 faz instrumental, trilha e efeitos. Os dois usam o mesmo motor da imagem e do vídeo, então não há nada a mais para instalar além dos modelos: marque YuE2 INT8 (5 GB) e Stable Audio 3 (13,9 GB) em “IAs aprovadas”, na tela de Início. Depois abra a aba Música e clique em Ligar. A primeira música demora mais, porque o modelo sai do disco. O equalizador e o “tirar a voz” ainda não vêm ligados."
     },
