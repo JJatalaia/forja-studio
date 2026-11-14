@@ -1688,9 +1688,23 @@ async function lerRequisitos() {
     if (!r.ok) return;
     G.requisitos = await r.json();
     renderPreparar();
+    try { renderAprovadas(); } catch (e) { /* a lista ainda nao esta na tela */ }
     clearTimeout(G.reqTimer);
-    if ((G.requisitos.andamento || {}).id) G.reqTimer = setTimeout(lerRequisitos, 1500);
+    const andando = (G.requisitos.andamento || {}).id;
+    // a fila dos extras (voz, texto): o servidor baixa um por vez; quando ele fica livre, vai o proximo
+    if (!andando && G.extraFila && G.extraFila.length) { proximoExtra(); return; }
+    if (andando) G.reqTimer = setTimeout(lerRequisitos, 1500);
   } catch (e) { /* servidor antigo: o bloco nao aparece */ }
+}
+async function proximoExtra() {
+  const qual = (G.extraFila || []).shift();
+  if (!qual) return;
+  try {
+    const r = await fetch('/api/requisitos/instalar', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ qual }) });
+    if (!r.ok) { const d = await r.json().catch(() => ({})); aviso(d.mensagem || 'Não deu para começar.', 'erro', 8000); }
+  } catch (e) { aviso('Não consegui falar com o estúdio.', 'erro'); }
+  lerRequisitos();
 }
 function renderPreparar() {
   const onde = $('#preparar'), bloco = $('#blocoPreparar'), d = G.requisitos;
@@ -1814,7 +1828,7 @@ function renderAprovadas() {
       <small>${esc(T('aprov.deTotal', 'de {gb} GB', { gb: num(k.total_gb, 0) }))}${k.unidade === noPainel ? ' · ' + esc(TX('onde o painel está')) : ''}</small></button>`;
   }).join('');
 
-  const comToken = [], comErro = [];
+  const comToken = [], comErro = [], comErroX = [];
   const linhas = ids.map((id) => {
     const e = ias[id], pr = pg.baixando;
     let estado, marcavel = false;
@@ -1853,8 +1867,32 @@ function renderAprovadas() {
   comErro.forEach((e) => recados.push(`<div class="aprov-recado erro" role="alert">${ic('alerta')}<div>
       <b>${esc(nomeCurto(e.nome))} não baixou</b><p>${esc(erroDaIA(pg, e.nome))}</p></div></div>`));
 
+  // 14/11/2026: voz, IA de texto e musica na mesma lista de marcar. Vem de /api/requisitos.
+  if (!G.extraSel) G.extraSel = new Set();
+  const req = G.requisitos || {}, and = req.andamento || {}, filaX = G.extraFila || [];
+  const extras = req.extras || [];
+  const linhasX = extras.map((x) => {
+    let estado, pode = false;
+    if (x.instalada) estado = `<span class="aprov-ok">${ic('ok')}${esc(TX('instalada'))}</span>`;
+    else if (and.id === x.id) {
+      const pc = and.fase === 'baixando' && and.total ? Math.floor((and.baixados / and.total) * 100) : null;
+      estado = `<span class="aprov-baixando">${pc != null ? esc(T('ia.baixando', 'Baixando… {pc}%', { pc })) : 'Instalando…'}</span>`;
+    } else if (filaX.includes(x.id)) estado = `<span class="aprov-baixando">${esc(TX('na fila'))}</span>`;
+    else if (and.erro && and.erro_de === x.id) { pode = true; estado = `<span class="aprov-erro">${ic('alerta')}não baixou</span>`; comErroX.push([x, and.erro]); }
+    else if (!x.pode) estado = '<span class="aprov-breve">em breve</span>';
+    else { pode = true; estado = `<span class="aprov-falta">${esc(T('aprov.falta', 'falta baixar {gb} GB', { gb: num(x.gb, x.gb < 1 ? 2 : 1) }))}</span>`; }
+    if (!pode) G.extraSel.delete(x.id);
+    return `<label class="aprov-linha${pode ? '' : ' travada'}" title="${esc(x.nota || '')}">
+      <input type="checkbox" data-extra="${esc(x.id)}" ${G.extraSel.has(x.id) ? 'checked' : ''} ${pode ? '' : 'disabled'}>
+      <span class="aprov-nome">${esc(x.nome)}</span>${estado}</label>`;
+  }).join('');
+  comErroX.forEach(([x, msg]) => recados.push(`<div class="aprov-recado erro" role="alert">${ic('alerta')}<div>
+      <b>${esc(x.nome)} não baixou</b><p>${esc(msg)}</p></div></div>`));
+  const marcadasX = extras.filter((x) => G.extraSel.has(x.id));
+
   const marcadas = ids.filter((i) => G.aprovSel.has(i));
-  const soma = marcadas.reduce((s, i) => s + (ias[i].gb_falta || 0), 0);
+  const soma = marcadas.reduce((s, i) => s + (ias[i].gb_falta || 0), 0) + marcadasX.reduce((s, x) => s + (x.gb || 0), 0);
+  const nMarcadas = marcadas.length + marcadasX.length;
   const disco = (d.discos || []).find((k) => k.unidade === d.unidade);
   const livre = disco ? disco.livre_gb : null;
   const naoCabe = livre != null && soma + 2 > livre;
@@ -1869,18 +1907,19 @@ function renderAprovadas() {
     </div>
     <div class="aprov-passo"><h3>${esc(TX('2. Quais você quer'))}</h3>
       <div class="aprov-lista">${linhas}</div>
+      ${linhasX ? `<h4 class="aprov-sub">Voz, texto e música</h4><div class="aprov-lista">${linhasX}</div>` : ''}
       ${recados.join('')}
       ${faltam > 1 && !ocupado ? `<button type="button" class="aprov-todas" data-marcar-todas>${esc(marcadas.length === faltam ? TX('Desmarcar todas') : TX('Marcar todas'))}</button>` : ''}
     </div>
     <div class="aprov-passo aprov-fim">
-      <p class="aprov-total${naoCabe ? ' nao-cabe' : ''}">${marcadas.length
-        ? esc(T('aprov.total', '{n} marcada(s): {gb} GB para baixar', { n: marcadas.length, gb: num(soma, 1) }))
+      <p class="aprov-total${naoCabe ? ' nao-cabe' : ''}">${nMarcadas
+        ? esc(T('aprov.total', '{n} marcada(s): {gb} GB para baixar', { n: nMarcadas, gb: num(soma, 1) }))
           + (livre != null ? ' · ' + esc(T('aprov.livreNo', '{gb} GB livres no {u}:', { gb: num(livre, 0), u: d.unidade })) : '')
           + (naoCabe ? ' — ' + esc(TX('não cabe neste disco')) : '')
-        : esc(faltam ? TX('Marque as IAs que você quer baixar.') : TX('Todas as aprovadas já estão instaladas.'))}</p>
+        : esc(faltam || extras.some((x) => x.pode && !x.instalada) ? TX('Marque o que você quer baixar.') : TX('Tudo que dá para instalar por aqui já está instalado.'))}</p>
       ${ocupado
         ? `<button type="button" class="bt-sec" data-parar-download>${esc(TX('Parar o download'))}</button>`
-        : `<button type="button" class="gerar aprov-instalar" data-instalar-aprovadas ${marcadas.length && !naoCabe ? '' : 'disabled'}>${ic('baixar')}<span>${esc(TX('3. Instalar as marcadas'))}</span></button>`}
+        : `<button type="button" class="gerar aprov-instalar" data-instalar-aprovadas ${nMarcadas && !naoCabe ? '' : 'disabled'}>${ic('baixar')}<span>${esc(TX('3. Instalar as marcadas'))}</span></button>`}
     </div>`;
   pintarIcones(onde);
 }
@@ -1904,11 +1943,18 @@ async function trocarDisco(unidade) {
 }
 async function instalarAprovadas() {
   const ias = G.ias || {}, ids = (G.aprovadasIds || []).filter((i) => G.aprovSel && G.aprovSel.has(i));
-  if (!ids.length) return;
-  const soma = ids.reduce((s, i) => s + (ias[i].gb_falta || 0), 0);
+  const extras = ((G.requisitos || {}).extras || []).filter((x) => G.extraSel && G.extraSel.has(x.id));
+  if (!ids.length && !extras.length) return;
+  const soma = ids.reduce((s, i) => s + (ias[i].gb_falta || 0), 0) + extras.reduce((s, x) => s + (x.gb || 0), 0);
   // confirmar: sao dezenas de GB de internet de alguem
   if (!confirm(T('aprov.confirma', 'Baixar {n} IA(s)?\n\nSão {gb} GB no disco {u}:. Dá para usar o estúdio enquanto baixa, e se parar no meio continua de onde parou.',
-      { n: ids.length, gb: num(soma, 1), u: (G.destino || {}).unidade || '' }))) return;
+      { n: ids.length + extras.length, gb: num(soma, 1), u: (G.destino || {}).unidade || '' }))) return;
+  if (extras.length) {      // um por vez no servidor: o resto espera na fila daqui
+    G.extraFila = (G.extraFila || []).concat(extras.map((x) => x.id));
+    G.extraSel.clear();
+    if (!((G.requisitos || {}).andamento || {}).id) proximoExtra(); else lerRequisitos();
+  }
+  if (!ids.length) { aviso('Começando a baixar.'); return; }
   let entrou = 0, recusa = '';
   for (const id of ids) {
     try {
@@ -1948,6 +1994,13 @@ document.addEventListener('click', (ev) => {
   }
 });
 document.addEventListener('change', (ev) => {
+  const x = ev.target && ev.target.dataset && ev.target.dataset.extra;
+  if (x) {
+    if (!G.extraSel) G.extraSel = new Set();
+    if (ev.target.checked) G.extraSel.add(x); else G.extraSel.delete(x);
+    renderAprovadas();
+    return;
+  }
   const c = ev.target && ev.target.dataset && ev.target.dataset.aprov;
   if (!c) return;
   if (!G.aprovSel) G.aprovSel = new Set();

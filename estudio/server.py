@@ -4275,7 +4275,24 @@ async def api_requisitos(req):
                                                   "rotulo": "Ver as chaves"}})})
 
     falta = [i["id"] for i in itens if i["estado"] == "falta"]
-    return web.json_response({"ok": True, "itens": itens, "falta": falta,
+    # 14/11/2026: os motores que NAO sao da ComfyUI entram na mesma lista de marcar e baixar
+    # das IAs de imagem e video ("IAs aprovadas"). "pode": False = ainda nao instala por aqui.
+    extras = [
+        {"id": "voz", "nome": "Voz e clone de voz (VoiceStudio)", "instalada": voz_instalada, "pode": True,
+         "gb": round(v["bytes"] / 1024 ** 3, 2),
+         "nota": "Baixa e abre o instalador dele. Os modelos de voz (cerca de 22 GB) ele mesmo baixa na primeira vez que abrir."},
+        {"id": "texto", "nome": "IA de texto (Qwen)", "pode": True,
+         "instalada": not falta_nomes and TEXTO.instalado(), "gb": round(falta_b / 1024 ** 3, 1),
+         "nota": "Melhora o prompt, traduz, descreve imagem e escreve roteiro. Não precisa de conta nem de chave."},
+    ]
+    if not TEM_MUSICA:
+        extras += [
+            {"id": "musica-yue2-int8", "nome": "YuE2 INT8 · música com letra", "instalada": False, "pode": False,
+             "nota": "Em breve: a instalação da música ainda está sendo construída."},
+            {"id": "musica-stable-audio3", "nome": "Stable Audio 3 · instrumental", "instalada": False,
+             "pode": False, "nota": "Em breve: a instalação da música ainda está sendo construída."},
+        ]
+    return web.json_response({"ok": True, "itens": itens, "falta": falta, "extras": extras,
                               "andamento": requisitos.progresso()})
 
 

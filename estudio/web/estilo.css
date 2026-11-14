@@ -1401,3 +1401,8 @@ details.nov.destaque, details.nov.destaque[open] { background: none; border-colo
   .heroi-foto { width: 100%; opacity: .55;
     -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, .25) 0, #000 80%); mask-image: linear-gradient(90deg, rgba(0, 0, 0, .25) 0, #000 80%); }
 }
+
+/* ---- voz, texto e musica na mesma lista de marcar (14/11/2026) ---- */
+.aprov-sub { margin: 16px 0 8px; font-size: 12.5px; font-weight: 600; color: var(--fraco); }
+.aprov-breve { flex: none; font-size: 12px; color: var(--fraco); padding: 2px 9px; border-radius: 999px;
+  border: 1px solid var(--borda-forte); white-space: nowrap; }
