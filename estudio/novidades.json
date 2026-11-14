@@ -2,10 +2,74 @@
   "_sobre": "As notícias que aparecem na página inicial do Forja Studio. Uma por bloco, a mais nova em cima. Campos: id (nunca repetir), data (AAAA-MM-DD), etiqueta (novidade | ias | dica | aviso), titulo, texto. O 'destaque' deixa a primeira em evidência. Quando o servidor de contas entrar no ar, este arquivo passa a vir de lá — e todo mundo recebe a mesma notícia sem baixar nada de novo.",
   "novidades": [
     {
+      "id": "2026-11-14-preparar-esta-maquina",
+      "data": "2026-11-14",
+      "etiqueta": "novidade",
+      "destaque": true,
+      "titulo": "Preparar esta máquina: tudo que falta, com passo a passo e botão",
+      "texto": "A tela de Início ganhou uma lista do que o seu computador precisa para o estúdio funcionar inteiro: placa de vídeo, ffmpeg, o motor de imagem e vídeo, as IAs, a voz, a IA de texto e as chaves. Cada linha diz se está pronta, se falta ou se é opcional — e, quando falta, traz os passos e o botão que resolve. O ffmpeg, por exemplo, instala com um clique dentro da pasta do estúdio, sem mexer no Windows. Antes, parte disso só estava num manual, e a pessoa descobria que faltava no meio de um trabalho."
+    },
+    {
+      "id": "2026-11-14-ia-de-texto-pelo-botao",
+      "data": "2026-11-14",
+      "etiqueta": "ias",
+      "destaque": false,
+      "titulo": "A IA de texto agora instala pelo botão",
+      "texto": "É ela que melhora o seu prompt, traduz, descreve uma imagem e escreve roteiro, tudo na sua máquina, sem internet e sem mensalidade. Em “Preparar esta máquina”, clique em “Instalar a IA de texto”: o painel baixa o programa e os dois modelos (18,7 GB), confere cada arquivo e deixa tudo configurado. Não precisa de conta nem de chave. Os modelos vão para o disco que você escolheu para as IAs, não para o C:. É opcional: sem ela só esses botões ficam parados."
+    },
+    {
+      "id": "2026-11-14-voz-pelo-painel",
+      "data": "2026-11-14",
+      "etiqueta": "ias",
+      "destaque": false,
+      "titulo": "Voz e clone de voz: o painel baixa o VoiceStudio para você",
+      "texto": "A narração local e o clone de voz usam o VoiceStudio, que é um programa à parte. Agora o painel baixa o instalador oficial, confere o arquivo e abre já apontando para o disco das IAs — você só avança as telas. Na primeira vez que abrir, ele baixa os modelos de voz (cerca de 22 GB). Um cuidado que a tela também avisa: troque o motor para o VoxCPM 2 antes de publicar, porque o que vem ligado tem licença que não permite vídeo monetizado."
+    },
+    {
+      "id": "2026-11-14-download-que-nao-trava",
+      "data": "2026-11-14",
+      "etiqueta": "novidade",
+      "destaque": false,
+      "titulo": "Download das IAs: porcentagem de verdade e sem ficar preso em conexão lenta",
+      "texto": "Duas correções no download. Primeira: cada IA é feita de vários arquivos, e a porcentagem era de cada arquivo — chegava a 100% e voltava a 0%, parecendo que tinha recomeçado. Agora ela é da IA inteira, sobe uma vez só e mostra “arquivo 3 de 4”. Segunda: às vezes o servidor entrega uma conexão muito lenta e o download ficava horas nela. Agora o painel percebe, pede outra conexão sozinho e continua de onde parou. As IAs seguem baixando uma por vez, em fila, e a que termina fica verde."
+    },
+    {
+      "id": "2026-11-13-instalador-exe",
+      "data": "2026-11-13",
+      "etiqueta": "novidade",
+      "destaque": false,
+      "titulo": "Instalador de dois cliques — não precisa mais de IA nem de linha de comando",
+      "texto": "Agora existe o ForjaStudio-Instalador.exe (72 MB), no link do GitHub. Ele instala o painel em C:\\ForjaStudio, já com o Python e as bibliotecas dentro — não é preciso instalar nada antes — e cria o ícone na Área de Trabalho. Não pede senha de administrador e vem em português, inglês e espanhol. Os motores e as IAs não vêm nele: você baixa depois, pelo próprio painel, só o que quiser."
+    },
+    {
+      "id": "2026-11-13-escolha-o-disco",
+      "data": "2026-11-13",
+      "etiqueta": "ias",
+      "destaque": false,
+      "titulo": "Escolha o disco das IAs — e instale o motor e as 8 aprovadas pela tela",
+      "texto": "O painel é leve e fica no C:. O que pesa você manda para o disco que tiver espaço: a tela de Início mostra os discos da máquina com o espaço livre de cada um, e o painel cria a pasta ForjaStudio-IAs no que você escolher. Logo abaixo ficam as 8 IAs aprovadas pelo projeto — as que já foram usadas de verdade para fazer vídeo — para marcar e instalar. O motor (ComfyUI) também instala por botão, 1,8 GB, já com os complementos que os fluxos usam. Escolha o disco antes do primeiro download: trocar depois não move o que já baixou."
+    },
+    {
+      "id": "2026-11-13-codigo-por-email",
+      "data": "2026-11-13",
+      "etiqueta": "aviso",
+      "destaque": false,
+      "titulo": "Atualização de cadastro: confirme o código que chega no seu e-mail",
+      "texto": "Toda conta agora precisa confirmar o e-mail com um código de 6 números. Vale para quem cria conta hoje e também para quem já tinha: no próximo login o painel pede o código, e sem confirmar não dá para entrar. O código vale 30 minutos e dá para pedir outro. Se você não tem mais acesso ao e-mail do cadastro, crie uma conta nova com um e-mail que você use. O “Esqueci minha senha” também passou a funcionar pela tela: você confirma o código no e-mail e recebe a senha em seguida."
+    },
+    {
+      "id": "2026-11-13-icone-e-pasta-padrao",
+      "data": "2026-11-13",
+      "etiqueta": "novidade",
+      "destaque": false,
+      "titulo": "O ícone aparece sozinho e o estúdio tem lugar padrão",
+      "texto": "Em algumas máquinas o ícone não era criado na Área de Trabalho, ou era criado e não abria, e o cadastro respondia “não consegui identificar esta máquina”. As três coisas foram corrigidas: o ícone é criado sozinho na primeira vez que o painel sobe, o estúdio passa a morar sempre em C:\\ForjaStudio, e a máquina é reconhecida mesmo quando o Windows esconde parte das informações. E quando o painel não consegue abrir, agora ele mostra uma página dizendo o motivo, em vez de não acontecer nada."
+    },
+    {
       "id": "2026-11-11-chaves-api",
       "data": "2026-11-11",
       "etiqueta": "novidade",
-      "destaque": true,
+      "destaque": false,
       "titulo": "Configurações de API: cole as suas chaves pela tela",
       "texto": "Na tela de Início agora tem um lugar para as chaves que você tiver. São todas opcionais — o estúdio funciona inteiro sem nenhuma. A do ElevenLabs destrava as vozes na nuvem; sem ela a narração continua de graça, com as vozes locais. E o token do Hugging Face serve para baixar o LTX 2.5, o único dos 19 repositórios de modelos que pede conta e aceitar a licença — o cartão leva os três passos em links, na ordem certa. A tela nunca mostra a chave já guardada, só diz que ela existe, e tudo fica apenas no seu computador. Antes, quando o LTX 2.5 parava, nada aparecia na tela; agora o cartão da IA explica o que fazer."
     },
