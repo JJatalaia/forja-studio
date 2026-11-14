@@ -279,7 +279,29 @@ def progresso():
         return {"baixando": d, "fila": list(_fila), "erro": _erro, "erro_ia": _erro_ia}
 
 
-def _baixar_arquivo(nome, info):
+class _Lento(Exception):
+    """A conexao da vez esta muito abaixo do que esta internet ja mostrou: vale pedir outra."""
+
+
+JANELA_S = 20               # mede a velocidade em janelas deste tamanho
+_melhor = 0.0               # a melhor velocidade (bytes/s) ja vista numa janela, nesta sessao
+RELIGADAS_POR_ARQUIVO = 6   # depois disso aceita a conexao que vier: a internet e que esta ruim
+
+
+def _conexao_ruim(velocidade, pode_tentar_as_cegas):
+    """Decide se vale largar esta conexao e pedir outra (o download continua de onde parou).
+
+    - ja vimos esta internet correr (2 MB/s ou mais) e agora esta a menos de 10% disso; ou
+    - nunca vimos correr, esta abaixo de 1 MB/s e ainda nao tentamos trocar neste arquivo.
+    Quem tem internet lenta de verdade nao entra em laco: a primeira regra nunca dispara e a
+    segunda so vale uma vez por arquivo.
+    """
+    if _melhor >= 2 * 1024 ** 2:
+        return velocidade < _melhor * 0.10
+    return pode_tentar_as_cegas and velocidade < 1024 ** 2
+
+
+def _baixar_arquivo(nome, info, religadas=0):
     """Baixa um arquivo, continuando de onde parou. Levanta em caso de erro."""
     global _agora
     destino = caminho_de(nome, info)
@@ -325,6 +347,8 @@ def _baixar_arquivo(nome, info):
             ja = 0
         if not total:
             total = int(r.headers.get("Content-Length") or 0) + ja
+        global _melhor
+        marco_t, marco_b = time.time(), ja
         with open(parcial, "ab" if continuando else "wb") as f:
             while True:
                 if _parar:
@@ -338,6 +362,17 @@ def _baixar_arquivo(nome, info):
                     if _agora:
                         _agora["baixados"] = ja
                         _agora["total"] = total
+                agora = time.time()
+                if agora - marco_t >= JANELA_S:
+                    velocidade = (ja - marco_b) / (agora - marco_t)
+                    _melhor = max(_melhor, velocidade)
+                    with _trava:
+                        if _agora:
+                            _agora["velocidade"] = int(velocidade)
+                    if (religadas < RELIGADAS_POR_ARQUIVO and total - ja > 20 * 1024 ** 2
+                            and _conexao_ruim(velocidade, religadas == 0)):
+                        raise _Lento(f"{velocidade / 1024 ** 2:.1f} MB/s")
+                    marco_t, marco_b = agora, ja
 
     if total and abs(parcial.stat().st_size - total) > FOLGA_BYTES:
         raise OSError(f"{nome}: baixou {parcial.stat().st_size} de {total} bytes")
@@ -371,7 +406,19 @@ def _trabalhar(nomes_por_ia):
                               "total": info.get("bytes") or 0, "comecou": time.time(),
                               "ia_total": ia_total, "ia_antes": ia_antes,
                               "numero": numero, "de": len(arquivos)}
-                _baixar_arquivo(nome, info)
+                religadas = 0
+                while True:
+                    try:
+                        _baixar_arquivo(nome, info, religadas)
+                        break
+                    except _Lento as lento:
+                        religadas += 1
+                        print(f"[estúdio] {nome}: conexão lenta ({lento}); pedindo outra "
+                              f"({religadas} de {RELIGADAS_POR_ARQUIVO}). Continua de onde parou.",
+                              flush=True)
+                        with _trava:
+                            if _agora:
+                                _agora["religadas"] = religadas
                 ia_antes += info.get("bytes") or 0
             with _trava:
                 if _fila and _fila[0] == ia:
