@@ -146,6 +146,7 @@ IAs más grandes no quepan. Empieza por el camino de la imagen y ve subiendo.
 
 Dos pasos: **descargar los modelos** y **aplicar la configuración**.
 
+- **[Descargar el instalador para Windows (.exe)](https://github.com/JJatalaia/forja-studio/releases/latest/download/ForjaStudio-Instalador.exe)** — dos clics: instala el panel en `C:\ForjaStudio`, con Python propio e icono en el Escritorio. No hace falta IA de código.
 - [INSTALAR.md](INSTALAR.md) — paso a paso, para hacerlo a mano (en portugués). **El lugar estándar es `C:\ForjaStudio`:** `git clone https://github.com/JJatalaia/forja-studio.git C:\ForjaStudio`
 - [INSTALAR-COM-IA.md](INSTALAR-COM-IA.md) — **el texto para pegar en Claude Code, Codex o
   Gemini CLI y dejar que la IA descargue y verifique todo por ti** (en portugués)

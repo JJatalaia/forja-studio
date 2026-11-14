@@ -141,6 +141,7 @@ caber. Comece pela trilha de imagem e vá subindo.
 
 Em dois passos: **baixar os modelos** e **aplicar a configuração**.
 
+- **[Baixar o instalador para Windows (.exe)](https://github.com/JJatalaia/forja-studio/releases/latest/download/ForjaStudio-Instalador.exe)** — dois cliques: instala o painel em `C:\ForjaStudio`, com Python próprio e ícone na Área de Trabalho. Não precisa de IA de código.
 - [INSTALAR.md](INSTALAR.md) — passo a passo, para fazer à mão. **O lugar padrão é `C:\ForjaStudio`:** `git clone https://github.com/JJatalaia/forja-studio.git C:\ForjaStudio`
 - [INSTALAR-COM-IA.md](INSTALAR-COM-IA.md) — **o texto para colar no Claude Code, no Codex ou
   no Gemini CLI e deixar a IA baixar e conferir tudo para você**

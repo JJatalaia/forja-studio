@@ -141,6 +141,7 @@ may not fit. Start with the image track and work your way up.
 
 Two steps: **download the models** and **apply the configuration**.
 
+- **[Download the Windows installer (.exe)](https://github.com/JJatalaia/forja-studio/releases/latest/download/ForjaStudio-Instalador.exe)** — two clicks: installs the panel to `C:\ForjaStudio`, with its own Python and a Desktop icon. No coding AI needed.
 - [INSTALAR.md](INSTALAR.md) — step by step, to do by hand (in Portuguese). **The standard place is `C:\ForjaStudio`:** `git clone https://github.com/JJatalaia/forja-studio.git C:\ForjaStudio`
 - [INSTALAR-COM-IA.md](INSTALAR-COM-IA.md) — **the text to paste into Claude Code, Codex or
   Gemini CLI and let the AI download and verify everything for you**
