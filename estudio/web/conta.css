@@ -1,7 +1,7 @@
 /* A PORTA DE ENTRADA do Forja Studio (03/11/2026).
 
-   Mesma paleta da forja: fundo escuro, lima como acento e a brasa aquecendo a arte do
-   lado. Nada de internet aqui - sem fonte de fora, sem imagem de fora. Uma tela de login
+   Mesma paleta da forja: fundo escuro, o ciano do chip como acento e a brasa aquecendo a
+   arte do lado. Nada de internet aqui - sem fonte de fora, sem imagem de fora. Uma tela de login
    que carrega antes do resto nao pode depender de nada que possa faltar.
 
    A porta cobre a pagina inteira enquanto nao houver conta. Quando o estudio esta liberado,
@@ -16,31 +16,23 @@
     radial-gradient(800px 600px at 100% 110%, rgba(255, 138, 61, .09), transparent 60%);
 }
 
-/* o lado da arte: a brasa viva, feita so com gradiente - zero imagem */
-.porta-arte { position: relative; overflow: hidden; border-right: 1px solid var(--borda); }
-.porta-brasa {
-  position: absolute; left: 50%; top: 50%; width: min(60vh, 460px); aspect-ratio: 1;
-  transform: translate(-50%, -50%); border-radius: 50%;
+/* O lado da arte (14/11/2026): a placa de video na bigorna, da abertura do canal Forja IA.
+   Antes era um circulo de gradiente pulsando. A foto e um arquivo LOCAL (web/img); se ela
+   faltar, sobra o fundo escuro com o lema - a porta continua abrindo. */
+.porta-arte { position: relative; overflow: hidden; display: flex; align-items: flex-end;
+  border-right: 1px solid var(--borda); background: #0b0d12; }
+.porta-foto { position: absolute; inset: 0; background: url("img/forja-porta.jpg") 50% 50% / cover no-repeat; }
+/* a foto escurece embaixo (onde vai o texto), em cima e na costura com o formulario */
+.porta-foto::after { content: ""; position: absolute; inset: 0;
   background:
-    radial-gradient(circle at 50% 55%, rgba(255, 221, 150, .95) 0%, rgba(255, 138, 61, .85) 26%,
-                    rgba(64, 206, 232, .25) 48%, transparent 70%);
-  filter: blur(2px);
-  animation: porta-respira 7s ease-in-out infinite;
-}
-.porta-arte::after {           /* a bigorna: duas faixas, so geometria */
-  content: ""; position: absolute; left: 50%; bottom: 18%; translate: -50% 0;
-  width: min(46vh, 320px); height: 14px; border-radius: 6px;
-  background: linear-gradient(180deg, #2a3040, #141821);
-  box-shadow: 0 -26px 60px rgba(255, 138, 61, .35), 0 10px 30px rgba(0, 0, 0, .5);
-}
-@keyframes porta-respira {
-  0%, 100% { opacity: .82; transform: translate(-50%, -50%) scale(1); }
-  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.06); }
-}
-/* quem pediu menos movimento no sistema nao ve a brasa pulsar */
-@media (prefers-reduced-motion: reduce) {
-  .porta-brasa { animation: none; }
-}
+    linear-gradient(0deg, rgba(8, 10, 14, .96) 0%, rgba(8, 10, 14, .62) 30%, rgba(8, 10, 14, .1) 56%, rgba(8, 10, 14, .5) 100%),
+    linear-gradient(90deg, transparent 72%, rgba(11, 13, 18, .9) 100%); }
+.porta-dizer { position: relative; max-width: 600px; padding: clamp(28px, 4.6vw, 68px); }
+.porta-lema { font-family: "Bahnschrift", "Segoe UI Variable Display", var(--fonte-titulo);
+  font-size: clamp(28px, 3.3vw, 50px); line-height: 1.02; font-weight: 600; font-stretch: 85%;
+  text-transform: uppercase; color: var(--texto); }
+.porta-lema em { font-style: normal; color: var(--acento); }
+.porta-lema-sub { margin-top: 14px; max-width: 44ch; font-size: 15px; line-height: 1.6; color: #c3c9d6; }
 
 /* o lado do formulario */
 .porta-cartao {

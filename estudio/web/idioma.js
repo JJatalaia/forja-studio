@@ -70,6 +70,8 @@
 
     // ---- tela de Início
     'inicio.titulo': 'What are we <em>forging</em> today?',
+    'porta.lema': 'Forged on your own <em>graphics card</em>.',
+    'porta.lema-sub': 'Images, video, voice and text generated on your computer. No subscription, no cloud.',
     'inicio.sub': 'Images, video, talking people, narration and music — forged on your own '
       + 'graphics card. No monthly fee, no cloud, no waiting in anyone’s queue.',
 
@@ -311,6 +313,8 @@
 
     // ---- tela de Início
     'inicio.titulo': '¿Qué vamos a <em>forjar</em> hoy?',
+    'porta.lema': 'Forjado en tu propia <em>tarjeta gráfica</em>.',
+    'porta.lema-sub': 'Imágenes, vídeo, voz y texto generados en tu equipo. Sin mensualidad y sin nube.',
     'inicio.sub': 'Imágenes, vídeo, personas hablando, narración y música — forjados en tu '
       + 'propia tarjeta gráfica. Sin mensualidad, sin nube, sin esperar en la cola de nadie.',
 
