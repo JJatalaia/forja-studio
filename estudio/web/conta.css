@@ -12,7 +12,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   background: var(--fundo);
   background-image:
-    radial-gradient(900px 600px at 12% -10%, rgba(215, 255, 58, .07), transparent 60%),
+    radial-gradient(900px 600px at 12% -10%, rgba(64, 206, 232, .07), transparent 60%),
     radial-gradient(800px 600px at 100% 110%, rgba(255, 138, 61, .09), transparent 60%);
 }
 
@@ -23,7 +23,7 @@
   transform: translate(-50%, -50%); border-radius: 50%;
   background:
     radial-gradient(circle at 50% 55%, rgba(255, 221, 150, .95) 0%, rgba(255, 138, 61, .85) 26%,
-                    rgba(215, 255, 58, .25) 48%, transparent 70%);
+                    rgba(64, 206, 232, .25) 48%, transparent 70%);
   filter: blur(2px);
   animation: porta-respira 7s ease-in-out infinite;
 }

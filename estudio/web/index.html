@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>JerS · Forja Studio</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d7ff3a'/%3E%3Cpath d='M16 5l2.6 7.4L26 15l-7.4 2.6L16 25l-2.6-7.4L6 15l7.4-2.6z' fill='%230b0d12'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2340cee8'/%3E%3Cpath d='M16 5l2.6 7.4L26 15l-7.4 2.6L16 25l-2.6-7.4L6 15l7.4-2.6z' fill='%230b0d12'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="estilo.css?v=20261111-chaves">
 <link rel="stylesheet" href="voz.css?v=20261103-nuvem">
 <link rel="stylesheet" href="canal.css?v=20261102-molde">
@@ -126,6 +126,8 @@
     <div class="heroi">
       <div class="heroi-brasa" aria-hidden="true"></div>
       <div class="heroi-corpo">
+        <!-- 14/11/2026: a placa de video na bigorna, da abertura do canal Forja IA. Decorativa. -->
+        <div class="heroi-foto" aria-hidden="true"></div>
         <div class="heroi-texto">
           <p class="heroi-marca"><span class="heroi-jers">JerS</span><i aria-hidden="true"></i>Forja Studio</p>
           <h1 id="inicioTitulo" tabindex="-1" data-i18n-html="inicio.titulo">O que vamos <em>forjar</em> hoje?</h1>
@@ -133,15 +135,15 @@
             própria placa de vídeo. Sem mensalidade, sem nuvem, sem fila de ninguém.</p>
           <div class="heroi-tiras" id="heroiTiras" role="status"></div>
         </div>
-        <section class="maquina" id="maquina" aria-labelledby="maqTitulo">
+      </div>
+      <div class="bancada" id="bancada">
+      <section class="maquina" id="maquina" aria-labelledby="maqTitulo">
           <div class="bloco-cab">
             <h2 id="maqTitulo" data-i18n="tela.sua-maquina">Sua máquina</h2>
             <span class="ao-vivo" id="maqAoVivo"><i></i>ao vivo</span>
           </div>
           <div id="maqCorpo"><p class="fraco">Verificando…</p></div>
         </section>
-      </div>
-      <div class="bancada" id="bancada">
         <div class="forja-fornos" id="forjaFornos"></div>
       </div>
     </div>
