@@ -51,7 +51,30 @@
   // "esse e-mail nao existe", qualquer um descobriria quem tem conta so tentando
   // enderecos. Por isso a mensagem aqui tambem e a mesma nos dois casos - se ela
   // mudasse, o cuidado do servidor nao valeria de nada.
+  // 13/11/2026: codigo primeiro, senha depois. O pedido agora chega de verdade ao servidor
+  // (a rota nao existia no painel) e, se ele falhar, a tela DIZ - nao finge mais sucesso.
   async function esqueciSenha() {
+    const email = $('#cEmail').value.trim();
+    if (!email || email.indexOf('@') < 0) {
+      erro('Escreva o seu e-mail aqui em cima e clique de novo.');
+      $('#cEmail').focus();
+      return;
+    }
+    const bt = $('#portaEsqueci');
+    const antes = bt.textContent;
+    bt.disabled = true;
+    bt.textContent = 'Mandando…';
+    try {
+      await pedir('/api/conta/recuperar', { email });
+      pedirCodigo({ motivo: 'senha', email, enviado: true });
+    } catch (e) {
+      erro('Não consegui pedir o código agora: ' + String(e.message || e));
+    }
+    bt.textContent = antes;
+    bt.disabled = false;
+  }
+  // (a versao de 05/11, que mandava o link e nunca funcionou no painel; sem uso)
+  async function esqueciSenhaAntigo() {
     const email = $('#cEmail').value.trim();
     if (!email || email.indexOf('@') < 0) {
       erro('Escreva o seu e-mail aqui em cima e clique de novo.');
@@ -157,7 +180,12 @@
     E.codigo = d;
     const email = String(d.email || '').replace(/[<>&]/g, '');
     let txt;
-    if (d.motivo === 'atualizacao') {
+    if (d.motivo === 'senha') {
+      // a mesma frase exista a conta ou nao: a tela nao pode entregar quem tem cadastro
+      txt = 'Se existir uma conta com <b>' + email + '</b>, mandamos um código de 6 números para '
+        + 'esse e-mail. Digite ele aqui e a sua senha vai para o mesmo e-mail.'
+        + '<br><br>Se não achar, olhe no spam.';
+    } else if (d.motivo === 'atualizacao') {
       txt = '<b>Estamos fazendo uma atualização de cadastro.</b> Mandamos um código de 6 números '
         + 'para <b>' + email + '</b>. Por favor, confirme o código: sem ele não dá para entrar.'
         + '<br><br>Se você não tem mais acesso a esse e-mail, crie uma conta nova com um '
@@ -171,7 +199,9 @@
       + 'minuto e clique em "Mandar outro código".';
     $('#codigoTxt').innerHTML = txt;
     $('#codigoVoltar').textContent = d.motivo === 'atualizacao' ? 'Criar uma conta nova' : 'Voltar';
-    $('#portaTitulo').textContent = d.motivo === 'atualizacao' ? 'Atualização de cadastro' : 'Confirme o seu e-mail';
+    $('#portaTitulo').textContent = d.motivo === 'senha' ? 'Esqueci minha senha'
+      : d.motivo === 'atualizacao' ? 'Atualização de cadastro' : 'Confirme o seu e-mail';
+    $('#codigoBt').textContent = rotuloDoCodigo();
     $('#portaSub').hidden = true;
     $$('.porta-abas').forEach((a) => { a.hidden = true; });
     $('#portaForm').hidden = true;
@@ -179,6 +209,9 @@
     $('#cCodigo').value = '';
     erroCodigo('');
     $('#cCodigo').focus();
+  }
+  function rotuloDoCodigo() {
+    return E.codigo && E.codigo.motivo === 'senha' ? 'Confirmar e receber a senha' : 'Confirmar e entrar';
   }
   function sairDoCodigo(modo) {
     E.codigo = null;
@@ -199,6 +232,21 @@
     $('#codigoBt').textContent = 'Conferindo…';
     erroCodigo('');
     try {
+      if (E.codigo.motivo === 'senha') {
+        const email = E.codigo.email;
+        const r = await pedir('/api/conta/senha-por-codigo', { email, codigo });
+        sairDoCodigo('entrar');
+        $('#cEmail').value = email;
+        const p = $('#portaErro');
+        p.hidden = false;
+        p.classList.add('porta-erro-ok');
+        p.innerHTML = r && r.como === 'link'
+          ? 'Código certo. Esta conta é de antes de guardarmos a senha, então mandamos para <b>'
+            + email.replace(/[<>&]/g, '') + '</b> um link para você escolher uma senha nova. Ele vale por 1 hora.'
+          : 'Código certo. A sua senha foi enviada para <b>' + email.replace(/[<>&]/g, '')
+            + '</b>. Abra o e-mail, copie a senha e entre aqui.';
+        return;
+      }
       E.estado = await pedir('/api/conta/codigo', { email: E.codigo.email, codigo });
       sairDoCodigo('entrar');
       aplicar(E.estado);
@@ -207,7 +255,7 @@
     } finally {
       E.ocupado = false;
       $('#codigoBt').disabled = false;
-      $('#codigoBt').textContent = 'Confirmar e entrar';
+      $('#codigoBt').textContent = rotuloDoCodigo();
     }
   }
   async function outroCodigo() {
@@ -215,7 +263,8 @@
     const bt = $('#codigoDeNovo');
     bt.disabled = true;
     try {
-      await pedir('/api/conta/reenviar-codigo', { email: E.codigo.email });
+      await pedir(E.codigo.motivo === 'senha' ? '/api/conta/recuperar' : '/api/conta/reenviar-codigo',
+        { email: E.codigo.email });
       erroCodigo('Pronto: se dois minutos já passaram desde o último, um código novo está a caminho. '
         + 'O anterior deixa de valer.', true);
     } catch (e) {

@@ -4215,6 +4215,26 @@ async def api_conta_codigo(req):
         return web.json_response({"erro": str(exc)}, status=exc.status if exc.status < 500 else 502)
 
 
+async def api_conta_recuperar(req):
+    """"Esqueci minha senha". Ate 13/11/2026 esta rota NAO EXISTIA no painel: o botao da
+    tela chamava um endereco que respondia 404, e a tela dizia que o e-mail tinha saido."""
+    b = await req.json()
+    try:
+        await licenca.pedir_codigo_da_senha((b.get("email") or "").strip())
+        return web.json_response({"ok": True})
+    except licenca.ErroDeConta as exc:
+        return web.json_response({"erro": str(exc)}, status=exc.status if exc.status < 500 else 502)
+
+
+async def api_conta_senha_por_codigo(req):
+    b = await req.json()
+    try:
+        return web.json_response(await licenca.senha_por_codigo(
+            (b.get("email") or "").strip(), re.sub(r"\D", "", str(b.get("codigo") or ""))))
+    except licenca.ErroDeConta as exc:
+        return web.json_response({"erro": str(exc)}, status=exc.status if exc.status < 500 else 502)
+
+
 async def api_conta_reenviar_codigo(req):
     b = await req.json()
     try:
@@ -5187,6 +5207,8 @@ app.add_routes([
     web.post("/api/conta/criar", api_conta_criar),
     web.post("/api/conta/entrar", api_conta_entrar),
     web.post("/api/conta/codigo", api_conta_codigo),
+    web.post("/api/conta/recuperar", api_conta_recuperar),
+    web.post("/api/conta/senha-por-codigo", api_conta_senha_por_codigo),
     web.post("/api/conta/reenviar-codigo", api_conta_reenviar_codigo),
     web.post("/api/conta/sair", api_conta_sair),
     web.get("/api/novidades", api_novidades), web.post("/api/upload", api_upload),

@@ -513,6 +513,18 @@ async def confirmar_codigo(email, codigo):
     return estado()
 
 
+async def pedir_codigo_da_senha(email):
+    """"Esqueci minha senha": o servidor manda um codigo para o e-mail (se a conta existir)."""
+    await _pedir("/api/conta/recuperar", {"email": email, "sabe_codigo": True})
+    return True
+
+
+async def senha_por_codigo(email, codigo):
+    """O codigo bateu: o servidor manda a senha (ou o link de senha nova) por e-mail."""
+    r = await _pedir("/api/conta/senha-por-codigo", {"email": email, "codigo": codigo})
+    return {"ok": True, "como": r.get("como") or "senha"}
+
+
 async def reenviar_codigo(email):
     await _pedir("/api/conta/reenviar-codigo", {"email": email})
     return True
