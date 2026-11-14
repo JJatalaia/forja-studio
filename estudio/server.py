@@ -2931,6 +2931,15 @@ def disco(raiz):
         return None, None
 
 
+def _disco_com_letra(pasta):
+    """{"unidade": "E", "livre_gb":, "total_gb":} do disco onde a pasta mora, ou None."""
+    raiz = Path(pasta).anchor
+    livre, total = disco(raiz) if raiz else (None, None)
+    if livre is None:
+        return None
+    return {"unidade": raiz[:1].upper(), "livre_gb": livre, "total_gb": total}
+
+
 def contar_musicas():
     """Músicas prontas no painel (lê o jobs.json dele, só leitura). None se não der para ler."""
     try:
@@ -3429,6 +3438,9 @@ async def montar_inicio():
                "vram_total_gb": round(vt / gb, 1) if vt else None, "vram_livre_gb": round(vl / gb, 1) if vl else None,
                **_tente(memoria_ram, {}, "RAM"), "disco_e_livre_gb": e_livre, "disco_e_total_gb": e_total,
                "disco_c_livre_gb": c_livre,
+               # 14/11/2026: a tela dizia "Disco E: (projeto)" com os numeros do disco do
+               # PAINEL. Agora cada disco vai com a sua letra: o das IAs e o do painel.
+               "disco_ias": _disco_com_letra(COMFY_DIR), "disco_painel": _disco_com_letra(ROOT),
                # (compatível com a tela antiga: só ligado sim/não; o estado completo vai em "servicos")
                # .get com padrao: sem os projetos de musica, CHAVES_SERVICO so tem "video" e as
                # outras chaves nem existem. Com indice direto isso virava KeyError e derrubava

@@ -2,10 +2,18 @@
   "_sobre": "As notícias que aparecem na página inicial do Forja Studio. Uma por bloco, a mais nova em cima. Campos: id (nunca repetir), data (AAAA-MM-DD), etiqueta (novidade | ias | dica | aviso), titulo, texto. O 'destaque' deixa a primeira em evidência. Quando o servidor de contas entrar no ar, este arquivo passa a vir de lá — e todo mundo recebe a mesma notícia sem baixar nada de novo.",
   "novidades": [
     {
-      "id": "2026-11-14-preparar-esta-maquina",
+      "id": "2026-11-14-pagina-inicial-nova",
       "data": "2026-11-14",
       "etiqueta": "novidade",
       "destaque": true,
+      "titulo": "Página inicial redesenhada: tudo à vista, sem buraco",
+      "texto": "A tela de Início foi refeita. A sua máquina agora aparece no alto, com medidores ao vivo da placa, da memória e de cada disco com a letra certa. Logo abaixo, uma faixa única reúne os serviços, a IA de texto, a fila e o botão de liberar memória. Os cartões de criar só recomendam IA que já está instalada, e em “Conheça as IAs” a que está instalada fica verde e sobe para o topo da coluna. Enquanto faltar alguma coisa para o estúdio funcionar, “Preparar esta máquina” fica em primeiro lugar; quando está tudo pronto, ele sai da frente. No download, a IA que pede token baixa todo o resto antes de avisar, e uma falha não para mais a fila."
+    },
+    {
+      "id": "2026-11-14-preparar-esta-maquina",
+      "data": "2026-11-14",
+      "etiqueta": "novidade",
+      "destaque": false,
       "titulo": "Preparar esta máquina: tudo que falta, com passo a passo e botão",
       "texto": "A tela de Início ganhou uma lista do que o seu computador precisa para o estúdio funcionar inteiro: placa de vídeo, ffmpeg, o motor de imagem e vídeo, as IAs, a voz, a IA de texto e as chaves. Cada linha diz se está pronta, se falta ou se é opcional — e, quando falta, traz os passos e o botão que resolve. O ffmpeg, por exemplo, instala com um clique dentro da pasta do estúdio, sem mexer no Windows. Antes, parte disso só estava num manual, e a pessoa descobria que faltava no meio de um trabalho."
     },

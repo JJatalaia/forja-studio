@@ -720,9 +720,9 @@ function avisoCartao(e) {
     return `<span class="escolha-aviso desligado" title="Esta versão do servidor ainda não liga pelo Início. Reinicie o estúdio para ativar o botão Ligar.">${ic('ligar')}<span>${g.parcial ? 'Parte desligada' : 'Desligado'}</span></span>`;
   }
   if (g.estado === 'erro') {
-    return `<button type="button" class="escolha-aviso erro" data-ligar="${acao}" title="${esc(g.mensagem || '')}" aria-label="${esc(e.titulo)}: ${esc(quem)} não ligou. Clique para tentar de novo.">${ic('alerta')}<span>Não ligou — tentar de novo</span></button>`;
+    return `<button type="button" class="escolha-aviso erro" data-ligar="${acao}" title="${esc(g.mensagem || '')}" aria-label="${esc(e.titulo)}: ${esc(quem)} não ligou. Clique para tentar de novo.">${ic('alerta')}<span>Não ligou. Tentar de novo</span></button>`;
   }
-  return `<button type="button" class="escolha-aviso desligado" data-ligar="${acao}" aria-label="${esc(e.titulo)}: ${esc(quem)} está ${g.parcial ? 'em parte ' : ''}desligada. Clique para ligar.">${ic('ligar')}<span>${g.parcial ? 'Parte desligada' : 'Desligado'} — clique em Ligar</span></button>`;
+  return `<button type="button" class="escolha-aviso desligado" data-ligar="${acao}" aria-label="${esc(e.titulo)}: ${esc(quem)} está ${g.parcial ? 'em parte ' : ''}desligada. Clique para ligar.">${ic('ligar')}<span>${g.parcial ? 'Parte desligada' : 'Desligado'}</span><b>Ligar</b></button>`;
 }
 /* Qual IA da seção é a mais RÁPIDA e qual é a mais CAPRICHADA (notas 1 a 5 da ficha).
    Empate desempata pela outra nota. Quando a mesma IA ganha nas duas, sai uma linha só —
@@ -749,7 +749,7 @@ function htmlDestaques(lista) {
    Vem de /api/novidades (arquivo estudio/novidades.json). Mostra 3 e abre o resto no
    botão. Se o servidor não tiver a rota — versão antiga — o bloco some em vez de dar erro. */
 const ETIQUETA_NOV = { novidade: 'novidade', ias: 'IAs', dica: 'dica', aviso: 'aviso' };
-const NOV_INICIAIS = 3;
+const NOV_INICIAIS = 5;
 
 function dataCurta(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
@@ -761,17 +761,20 @@ function renderNovidades() {
   const todas = G.novidades || [];
   bloco.hidden = todas.length === 0;
   if (!todas.length) return;
+  bloco.classList.toggle('todas', !!G.novTodas);
   const mostrar = G.novTodas ? todas : todas.slice(0, NOV_INICIAIS);
   lista.innerHTML = mostrar.map((n, i) => {
     const et = ETIQUETA_NOV[n.etiqueta] || n.etiqueta || '';
-    return `<article class="nov ${n.destaque && i === 0 ? 'destaque' : ''}">
-      <div class="nov-cab">
-        ${et ? `<span class="nov-et et-${esc(n.etiqueta || 'novidade')}">${esc(et)}</span>` : ''}
-        <span class="nov-data">${esc(dataCurta(n.data))}</span>
-      </div>
-      <h3>${esc(n.titulo)}</h3>
+    return `<details class="nov ${n.destaque && i === 0 ? 'destaque' : ''}">
+      <summary>
+        <span class="nov-cab">
+          ${et ? `<span class="nov-et et-${esc(n.etiqueta || 'novidade')}">${esc(et)}</span>` : ''}
+          <span class="nov-data">${esc(dataCurta(n.data))}</span>
+        </span>
+        <h3>${esc(n.titulo)}</h3>
+      </summary>
       ${n.texto ? `<p>${esc(n.texto)}</p>` : ''}
-    </article>`;
+    </details>`;
   }).join('');
   const bt = $('#novVerTodas');
   if (bt) {
@@ -798,11 +801,13 @@ function renderHeroi() {
   const feitas = ['imagens', 'videos', 'musicas'].reduce((t, k) => t + (+c[k] || 0), 0);
   const cab = G.cab || {};
   const tiras = [];
-  if (S.gpu) tiras.push(`<span class="heroi-tira">${ic('placa')}<b>${esc(S.gpu)}</b></span>`);
-  if (S.vram_livre_gb != null) {
-    tiras.push(`<span class="heroi-tira">${ic('raio')}<span><b>${esc(num(S.vram_livre_gb))} GB</b> livres na placa</span></span>`);
-  }
-  if (ias) tiras.push(`<span class="heroi-tira">${ic('brilho')}<span><b>${ias}</b> IAs prontas</span></span>`);
+  // 14/11/2026: dizia "17 IAs prontas" contando o CATALOGO, com 4 instaladas. A placa e a
+  // memoria sairam daqui: agora moram nos medidores de "Sua máquina", logo ao lado.
+  const estados = Object.values(G.ias || {});
+  if (estados.length) {
+    const prontas = estados.filter((e) => e.instalada).length;
+    tiras.push(`<span class="heroi-tira">${ic('brilho')}<span><b>${prontas}</b> de ${estados.length} IAs instaladas</span></span>`);
+  } else if (ias) tiras.push(`<span class="heroi-tira">${ic('brilho')}<span><b>${ias}</b> IAs no catálogo</span></span>`);
   if (feitas) tiras.push(`<span class="heroi-tira">${ic('ok')}<span><b>${num(feitas, 0)}</b> criações até agora</span></span>`);
   tiras.push(`<span class="heroi-tira viva"><i class="ponto ${cab.rodando ? 'ocupado' : 'on'}"></i>`
     + `<span>${cab.rodando ? 'forjando agora' : 'placa livre'}</span></span>`);
@@ -813,7 +818,8 @@ function renderHeroi() {
 function renderEscolhas(forcar) {
   const cont = (G.inicio && G.inicio.contagem) || {};
   const avisos = ESCOLHAS.map((e) => { const g = estadoDoGrupo(SERV_DO_CARTAO[e.rota]); return g ? [g.estado, g.parcial, g.mensagem] : null; });
-  const sig = JSON.stringify([cont, Object.keys(G.fichas).length, !!G.presets, avisos, podeLigar('video'), podeLigar('musica')]);
+  const sig = JSON.stringify([cont, Object.keys(G.fichas).length, !!G.presets, avisos, podeLigar('video'), podeLigar('musica'),
+    Object.keys(G.ias || {}).filter((k) => G.ias[k].instalada)]);
   if (!forcar && sig === renderEscolhas.sig) return;
   renderEscolhas.sig = sig;
   // botão focado (teclado) volta a ter o foco depois de redesenhar: guarda em qual cartão ele estava
@@ -825,22 +831,30 @@ function renderEscolhas(forcar) {
   // mesma ideia da Musica: o cartao do Plano-sequencia so existe se a IA dele estiver
   // instalada. No pacote do GitHub ela nao viaja, e um cartao que nao abre parece defeito.
   const temPlano = !G.presets || presetsDa('plano').length > 0;
-  $('#escolhas').innerHTML = ESCOLHAS
-    .filter((e) => (temMusica || e.rota !== 'musica') && (temPlano || e.rota !== 'plano')).map((e) => {
-    const lista = e.rota === 'musica' ? G.fichasMusica : presetsDa(e.rota).map(fichaOuPreset);
+  const visiveis = ESCOLHAS.filter((e) => (temMusica || e.rota !== 'musica') && (temPlano || e.rota !== 'plano'));
+  $('#escolhas').dataset.n = visiveis.length;      // o CSS escolhe as colunas para nao sobrar cartao sozinho
+  $('#escolhas').innerHTML = visiveis.map((e) => {
+    const todas = e.rota === 'musica' ? G.fichasMusica : presetsDa(e.rota).map(fichaOuPreset);
+    // 14/11/2026: o cartao recomendava IA que nem estava no disco ("Recomendada: LTX 2.5"
+    // numa instalacao sem ele). Sem informacao de instalacao (servidor antigo), vale a lista toda.
+    const sei = (f) => G.ias && G.ias[f.id];
+    const lista = todas.filter((f) => !sei(f) || G.ias[f.id].instalada);
+    const controladas = todas.filter(sei).length;
+    const nenhuma = controladas > 0 && lista.length === 0;
     const rec = lista.find((f) => f.id === RECOMENDADA[e.rota]) || lista[0];
-    const n = lista.length;
+    const n = todas.length;
     const qtd = e.rota === 'imagem' ? cont.imagens : e.rota === 'video' ? cont.videos : e.rota === 'musica' ? cont.musicas : null;
     const tempo = rec ? tempoCurto(rec) : '';
-    const pe = [n ? `${n} IA${n > 1 ? 's' : ''}` : '', qtd != null ? `${qtd} criaç${qtd === 1 ? 'ão' : 'ões'}` : ''].filter(Boolean).join(' · ');
+    const quantas = !n ? '' : controladas ? `${lista.length} de ${n} IAs instaladas` : `${n} IA${n > 1 ? 's' : ''}`;
+    const pe = [quantas, qtd ? `${qtd} criaç${qtd === 1 ? 'ão' : 'ões'}` : ''].filter(Boolean).join(' · ');
     // o aviso de serviço desligado é IRMÃO do link (botão dentro de link não é permitido), posicionado sobre o cartão
     return `<div class="escolha-caixa">
-      <a class="escolha ${e.tipo}" href="#/${e.rota}" aria-label="${esc(TX(e.titulo))}: ${esc(TX(e.frase))}">
-      <span class="escolha-marca" aria-hidden="true">${ic(e.icone)}</span>
+      <a class="escolha ${e.tipo}${nenhuma ? ' sem-ia' : ''}" href="#/${e.rota}" aria-label="${esc(TX(e.titulo))}: ${esc(TX(e.frase))}">
       <span class="escolha-ic">${ic(e.icone)}</span>
       <h2>${esc(TX(e.titulo))}</h2>
       <p class="escolha-frase">${esc(TX(e.frase))}</p>
       <span class="escolha-rec">
+        ${nenhuma ? `<span class="linha-ic falta">${ic('baixar')}<span>Nenhuma IA desta seção está instalada ainda.</span></span>` : ''}
         ${rec ? `<span class="linha-ic">${ic('estrela')}<span>Recomendada: <b>${esc(nomeCurto(rec.nome))}</b></span></span>` : ''}
         ${tempo ? `<span class="linha-ic">${ic('relogio')}<span>${esc(tempo)}</span></span>` : ''}
         ${!G.presets && e.rota !== 'musica' && e.rota !== 'voz' ? `<span class="linha-ic">${ic('relogio')}<span>Carregando as IAs…</span></span>` : ''}
@@ -869,11 +883,17 @@ function renderRecentes() {
   $('#contConta').textContent = total ? `${total} criaç${total === 1 ? 'ão' : 'ões'} mais recente${total === 1 ? '' : 's'}` : '';
   if (sig === renderRecentes.sig) return;
   renderRecentes.sig = sig;
+  $('#recentes').classList.toggle('vazia', !itens.length);
   // o visualizador só percorre o que tem arquivo no HD
   G.listaRecentes = itens.filter((x) => x.j && !sumiu(x.j)).map((x) => x.j);
   G.musRecentes = itens.filter((x) => x.m).map((x) => x.m);
   if (!itens.length) {
-    $('#recentes').innerHTML = `<p class="vazio-inicio">Nada criado ainda. Escolha acima o que vamos fazer primeiro.</p>`;
+    $('#recentes').innerHTML = `<div class="vazio-inicio">
+      <span class="vazio-ic">${ic('brilho')}</span>
+      <p><b>Nada criado ainda</b></p>
+      <p class="fraco">O que você gerar aparece aqui, para abrir de novo com um clique.</p>
+      <span class="vazio-acoes"><a class="bt-sec" href="#/imagem">${ic('imagem')}Criar uma imagem</a><a class="bt-sec" href="#/video">${ic('video')}Criar um vídeo</a></span>
+    </div>`;
     return;
   }
   let iE = 0, iM = 0;
@@ -965,19 +985,32 @@ function renderMaquina() {
   renderSemResposta();
   // placa, memórias e discos (a placa aparece mesmo com a ComfyUI desligada: o servidor lê no nvidia-smi)
   const h = [];
-  h.push(linhaMaq('placa', 'Placa de vídeo', esc(S.gpu || '—')));
+  // 14/11/2026: era uma coluna de 5 linhas e 869 px. Agora sao medidores lado a lado, e o
+  // disco deixou de se chamar "E: (projeto)" com os numeros do C:.
+  const medida = (rotulo, forte, fraco, usado, alerta = '') =>
+    `<div class="medida"><div class="medida-topo"><span>${rotulo}</span><b>${forte}</b></div>`
+    + `${usado != null ? medidor(usado) : ''}<small>${fraco}</small>${alerta}</div>`;
+  h.push(`<p class="maq-gpu">${ic('placa')}<span>${esc(S.gpu || 'Placa de vídeo não encontrada')}</span></p>`);
   const vT = gb(S.vram_total), vL = gb(S.vram_livre);
-  if (vT) h.push(linhaMaq('placa', 'Memória da placa (VRAM)', `${num(vL)} de ${num(vT)} GB livres`, medidor(1 - vL / vT)));
+  if (vT) h.push(medida('Memória da placa', `${num(vL)} GB`, `livres de ${num(vT)} GB`, 1 - vL / vT));
   const rT = gb(S.ram_total_gb), rL = gb(S.ram_livre_gb);
-  if (rT) h.push(linhaMaq('ram', 'Memória RAM', `${num(rL)} de ${num(rT, 0)} GB livres`, medidor(1 - rL / rT)));
-  const eT = gb(S.disco_e_total_gb), eL = gb(S.disco_e_livre_gb);
-  if (eL != null) {
-    const pouco = eL < 50;
-    h.push(linhaMaq('disco', 'Disco E: (projeto)', `${num(eL, 0)} GB livres${eT ? ` de ${num(eT, 0)}` : ''}`,
-      (eT ? medidor(1 - eL / eT) : '') + (pouco ? `<p class="maq-alerta">${ic('alerta')}<span>Pouco espaço no E: (menos de 50 GB). Vídeos e modelos novos podem não caber.</span></p>` : '')));
+  if (rT) h.push(medida('Memória RAM', `${num(rL)} GB`, `livres de ${num(rT, 0)} GB`, 1 - rL / rT));
+  const disco = (d, rotulo) => {
+    if (!d || d.livre_gb == null) return;
+    const pouco = d.livre_gb < 50;
+    h.push(medida(`${rotulo} (${esc(d.unidade)}:)`, `${num(d.livre_gb, 0)} GB`,
+      d.total_gb ? `livres de ${num(d.total_gb, 0)} GB` : 'livres', d.total_gb ? 1 - d.livre_gb / d.total_gb : null,
+      pouco ? `<p class="maq-alerta">${ic('alerta')}<span>Menos de 50 GB: vídeo e modelo novo podem não caber.</span></p>` : ''));
+  };
+  if (S.disco_ias || S.disco_painel) {
+    const mesmo = S.disco_ias && S.disco_painel && S.disco_ias.unidade === S.disco_painel.unidade;
+    if (mesmo) disco(S.disco_ias, 'Disco');
+    else { disco(S.disco_ias, 'Disco das IAs'); disco(S.disco_painel, 'Disco do painel'); }
+  } else {      // servidor antigo: so sabe o disco do painel (que chamava de "E:") e o C:
+    const eT = gb(S.disco_e_total_gb), eL = gb(S.disco_e_livre_gb), cL = gb(S.disco_c_livre_gb);
+    if (eL != null) h.push(medida('Disco do painel', `${num(eL, 0)} GB`, eT ? `livres de ${num(eT, 0)} GB` : 'livres', eT ? 1 - eL / eT : null));
+    if (cL != null && cL !== eL) h.push(medida('Disco C:', `${num(cL, 0)} GB`, 'livres', null));
   }
-  const cL = gb(S.disco_c_livre_gb);
-  if (cL != null) h.push(linhaMaq('disco', 'Disco C: (sistema)', `${num(cL, 0)} GB livres`));
   const hw = h.join('');
   if (hw !== renderMaquina.hw) { $('#maqHw').innerHTML = hw; renderMaquina.hw = hw; }
   renderServicos();
@@ -995,8 +1028,8 @@ function renderMaquina() {
   if (+F.na_fila) extras.push(`${F.na_fila} esperando na fila`);
   if (S.fila_comfy) extras.push(`ComfyUI com ${S.fila_comfy} na fila`);
   if (F.musica_ocupada === true) extras.push('música gerando agora (a placa está ocupada)');
-  if (F.musica_ocupada === false) extras.push('música livre');
-  const filaHtml = linhaMaq('fila', 'Fila (uma geração por vez)', '', fila + (extras.length ? `<p class="nota" style="margin-top:6px">${esc(extras.join(' · '))}</p>` : ''));
+  if (F.musica_ocupada === false && I.tem_musica !== false) extras.push('música livre');
+  const filaHtml = linhaMaq('fila', 'Fila', '', fila + (extras.length ? `<p class="nota" style="margin-top:6px">${esc(extras.join(' · '))}</p>` : ''));
   if (filaHtml !== renderMaquina.fila) { $('#maqFila').innerHTML = filaHtml; renderMaquina.fila = filaHtml; }
   const ocupado = !!F.rodando || +F.na_fila > 0;
   const bl = $('#btLiberar');
@@ -1191,6 +1224,24 @@ function renderTextoMaq() {
   const I = G.inicio, T = I && I.texto;
   $('#maqTextoLinha').hidden = !T;
   if (!T) return;
+  // 14/11/2026: numa instalacao nova esta linha dizia "Não ligou", em vermelho, com o
+  // caminho de um .exe. Nao e erro: e uma IA opcional que ainda nao foi baixada.
+  const naoInst = T.instalado === false;
+  $('#btTextoInstalar').hidden = !naoInst;
+  $('#textoDetalhes').hidden = naoInst;
+  if (naoInst) {
+    if (renderTextoMaq.sig === 'nao-instalada') return;
+    renderTextoMaq.sig = 'nao-instalada';
+    $('#textoStatus').innerHTML = `<i class="ponto parado" aria-hidden="true"></i><span><b>Não instalada</b> · opcional</span>`;
+    $('#textoExtra').innerHTML = '<span>Melhora o seu prompt, traduz e descreve imagem, tudo na sua máquina.</span>';
+    $('#textoExtra').hidden = false;
+    $('#btTextoLigar').hidden = true;
+    $('#btTextoDesligar').hidden = true;
+    $('#textoAcoes').hidden = false;
+    $('#textoNotaRam').hidden = true;
+    $('#textoSempreRot').hidden = true;
+    return;
+  }
   const s = textoSimplesDe(T), legado = !!s.legado || !!I.legado;
   const P = T.placa || {}, C = T.processador || {}, M = T.modelos || {}, u = T.ultimo, vr = T.vram_depois_de_descarregar;
   const nomes = Object.values(M).map((m) => `${m.nome}${m.instalado ? '' : ' (falta baixar)'}`).join(' e ');
@@ -1314,6 +1365,7 @@ function montarMaquina() {
         <div class="texto-acoes" id="textoAcoes">
           <button type="button" class="bt-sec" id="btTextoLigar" hidden>${ic('ligar')}<span>Ligar agora</span></button>
           <button type="button" class="bt-sec" id="btTextoDesligar" hidden>${ic('parar')}<span>${esc(TX('Desligar'))}</span></button>
+          <button type="button" class="bt-sec" id="btTextoInstalar" data-prep-ir="blocoPreparar" hidden>${ic('baixar')}<span>Ver como instalar</span></button>
         </div>
         <p class="nota" id="textoNotaRam">Fica na memória do computador, uns 8 GB, sem ocupar a placa de vídeo.</p>
         <label class="marcar" id="textoSempreRot" hidden><input type="checkbox" id="chkTextoSempre"><span>Deixar sempre ligada ao abrir o estúdio</span></label>
@@ -1322,16 +1374,23 @@ function montarMaquina() {
     </div>
     <div id="maqFila"></div>
     <div class="liberar">
+      <div class="maq-rot"><span>Memória</span></div>
       <button type="button" class="bt-sec" id="btLiberar">${ic('raio')}Liberar memória</button>
-      <p class="nota">Tira os modelos da placa de vídeo e da RAM. Use antes de gerar música, quando o PC estiver lento ou ao terminar uma série. Só funciona com nada gerando; a próxima geração carrega o modelo de novo (demora mais).<span id="liberarTextoNota"> A IA de texto “Pronta” continua ligada (para tirar, use Desligar nela).</span></p>
       <p class="nota" id="maqAuto"></p>
-      <p class="nota" id="maqParcial" hidden>Algumas informações (RAM, discos, serviços da música) aparecem quando o servidor do estúdio for atualizado.</p>
+      <details class="mini-ajuda"><summary>O que isso faz</summary>
+        <p class="nota">Tira os modelos da placa de vídeo e da RAM. Use antes de gerar música, quando o PC estiver lento ou ao terminar uma série. Só funciona com nada gerando; a próxima geração carrega o modelo de novo (demora mais).<span id="liberarTextoNota"> A IA de texto “Pronta” continua ligada (para tirar, use Desligar nela).</span></p>
+        <p class="nota" id="maqParcial" hidden>Algumas informações (RAM, discos, serviços da música) aparecem quando o servidor do estúdio for atualizado.</p>
+      </details>
     </div>`;
   // 02/11/2026: os botões de ligar/desligar as IAs sobem para o alto da página (os "fornos").
   // A linha inteira é MOVIDA, não copiada: mesmos ids, mesmos botões, mesmo código. O clique
   // continua funcionando porque quem escuta é o #vInicio, e o herói também vive dentro dele.
   const fornos = $('#forjaFornos'), linhaServ = $('#maqServLinha');
   if (fornos && linhaServ) fornos.appendChild(linhaServ);
+  // 14/11/2026 (inicio v3): IA de texto, fila e memoria descem para a mesma bancada. Movidas,
+  // nao copiadas - os ids continuam os mesmos e todo o resto do codigo nem percebe.
+  const bancada = $('#bancada');
+  if (bancada) ['#maqTextoLinha', '#maqFila', '#maqCorpo .liberar'].forEach((s) => { const no = $(s); if (no) bancada.appendChild(no); });
   $('#btLiberar').onclick = liberarMemoria;
   $('#btTextoLigar').onclick = () => textoAcao('ligar');
   $('#btTextoDesligar').onclick = () => textoAcao('desligar');
@@ -1389,14 +1448,34 @@ function renderCatalogo() {
     { titulo: 'Imagem', tipo: 't-imagem', icone: 'imagem', lista: presetsDa('imagem').map(fichaOuPreset) },
     { titulo: 'Vídeo', tipo: 't-video', icone: 'video', lista: presetsDa('video').map(fichaOuPreset) },
     { titulo: 'Pessoa falando', tipo: 't-voz', icone: 'apresentador', lista: presetsDa('apresentador').map(fichaOuPreset) },
-    { titulo: 'Música', tipo: 't-musica', icone: 'musica', lista: G.fichasMusica },
+    { titulo: 'Música', tipo: 't-musica', icone: 'musica', lista: G.fichasMusica, musica: true },
   ];
-  $('#catalogo').innerHTML = cols.map((c) => `<div class="cat-col ${c.tipo}">
-    <h3>${ic(c.icone)}${esc(c.titulo)}</h3>
-    ${c.lista.length ? `<ul>${c.lista.map((f) => `<li><button type="button" class="cat-item" data-ficha="${esc(f.id)}">
-      <b>${esc(nomeCurto(f.nome))}</b>${f.resumo_curto ? `<small>${esc(f.resumo_curto)}</small>` : ''}</button></li>`).join('')}</ul>`
+  // 14/11/2026: a lista nao dizia quais IAs ja estavam no disco. Agora a instalada fica
+  // verde e sobe para o alto da coluna; a que falta diz quanto falta baixar.
+  const ias = G.ias || {}, pg = G.iasProgresso || {};
+  const semMusica = G.inicio && G.inicio.tem_musica === false;
+  $('#catalogo').innerHTML = cols.map((c) => {
+    const sei = c.lista.filter((f) => ias[f.id]);
+    const prontas = sei.filter((f) => ias[f.id].instalada).length;
+    const ordem = [...c.lista].sort((a, b) => (ias[b.id] && ias[b.id].instalada ? 1 : 0) - (ias[a.id] && ias[a.id].instalada ? 1 : 0));
+    const conta = c.musica ? (semMusica ? 'em breve' : '') : sei.length ? `${prontas} de ${sei.length} instaladas` : '';
+    const item = (f) => {
+      const e = ias[f.id];
+      let cls = '', est = '';
+      if (e && e.instalada) { cls = ' instalada'; est = `<span class="cat-estado">${ic('ok')}instalada</span>`; }
+      else if (e && pg.baixando && pg.baixando.ia === e.nome) { cls = ' baixando'; est = `<span class="cat-estado">${andamentoDaIA(pg.baixando).pc}%</span>`; }
+      else if (e && (pg.fila || []).includes(e.nome)) { cls = ' baixando'; est = '<span class="cat-estado">na fila</span>'; }
+      else if (e) { cls = ' falta'; est = e.gb_falta ? `<span class="cat-estado">falta ${num(e.gb_falta, 1)} GB</span>` : '<span class="cat-estado">não instalada</span>'; }
+      return `<li><button type="button" class="cat-item${cls}" data-ficha="${esc(f.id)}">
+        <span class="cat-nome"><b>${esc(nomeCurto(f.nome))}</b>${est}</span>${f.resumo_curto ? `<small>${esc(f.resumo_curto)}</small>` : ''}</button></li>`;
+    };
+    return `<div class="cat-col ${c.tipo}">
+    <h3>${ic(c.icone)}<span>${esc(c.titulo)}</span>${conta ? `<small>${esc(conta)}</small>` : ''}</h3>
+    ${c.musica && semMusica ? '<p class="nota cat-aviso">Os motores de música ainda não instalam pelo painel. As fichas ficam aqui para você conhecer.</p>' : ''}
+    ${c.lista.length ? `<ul>${ordem.map(item).join('')}</ul>`
       : `<p class="nota">${!G.presets ? 'Carregando as IAs do estúdio…' : c.tipo === 't-musica' ? 'As fichas dos motores de música aparecem quando o servidor do estúdio for atualizado. Abra a Música para ver os motores.' : 'Nenhuma IA nesta seção.'}</p>`}
-  </div>`).join('');
+  </div>`;
+  }).join('');
 }
 
 // ================================================================ GERADOR: estado por seção
@@ -1618,6 +1697,13 @@ function renderPreparar() {
   if (!onde || !bloco) return;
   bloco.hidden = !d || !(d.itens || []).length;
   if (bloco.hidden) return;
+  // 14/11/2026 (inicio v3): enquanto FALTA algo, o bloco fica logo abaixo dos cartoes - e a
+  // primeira coisa a fazer. Com tudo pronto, desce para depois do catalogo e sai da frente.
+  const falta = (d.falta || []).length > 0;
+  bloco.classList.toggle('tem-falta', falta);
+  const antes = falta ? document.querySelector('#vInicio .inicio-duo') : $('#blocoChaves');
+  if (antes && bloco.nextElementSibling !== antes) antes.parentNode.insertBefore(bloco, antes);
+  const abertos = new Set([...onde.querySelectorAll('details[open][data-prep-como]')].map((x) => x.dataset.prepComo));
   const and = d.andamento || {};
   const ROTULO = { ok: 'pronto', falta: 'falta', aviso: 'atenção', opcional: 'opcional' };
   const FASE = { baixando: 'Baixando…', conferindo: 'Conferindo a assinatura do arquivo…',
@@ -1645,8 +1731,10 @@ function renderPreparar() {
     }
     const erro = and.erro && and.erro_de === it.id ? `<p class="aprov-erro" role="alert" style="text-align:left">${esc(and.erro)}</p>` : '';
     const pronto = and.pronto && and.pronto.id === it.id ? `<p class="prep-feito">${esc(and.pronto.recado)}</p>` : '';
-    const passos = (it.passos || []).length
-      ? `<ol class="prep-passos">${it.passos.map((p) => `<li>${esc(TX(p))}</li>`).join('')}</ol>` : '';
+    const lis = (it.passos || []).map((p) => `<li>${esc(TX(p))}</li>`).join('');
+    // o que FALTA mostra os passos; o que e opcional ou ja funciona guarda os passos num "como fazer"
+    const passos = !lis ? '' : it.estado === 'falta' ? `<ol class="prep-passos">${lis}</ol>`
+      : `<details class="prep-como" data-prep-como="${esc(it.id)}"${abertos.has(it.id) ? ' open' : ''}><summary>Como fazer</summary><ol class="prep-passos">${lis}</ol></details>`;
     const link = it.link ? `<a class="prep-link" href="${esc(it.link.url)}" target="_blank" rel="noopener">${esc(TX(it.link.rotulo))}</a>` : '';
     return `<div class="prep-item prep-${esc(it.estado)}">
       <span class="prep-num">${i + 1}</span>
@@ -1888,7 +1976,7 @@ function htmlCardIA(p, f) {
 document.addEventListener('idioma-mudou', () => {
   // Cada um destes desenha um pedaco que o JavaScript escreve, e por isso nao e alcancado
   // pelo data-i18n do HTML. Cada um no seu try: um que falhe nao pode derrubar os outros.
-  [renderIAs, renderEscolhas, renderCatalogo, renderChaves, renderAprovadas, renderPreparar].forEach((f) => {
+  [renderIAs, renderEscolhas, renderHeroi, renderCatalogo, renderChaves, renderAprovadas, renderPreparar].forEach((f) => {
     try { f(true); } catch (e) { /* secao que ainda nao existe nesta tela */ }
   });
   try { if (G.rota && ROTAS[G.rota]) {

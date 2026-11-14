@@ -119,27 +119,56 @@
   <!-- ============================== INÍCIO ============================== -->
   <section id="vInicio" class="vista inicio" hidden aria-labelledby="inicioTitulo">
     <div id="contaRecado"></div>
+
+    <!-- INICIO v3 (14/11/2026). O heroi tem duas metades: o titulo e a maquina ao vivo.
+         Embaixo, a BANCADA: servicos, IA de texto, fila e memoria numa linha so. As pecas da
+         bancada sao MOVIDAS para ca pelo app.js (montarMaquina), com os mesmos ids. -->
     <div class="heroi">
       <div class="heroi-brasa" aria-hidden="true"></div>
       <div class="heroi-corpo">
-        <p class="heroi-marca"><span class="heroi-jers">JerS</span><i aria-hidden="true"></i>Forja Studio</p>
-        <h1 id="inicioTitulo" tabindex="-1" data-i18n-html="inicio.titulo">O que vamos <em>forjar</em> hoje?</h1>
-        <p class="heroi-sub" data-i18n="inicio.sub">Imagem, vídeo, pessoa falando, narração e música — forjados na sua
-          própria placa de vídeo. Sem mensalidade, sem nuvem, sem fila de ninguém.</p>
-        <div class="heroi-tiras" id="heroiTiras" role="status"></div>
-        <!-- os fornos: a linha de serviços da "Sua máquina" é MOVIDA para cá pelo app.js.
-             Movida, não copiada: os botões continuam os mesmos, com o mesmo código. -->
+        <div class="heroi-texto">
+          <p class="heroi-marca"><span class="heroi-jers">JerS</span><i aria-hidden="true"></i>Forja Studio</p>
+          <h1 id="inicioTitulo" tabindex="-1" data-i18n-html="inicio.titulo">O que vamos <em>forjar</em> hoje?</h1>
+          <p class="heroi-sub" data-i18n="inicio.sub">Imagem, vídeo, pessoa falando, narração e música — forjados na sua
+            própria placa de vídeo. Sem mensalidade, sem nuvem, sem fila de ninguém.</p>
+          <div class="heroi-tiras" id="heroiTiras" role="status"></div>
+        </div>
+        <section class="maquina" id="maquina" aria-labelledby="maqTitulo">
+          <div class="bloco-cab">
+            <h2 id="maqTitulo" data-i18n="tela.sua-maquina">Sua máquina</h2>
+            <span class="ao-vivo" id="maqAoVivo"><i></i>ao vivo</span>
+          </div>
+          <div id="maqCorpo"><p class="fraco">Verificando…</p></div>
+        </section>
+      </div>
+      <div class="bancada" id="bancada">
         <div class="forja-fornos" id="forjaFornos"></div>
       </div>
     </div>
 
     <div class="escolhas" id="escolhas"></div>
 
-    <div class="dica-faixa" id="dicaFaixa">
-      <span class="dica-ic" data-ic="dica"></span>
-      <div class="dica-corpo"><p class="dica-rot" id="dicaRot">Dica</p><p class="dica-txt" id="dicaTxt"></p></div>
-      <button type="button" class="bt-fantasma" id="dicaOutra" aria-label="Mostrar outra dica"><span data-ic="dir"></span></button>
-    </div>
+    <!-- 13/11/2026: as IAs que o projeto ja usou e aprova, com a escolha do DISCO. Antes o
+         painel baixava tudo dentro da propria pasta, sem perguntar - e quem nao tinha
+         espaco no C: nao tinha o que fazer. Desenhado pelo app.js (renderAprovadas). -->
+    <!-- 14/11/2026: tudo que esta maquina precisa para o estudio funcionar inteiro, em
+         ordem de fazer, com o passo a passo e o botao. Desenhado pelo app.js (renderPreparar). -->
+    <section class="bloco-inicio preparar" id="blocoPreparar" aria-labelledby="prepTitulo" hidden>
+      <div class="bloco-cab">
+        <h2 id="prepTitulo" data-i18n="tela.preparar">Preparar esta máquina</h2>
+        <p class="fraco" id="prepSub"></p>
+      </div>
+      <div id="preparar"></div>
+    </section>
+
+    <div class="inicio-duo">
+      <section class="bloco-inicio" aria-labelledby="contTitulo">
+        <div class="bloco-cab">
+          <h2 id="contTitulo" data-i18n="tela.continue-de-onde-parou">Continue de onde parou</h2>
+          <p class="fraco" id="contConta"></p>
+        </div>
+        <div class="recentes" id="recentes"><p class="fraco">Carregando…</p></div>
+      </section>
 
     <!-- ====== Novidades (02/11/2026): vem de estudio/novidades.json ====== -->
     <section class="bloco-inicio novidades" id="blocoNovidades" aria-labelledby="novTitulo" hidden>
@@ -149,24 +178,41 @@
       </div>
       <div class="nov-lista" id="novLista"></div>
     </section>
-
-    <div class="inicio-grade">
-      <section class="bloco-inicio" aria-labelledby="contTitulo">
-        <div class="bloco-cab">
-          <h2 id="contTitulo" data-i18n="tela.continue-de-onde-parou">Continue de onde parou</h2>
-          <p class="fraco" id="contConta"></p>
-        </div>
-        <div class="recentes" id="recentes"><p class="fraco">Carregando…</p></div>
-      </section>
-
-      <section class="bloco-inicio maquina" id="maquina" aria-labelledby="maqTitulo">
-        <div class="bloco-cab">
-          <h2 id="maqTitulo" data-i18n="tela.sua-maquina">Sua máquina</h2>
-          <span class="ao-vivo" id="maqAoVivo"><i></i>ao vivo</span>
-        </div>
-        <div id="maqCorpo"><p class="fraco">Verificando…</p></div>
-      </section>
     </div>
+
+    <div class="dica-faixa" id="dicaFaixa">
+      <span class="dica-ic" data-ic="dica"></span>
+      <div class="dica-corpo"><p class="dica-rot" id="dicaRot">Dica</p><p class="dica-txt" id="dicaTxt"></p></div>
+      <button type="button" class="bt-fantasma" id="dicaOutra" aria-label="Mostrar outra dica"><span data-ic="dir"></span></button>
+    </div>
+
+    <section class="bloco-inicio aprovadas" id="blocoAprovadas" aria-labelledby="aprovTitulo" hidden>
+      <div class="bloco-cab">
+        <h2 id="aprovTitulo" data-i18n="tela.ias-aprovadas">IAs aprovadas pelo projeto</h2>
+        <p class="fraco" data-i18n="tela.ias-aprovadas-sub">As que já foram usadas de verdade para fazer vídeo e funcionam. Escolha o disco, marque as que quer e instale.</p>
+      </div>
+      <div id="aprovadas"></div>
+    </section>
+
+    <section class="bloco-inicio catalogo" aria-labelledby="catTitulo">
+      <div class="bloco-cab">
+        <h2 id="catTitulo" data-i18n="tela.conheca-as-ias-do-estudio">Conheça as IAs do estúdio</h2>
+        <p class="fraco" data-i18n="tela.clique-numa-ia-para-ver">Clique numa IA para ver a ficha completa.</p>
+      </div>
+      <div class="catalogo-grade" id="catalogo"></div>
+    </section>
+
+    <!-- 11/11/2026: as chaves de API, num lugar so. Antes a do ElevenLabs ficava escondida
+         dentro da aba Narracao e o token do Hugging Face só existia como arquivo — quem
+         instalava o pacote não tinha como saber que ele existia. O conteudo e desenhado
+         pelo app.js (renderChaves), a partir do que o /api/chaves conta. -->
+    <section class="bloco-inicio chaves" id="blocoChaves" aria-labelledby="chavesTitulo">
+      <div class="bloco-cab">
+        <h2 id="chavesTitulo" data-i18n="tela.configuracoes-de-api">Configurações de API</h2>
+        <p class="fraco" data-i18n="tela.sao-todas-opcionais-o-estudio">São todas opcionais: o estúdio funciona inteiro sem nenhuma. Cada uma destrava uma coisa a mais, e fica guardada só no seu computador.</p>
+      </div>
+      <div class="chaves-lista" id="chavesLista"></div>
+    </section>
 
     <!-- ====== o atalho que a IA escreve (02/11/2026) ====== -->
     <section class="bloco-inicio atalho-ia" aria-labelledby="atalhoTitulo">
@@ -175,6 +221,8 @@
         <p class="fraco" data-i18n="tela.sem-programar-voce-descreve-ela">Sem programar. Você descreve, ela escreve o atalho, você clica.</p>
       </div>
 
+      <details class="atalho-dobra">
+        <summary>Como funciona, com o texto pronto para colar</summary>
       <div class="atalho-corpo">
         <p>Este estúdio é um servidor na sua própria máquina, em
           <code>http://127.0.0.1:8194</code>. Quem sabe conversar com ele por HTTP comanda o
@@ -232,47 +280,7 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
             braço, não o olho.</p>
         </details>
       </div>
-    </section>
-
-    <!-- 13/11/2026: as IAs que o projeto ja usou e aprova, com a escolha do DISCO. Antes o
-         painel baixava tudo dentro da propria pasta, sem perguntar - e quem nao tinha
-         espaco no C: nao tinha o que fazer. Desenhado pelo app.js (renderAprovadas). -->
-    <!-- 14/11/2026: tudo que esta maquina precisa para o estudio funcionar inteiro, em
-         ordem de fazer, com o passo a passo e o botao. Desenhado pelo app.js (renderPreparar). -->
-    <section class="bloco-inicio preparar" id="blocoPreparar" aria-labelledby="prepTitulo" hidden>
-      <div class="bloco-cab">
-        <h2 id="prepTitulo" data-i18n="tela.preparar">Preparar esta máquina</h2>
-        <p class="fraco" id="prepSub"></p>
-      </div>
-      <div id="preparar"></div>
-    </section>
-
-    <section class="bloco-inicio aprovadas" id="blocoAprovadas" aria-labelledby="aprovTitulo" hidden>
-      <div class="bloco-cab">
-        <h2 id="aprovTitulo" data-i18n="tela.ias-aprovadas">IAs aprovadas pelo projeto</h2>
-        <p class="fraco" data-i18n="tela.ias-aprovadas-sub">As que já foram usadas de verdade para fazer vídeo e funcionam. Escolha o disco, marque as que quer e instale.</p>
-      </div>
-      <div id="aprovadas"></div>
-    </section>
-
-    <section class="bloco-inicio catalogo" aria-labelledby="catTitulo">
-      <div class="bloco-cab">
-        <h2 id="catTitulo" data-i18n="tela.conheca-as-ias-do-estudio">Conheça as IAs do estúdio</h2>
-        <p class="fraco" data-i18n="tela.clique-numa-ia-para-ver">Clique numa IA para ver a ficha completa.</p>
-      </div>
-      <div class="catalogo-grade" id="catalogo"></div>
-    </section>
-
-    <!-- 11/11/2026: as chaves de API, num lugar so. Antes a do ElevenLabs ficava escondida
-         dentro da aba Narracao e o token do Hugging Face só existia como arquivo — quem
-         instalava o pacote não tinha como saber que ele existia. O conteudo e desenhado
-         pelo app.js (renderChaves), a partir do que o /api/chaves conta. -->
-    <section class="bloco-inicio chaves" id="blocoChaves" aria-labelledby="chavesTitulo">
-      <div class="bloco-cab">
-        <h2 id="chavesTitulo" data-i18n="tela.configuracoes-de-api">Configurações de API</h2>
-        <p class="fraco" data-i18n="tela.sao-todas-opcionais-o-estudio">São todas opcionais: o estúdio funciona inteiro sem nenhuma. Cada uma destrava uma coisa a mais, e fica guardada só no seu computador.</p>
-      </div>
-      <div class="chaves-lista" id="chavesLista"></div>
+      </details>
     </section>
   </section>
 
