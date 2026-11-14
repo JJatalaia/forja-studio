@@ -70,6 +70,16 @@ import cofre  # noqa: E402  (os presets e workflows fechados: ver cofre.py)
 import ias  # noqa: E402  (instalar cada IA depois, pela tela: ver ias.py)
 import motor  # noqa: E402  (instalar a ComfyUI pelo botao: ver motor.py)
 import requisitos  # noqa: E402  (ffmpeg e VoiceStudio pelo botao: ver requisitos.py)
+# 14/11/2026: o Python do instalador veio SEM o psutil ate esta data. Ligar funcionava, mas
+# DESLIGAR qualquer motor respondia "500 Server got itself in trouble", sem dizer o motivo.
+# Agora ele vai no requirements.txt; e quem instalou antes fica sabendo, aqui e na tela.
+try:
+    import psutil as _psutil_conferido  # noqa: F401
+    FALTA_PSUTIL = False
+except ImportError:
+    FALTA_PSUTIL = True
+    print("[estúdio] FALTA a biblioteca psutil neste Python: desligar os motores não vai funcionar. "
+          "Instale de novo pelo ForjaStudio-Instalador.exe (o que você já baixou continua no lugar).", flush=True)
 requisitos.ativar_ffmpeg()     # o ffmpeg da pasta do estudio vale para este processo
 import enquadrar  # noqa: E402
 import licenca  # noqa: E402  (conta e licenca: ver licenca.py)
@@ -3870,6 +3880,10 @@ async def api_servicos_desligar(req):
     except ValueError:
         b = {}
     alvo = b.get("servico") if isinstance(b, dict) else None
+    if FALTA_PSUTIL and alvo != "texto":
+        return web.json_response({"erro": "Esta instalação é anterior a 14/11/2026 e veio sem uma peça que o "
+                                          "Desligar usa. Baixe o ForjaStudio-Instalador.exe de novo e instale por "
+                                          "cima: as IAs que você já baixou continuam no lugar."}, status=500)
     if alvo in ("hermes", "telegram") and not TEM_HERMES:
         return web.json_response(
             {"erro": "O Hermes nao esta instalado nesta maquina."}, status=404)
