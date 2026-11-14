@@ -227,6 +227,24 @@ MUSICA_ARQUIVOS = {
 }
 
 
+# O que da para ficar sem: o YuE2 CRIA musica sem o sheetsage2 (so o cover precisa dele).
+MUSICA_OPCIONAIS = {"sheetsage2_bf16.safetensors"}
+
+
+def musica_pronta(mid):
+    """Da para GERAR com esta IA de musica? (os arquivos obrigatorios dela estao no disco)
+
+    Nao e o mesmo que "instalada" do estado_de(): la o YuE2 so conta como instalado com o
+    arquivo do cover junto. A aba Musica usa esta aqui para decidir se abre ou se explica o
+    que falta - e com o YuE2 sem o cover ela ja abre, porque ja da para criar musica.
+    """
+    nome = MUSICA_IAS.get(mid)
+    if not nome:
+        return False
+    return all(esta_completo(n, v) for n, v in MUSICA_ARQUIVOS.items()
+               if nome in v["usado_por"] and n not in MUSICA_OPCIONAIS)
+
+
 def catalogo():
     """{nome do arquivo: {fonte, pasta, bytes, usado_por}}. Vazio se nao houver catalogo."""
     try:

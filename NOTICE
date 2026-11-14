@@ -12,13 +12,33 @@ naquele período continua com os direitos daquela licença, sobre aquela cópia.
 PROGRAMAS DE TERCEIROS — este projeto CONVERSA com eles, não os distribui
 --------------------------------------------------------------------------------
 
-Nada aqui contém código de terceiros. O Estúdio Local fala com cada um destes por
-HTTP, na sua própria máquina. É a regra que mantém este projeto com licença
-própria: chamar, nunca copiar.
+O Estúdio Local fala com cada um destes por HTTP, na sua própria máquina. É a
+regra que mantém este projeto com licença própria: chamar, nunca copiar.
 
   ComfyUI            GPL-3.0      https://github.com/comfyanonymous/ComfyUI
   VoiceStudio        AGPL-3.0     https://github.com/debpalash/VoiceStudio
   llama.cpp          MIT          https://github.com/ggml-org/llama.cpp
+
+--------------------------------------------------------------------------------
+A ÚNICA EXCEÇÃO — um arquivo de terceiros que VIAJA no pacote (desde 14/11/2026)
+--------------------------------------------------------------------------------
+
+A aba Música (YuE2) usa um nó pequeno da ComfyUI, em estudio/nos/fz_score_guard/.
+Dentro dele há UM arquivo que não é nosso:
+
+  abc_tools.py       Apache-2.0   https://github.com/multimodal-art-projection/YuE
+                                  (skills/yue2-music/scripts/abc_tools.py, baixado em
+                                  18/09/2026)
+
+A licença dele está ao lado, em estudio/nos/fz_score_guard/LICENSE.upstream, e a
+origem em SOURCE.txt. A Apache-2.0 permite redistribuir desde que a licença e o
+aviso acompanhem o arquivo, e é por isso que os dois arquivos NÃO podem ser
+apagados. O resto do nó (__init__.py) é deste projeto.
+
+Os textos de exemplo de estilo e a lista de gêneros da aba Música
+(painel_musica/web/exemplos_estilo.js e generos.js) foram tirados da página de
+demonstração do YuE2 (https://map-yue2.github.io). São frases de descrição de
+estilo e nomes de gênero, não código.
 
 --------------------------------------------------------------------------------
 MODELOS DE IA — não distribuídos; cada um tem a sua licença

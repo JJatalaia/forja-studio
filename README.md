@@ -250,8 +250,10 @@ essa regra: **chamar, nunca copiar**.
 
 ## O que este projeto não faz
 
-- **Não gera música.** A música aqui é outro projeto, separado. Se ele não estiver instalado,
-  a aba simplesmente não aparece.
+- **Música: só duas IAs.** A aba Música vem no pacote desde 14/11/2026 com o YuE2 INT8 (canta
+  a letra) e o Stable Audio 3 (instrumental), na mesma ComfyUI da imagem e do vídeo. Os outros
+  motores que o estúdio de origem tinha (ACE-Step, MiniMax Music, as IAs pagas na nuvem e o
+  "tirar a voz") não vêm.
 - **Não publica nada sozinho.** Não tem integração com YouTube, TikTok nem nada parecido.
 - **Não manda nada para fora do seu computador** — a não ser que você ligue a ElevenLabs, que
   é paga e opcional, e aí você põe a sua própria chave.

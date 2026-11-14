@@ -218,16 +218,26 @@ de onde parou se cair.
 
 ---
 
-## 7. Música: não vem neste pacote
+## 7. Música: duas IAs, na mesma ComfyUI
 
-O estúdio de música (letra com IA, instrumental, cover) **não faz parte deste download**. Ele
-é um painel separado que depende de contas e de configuração que não viajam aqui.
+Desde 14/11/2026 a aba **Música** vem no pacote (pasta `painel_musica`). Ela não instala nada
+de novo: usa a **mesma ComfyUI** da imagem e do vídeo e o Python que vem com ela. São duas IAs,
+baixadas pela lista de IAs do Início, como as outras:
 
-Para você ter ideia do tamanho, se um dia ele for incluído: a parte de música ocupa cerca de
-**17 GB** na máquina de referência.
+| IA | o que faz | download |
+|---|---|---|
+| **YuE2 INT8** | música com letra cantada e cover | 5,0 GB (3,7 GB sem o arquivo do cover) |
+| **Stable Audio 3** | trilha instrumental e efeitos | 13,9 GB |
 
-Quando você instalar só o que está neste pacote, a aba **Música** simplesmente não aparece no
-painel — não é defeito.
+Uma geração por vez na placa: se uma imagem ou um vídeo estiver gerando, a música espera na
+fila (e o contrário também).
+
+Sem o motor instalado, ou sem nenhuma das duas IAs baixada, a aba continua lá e **diz o que
+falta** — não é defeito.
+
+O que **não** vem: ACE-Step, MiniMax Music, as IAs pagas na nuvem e o botão "tirar a voz"
+(precisa de um complemento da ComfyUI que este pacote não instala). O **equalizador** só
+aparece se o pacote `pedalboard` estiver no Python da ComfyUI; sem ele, o resto funciona igual.
 
 ---
 

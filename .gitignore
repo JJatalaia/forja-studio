@@ -32,6 +32,18 @@ estudio/versao_config.json
 estudio/*.bak_antes_da_atualizacao
 estudio/vozes/
 estudio/vozes.json
+# musica (14/11/2026): a lista de musicas de quem usa (jobs.json), os envios (uploads.json)
+# e as copias convertidas para baixar. O estudio manda o painel guardar tudo aqui
+# (PAINEL_DADOS = <dados do estudio>/musica), FORA da pasta do codigo do painel.
+estudio/musica/
+# Rede de seguranca: se o painel for rodado a mao com PAINEL_DADOS apontando para a pasta
+# dele, ou se alguem copiar o painel antigo por cima, os dados pessoais nao sobem.
+painel_musica/jobs.json
+painel_musica/jobs.json.*
+painel_musica/jobs.tmp
+painel_musica/uploads.json
+painel_musica/baixar_convertido/
+painel_musica/_cache/
 outputs/
 saidas/
 

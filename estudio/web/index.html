@@ -513,9 +513,13 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
     <div class="musica-off" id="musicaOff" hidden>
       <div class="musica-off-card">
         <span class="musica-off-ic" data-ic="musica"></span>
-        <h2 data-i18n="tela.o-painel-de-musica-esta">O painel de música está desligado</h2>
-        <p data-i18n="tela.ele-gera-musicas-com-letra">Ele gera músicas com letra cantada, instrumentais e separa a voz (YuE2, ACE-Step, MiniMax Music, Stable Audio). Ligar leva uns 30 segundos.</p>
+        <!-- 14/11/2026: o titulo e o texto sao escritos pelo app.js (cartaoMusica): alem de "painel desligado",
+             este cartao explica o que FALTA para a musica funcionar (motor nao instalado, nenhuma IA baixada). -->
+        <h2 id="musicaOffTitulo">O painel de música está desligado</h2>
+        <p id="musicaOffTexto">Ele gera músicas com letra cantada e trilhas instrumentais (YuE2 e Stable Audio 3), na mesma ComfyUI da imagem e do vídeo. Ligar leva uns 30 segundos.</p>
         <button type="button" class="gerar" id="ligarMusica"><span data-ic="ligar"></span><span data-i18n="tela.ligar-musica">Ligar música</span></button>
+        <button type="button" class="gerar" id="musicaIrInicio" hidden><span data-ic="seta"></span><span>Ir para o Início</span></button>
+        <p class="nota" id="musicaOffNota" role="status" hidden></p>
         <p class="nota" id="ligarMusicaStatus" aria-live="polite"></p>
       </div>
     </div>
@@ -1031,11 +1035,11 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
 
 <!-- idioma.js vem ANTES dos outros: ele troca o texto da casca assim que a tela existe,
      para a pessoa que escolheu inglês não ver o português piscar primeiro. -->
-<script src="idioma.js?v=20261111-chaves"></script>
+<script src="idioma.js?v=20261114-musica"></script>
 <script src="icones.js?v=20260924-desligar2"></script>
 <script src="conta.js?v=20261103-conta2"></script>
 <script src="atualizacao.js?v=20261103-atu"></script>
-<script src="app.js?v=20261111-chaves"></script>
+<script src="app.js?v=20261114-musica"></script>
 <script src="voz.js?v=20261109-selo"></script>
 <script src="fila.js?v=20261109-musica"></script>
 <script src="canal.js?v=20261030-canal"></script>

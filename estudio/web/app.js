@@ -13,7 +13,21 @@ const IGUAL = 'Igual ao vídeo';
 const ENQ = { 'Igual ao vídeo (recomendado)': true, 'Original': false };
 const POR_PAGINA = 24;
 // endereço novo a cada carga: o navegador nunca reaproveita a tela antiga do painel guardada no cache
-const MUSICA_URL = 'http://127.0.0.1:8190/?embed=1&t=' + Date.now();
+// O endereço do painel de música vem do servidor ("musica_url" em /api/sistema e /api/inicio): quem define a porta
+// é o ESTUDIO_MUSICA_URL, e o estúdio liga o painel nessa mesma porta. O padrão só vale até a primeira resposta.
+const MUSICA_PADRAO = 'http://127.0.0.1:8190';
+const MUSICA_CARGA = Date.now();
+function musicaBase() {
+  const u = (G.sistema && G.sistema.musica_url) || (G.inicio && G.inicio.musica_url) || MUSICA_PADRAO;
+  return String(u).replace(/\/+$/, '');
+}
+// ?estudio= diz ao painel de quem ele pode aceitar recado (a origem desta página)
+const musicaUrl = () => `${musicaBase()}/?embed=1&estudio=${encodeURIComponent(location.origin)}&t=${MUSICA_CARGA}`;
+// O que falta para a música funcionar nesta máquina (motor, modelo): vem de quem respondeu por último
+function musicaEstado() {
+  return (G.rota === 'inicio' && G.inicio && G.inicio.musica_estado) || (G.sistema && G.sistema.musica_estado)
+    || (G.inicio && G.inicio.musica_estado) || null;
+}
 const seg = (s) => `${(+s).toFixed(1).replace('.', ',')} s`;
 const num = (n, casas = 1) => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
 const dois = (n) => String(n).padStart(2, '0');
@@ -125,7 +139,7 @@ const TITULOS = { inicio: 'Início', imagem: 'Imagem', video: 'Vídeo', apresent
 // IA recomendada em cada seção (CATALOGO_IAS.md: "Quem usar em cada caso")
 // 02/11/2026: a recomendada passou a ser a que o historico mostra em uso de verdade
 // (Krea 2 Turbo: 696 geracoes; LTX 2.5 texto: a mais usada que funciona SO com texto).
-const RECOMENDADA = { imagem: 'krea2', video: 'ltx25_t2v', apresentador: 'apresentador', plano: 'h3_contexto', musica: 'ace-xl-turbo' };
+const RECOMENDADA = { imagem: 'krea2', video: 'ltx25_t2v', apresentador: 'apresentador', plano: 'h3_contexto', musica: 'yue2-int8' };
 const ehGerador = (r) => r === 'imagem' || r === 'video' || r === 'apresentador';
 const ehApresentador = (p) => !!p && (p.tipo === 'apresentador' || p.id === 'apresentador');
 const tipoDaRota = (r) => (ROTAS[r] ? ROTAS[r].tipo : r === 'musica' ? 't-musica' : 't-imagem');
@@ -551,7 +565,7 @@ const ESCOLHAS = [
   { rota: 'voz', tipo: 't-voz', icone: 'onda', titulo: 'Narração',
     frase: 'Texto vira voz falada no seu computador, de graça: criar uma voz pela descrição ou clonar a sua.' },
   { rota: 'musica', tipo: 't-musica', icone: 'musica', titulo: 'Música',
-    frase: 'Músicas com letra cantada, instrumentais, covers e separação da voz (YuE2, ACE-Step e outros).' },
+    frase: 'Músicas com letra cantada, trilhas instrumentais e covers (YuE2 e Stable Audio 3).' },
 ];
 
 // ---------------------------------------------------------------- as chaves de API
@@ -671,7 +685,7 @@ async function carregarInicio() {
   G.inicio = {
     parcial: true, legado: true,
     sistema: { gpu: s.gpu, vram_total: s.vram_total, vram_livre: s.vram_livre,
-      servicos: { video: !!s.comfy, painel_musica: !!s.musica, comfy_musica: null, ace: null }, fila_comfy: s.fila },
+      servicos: { video: !!s.comfy, painel_musica: !!s.musica }, fila_comfy: s.fila },
     fila: { rodando: todos.find((j) => j.estado === 'rodando') || null, na_fila: todos.filter((j) => j.estado === 'fila').length, musica_ocupada: null },
     contagem: { imagens: ji.filter(prontoComArquivo).length, videos: jv.filter(prontoComArquivo).length, musicas: null },
     recentes: concl.slice(0, 8).map((j) => ({ ...j, midia: urlMidia(j) })),
@@ -681,21 +695,21 @@ async function carregarInicio() {
 }
 let musCache = { t: 0, lista: [] };
 async function musicasDireto() {
-  // só no endereço de produção (8194) o painel libera CORS; em outra porta nem tenta (evita erro no console)
+  // (servidor antigo) só no endereço de produção (8194) o painel libera CORS; em outra porta nem tenta
   if (location.port !== '8194') return [];
   if (Date.now() - musCache.t < 30000) return musCache.lista;
   musCache.t = Date.now();
-  try { musCache.lista = await api('http://127.0.0.1:8190/api/recentes?n=6', { timeout: 2000 }); } catch (e) { musCache.lista = []; }
+  try { musCache.lista = await api(musicaBase() + '/api/recentes?n=6', { timeout: 2000 }); } catch (e) { musCache.lista = []; }
   if (!Array.isArray(musCache.lista)) musCache.lista = [];
   return musCache.lista;
 }
 
-// Serviço de cada cartão: imagem, vídeo e pessoa falando usam a ComfyUI de vídeo; música usa painel + ComfyUI de
-// música + ACE-Step. Cartão com serviço desligado ganha um aviso pequeno que liga na hora (o cartão continua abrindo).
+// Serviço de cada cartão: imagem, vídeo e pessoa falando usam a ComfyUI; a música usa o painel dela + a MESMA
+// ComfyUI. Cartão com serviço desligado ganha um aviso pequeno que liga na hora (o cartão continua abrindo).
 // A Narração não depende de nenhum serviço que o estúdio ligue: quem liga o VoiceStudio é a
 // própria tela dela (lista vazia = nunca mostra aviso de "desligado" no cartão do Início).
-const SERV_DO_CARTAO = { imagem: ['video'], video: ['video'], apresentador: ['video'], voz: [], canal: [], plano: ['video'], musica: ['painel_musica', 'comfy_musica', 'ace'] };
-const ACAO_DO_SERV = { video: 'video', painel_musica: 'musica', comfy_musica: 'comfy_musica', ace: 'ace', hermes: 'hermes', telegram: 'telegram' };
+const SERV_DO_CARTAO = { imagem: ['video'], video: ['video'], apresentador: ['video'], voz: [], canal: [], plano: ['video'], musica: ['painel_musica', 'video'] };
+const ACAO_DO_SERV = { video: 'video', painel_musica: 'musica', hermes: 'hermes', telegram: 'telegram' };
 function estadoDoGrupo(chaves) {
   const S = servicosDe(G.inicio);
   const est = chaves.map((k) => S.find((s) => s.chave === k)).filter(Boolean);
@@ -712,7 +726,7 @@ function avisoCartao(e) {
   const g = estadoDoGrupo(SERV_DO_CARTAO[e.rota]);
   if (!g || g.estado === 'ligado') return '';
   const acao = e.rota === 'musica' ? 'musica' : 'video';
-  const quem = e.rota === 'musica' ? 'a música' : 'a ComfyUI de imagem e vídeo';
+  const quem = e.rota === 'musica' ? 'a música (painel e ComfyUI)' : 'a ComfyUI de imagem e vídeo';
   if (g.estado === 'ligando') {
     return `<span class="escolha-aviso ligando">${ic('relogio')}<span>Ligando… <span data-desde="${esc(g.desde)}">${esc(fmt(agoraServidor() - g.desde))}</span></span></span>`;
   }
@@ -1055,8 +1069,8 @@ function renderSemResposta() {
 
 // ---------------------------------------------------------------- serviços: "Ligar" em cada um e "Ligar tudo"
 const agoraServidor = () => Date.now() / 1000 + (G.relogioDif || 0);
-const ORDEM_SERV = ['video', 'painel_musica', 'comfy_musica', 'ace', 'hermes', 'telegram'];
-const NOME_SERV = { video: 'Imagem e vídeo (ComfyUI)', painel_musica: 'Painel de música', comfy_musica: 'ComfyUI de música', ace: 'ACE-Step (música)', hermes: 'Hermes (IA que conversa)', telegram: 'Telegram do Hermes (avisos no celular)' };
+const ORDEM_SERV = ['video', 'painel_musica', 'hermes', 'telegram'];
+const NOME_SERV = { video: 'Imagem e vídeo (ComfyUI)', painel_musica: 'Painel de música', hermes: 'Hermes (IA que conversa)', telegram: 'Telegram do Hermes (avisos no celular)' };
 const LEGADO_MSG = 'Esta versão do servidor do estúdio ainda não liga os serviços pelo Início. Feche o estúdio pelo atalho “Desligar Estúdio” (com nada gerando) e abra de novo para ativar os botões.';
 // [{chave, nome, estado, desde, mensagem, lento, porta}] do /api/inicio; servidor antigo: só ligado/desligado
 function servicosDe(I) {
@@ -1069,8 +1083,7 @@ function servicosDe(I) {
     return { chave: k, nome: NOME_SERV[k], estado: sv[k] ? 'ligado' : 'desligado' };
   }).filter(Boolean);
 }
-// o botão Ligar funciona? Servidor novo: sempre. Antigo: só a música com o painel desligado (/api/musica/ligar liga o
-// painel, e o painel liga a ComfyUI de música e o ACE-Step ao abrir)
+// o botão Ligar funciona? Servidor novo: sempre. Antigo: só a música com o painel desligado (/api/musica/ligar)
 function podeLigar(acao) {
   const I = G.inicio;
   if (!I) return false;
@@ -1118,8 +1131,7 @@ function renderServicos() {
     const focado = document.activeElement && document.activeElement.closest('#maqServ [data-servico]');
     const foco = focado ? focado.dataset.servico : null;
     $('#maqServ').innerHTML = lista.map(linhaServico).join('');
-    // na bancada do herói as explicações ficam lado a lado: duas iguais seguidas ("liga sozinho
-    // quando você gerar música", da ComfyUI de música e do ACE-Step) viram uma só.
+    // na bancada do herói as explicações ficam lado a lado: duas iguais seguidas viram uma só.
     const vistos = new Set();
     $$('#maqServ .servico-msg').forEach((el) => {
       const t = el.textContent.trim();
@@ -1131,11 +1143,11 @@ function renderServicos() {
   // ela não conta, senão o botão aparecia com tudo ligado, logo depois de o dono desligá-la de propósito)
   const off = lista.some((s) => !['hermes', 'telegram'].includes(s.chave) && (s.estado === 'desligado' || s.estado === 'erro'));
   $('#btLigarTudo').hidden = I.legado || !off;
-  // atalhos por grupo: "Ligar imagem e vídeo" (ComfyUI) e "Ligar música" (painel + ComfyUI de música + ACE-Step)
+  // atalhos por grupo: "Ligar imagem e vídeo" (ComfyUI) e "Ligar música" (o painel de música + a mesma ComfyUI)
   const est = (k) => (lista.find((s) => s.chave === k) || {}).estado;
   const desl = (k) => ['desligado', 'erro'].includes(est(k));
   const verVideo = !I.legado && desl('video');
-  const verMusica = !I.legado && (desl('painel_musica') || ['desligado', 'erro', 'em espera'].some((e) => e === est('comfy_musica') || e === est('ace')));
+  const verMusica = !I.legado && desl('painel_musica');
   $('#btLigarVideo').hidden = !verVideo;
   $('#btLigarMusicaGrupo').hidden = !verMusica;
   $('#maqGrupos').hidden = !(verVideo || verMusica);
@@ -1147,9 +1159,9 @@ function renderServicos() {
   nota.textContent = nota.hidden ? '' : TX(LEGADO_MSG);
 }
 const LIGANDO_CLIQUE = new Set();  // trava contra dois cliques (o servidor também não liga em dobro)
-const FRASE_LIGAR = { video: 'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…', musica: 'Ligando a música (painel, ComfyUI de música e ACE-Step)…',
+const FRASE_LIGAR = { video: 'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…', musica: 'Ligando a música (o painel e a ComfyUI)…',
   texto: 'Ligando a IA de texto no processador…', hermes: 'Ligando o Hermes (painel web, uns 6 s)…', telegram: 'Ligando o Telegram do Hermes (uns 20 s)…', tudo: 'Ligando o que estava desligado…' };
-const ALVO_DESLIGAR = { video: 'video', painel_musica: 'painel', comfy_musica: 'comfy_musica', ace: 'ace', hermes: 'hermes' };
+const ALVO_DESLIGAR = { video: 'video', painel_musica: 'painel', hermes: 'hermes' };
 async function desligarServico(alvo, bt) {
   if (alvo === 'tudo' && !confirm(TX('Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)'))) return;
   const antes = bt ? bt.innerHTML : null;
@@ -1351,7 +1363,7 @@ function montarMaquina() {
       <div>
         <div class="maq-rot maq-rot-bt"><span>${esc(TX('Serviços'))}</span>
           <button type="button" class="bt-ligar bt-ligar-tudo" id="btLigarTudo" data-ligar="tudo" hidden aria-label="${esc(TX('Ligar tudo o que está desligado'))}">${ic('ligar')}<span>${esc(TX('Ligar tudo'))}</span></button><button type="button" class="bt-desligar bt-desligar-tudo" id="btDesligarTudo" data-desligar="tudo" hidden aria-label="${esc(TX('Desligar todas as IAs para liberar memória'))}">${ic('ligar')}<span>${esc(TX('Desligar tudo'))}</span></button></div>
-        <div class="servicos-grupos" id="maqGrupos" hidden><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarVideo" data-ligar="video" hidden aria-label="${esc(TX('Ligar a IA de imagem e vídeo (ComfyUI)'))}">${ic('ligar')}<span>${esc(TX('Ligar imagem e vídeo'))}</span></button><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarMusicaGrupo" data-ligar="musica" hidden aria-label="${esc(TX('Ligar as IAs de música (painel, ComfyUI de música e ACE-Step)'))}">${ic('ligar')}<span>${esc(TX('Ligar música'))}</span></button></div>
+        <div class="servicos-grupos" id="maqGrupos" hidden><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarVideo" data-ligar="video" hidden aria-label="${esc(TX('Ligar a IA de imagem e vídeo (ComfyUI)'))}">${ic('ligar')}<span>${esc(TX('Ligar imagem e vídeo'))}</span></button><button type="button" class="bt-ligar bt-ligar-grupo" id="btLigarMusicaGrupo" data-ligar="musica" hidden aria-label="${esc(TX('Ligar a música (o painel de música e a ComfyUI)'))}">${ic('ligar')}<span>${esc(TX('Ligar música'))}</span></button></div>
         <div class="servicos" id="maqServ"></div>
         <p class="nota" id="maqServNota" hidden></p>
       </div>
@@ -1417,7 +1429,11 @@ async function ligarMusica(bt) {
   if (st) st.textContent = 'Ligando o painel de música…';
   try {
     const r = await api('/api/musica/ligar', { method: 'POST', timeout: 70000 });
-    aviso(r.musica ? 'Painel de música ligado.' : 'O painel de música não respondeu a tempo. Tente de novo em instantes.', r.musica ? 'ok' : 'aviso');
+    if (r.estado && G.sistema) G.sistema.musica_estado = r.estado;
+    if (!r.musica) aviso(r.erro || 'O painel de música não respondeu a tempo. Tente de novo em instantes.', 'aviso', 9000);
+    else if (r.erro_comfy) aviso('Painel de música ligado, mas a ComfyUI não ligou: ' + r.erro_comfy, 'aviso', 10000);
+    else if (r.comfy === 'ligando') aviso('Painel de música ligado. A ComfyUI está ligando (1 a 2 min); a primeira música espera na fila.', 'ok', 7000);
+    else aviso('Painel de música ligado.', 'ok');
     if (st) st.textContent = '';
   } catch (e) {
     aviso('Não consegui ligar a música: ' + e.message, 'erro');
@@ -1453,12 +1469,11 @@ function renderCatalogo() {
   // 14/11/2026: a lista nao dizia quais IAs ja estavam no disco. Agora a instalada fica
   // verde e sobe para o alto da coluna; a que falta diz quanto falta baixar.
   const ias = G.ias || {}, pg = G.iasProgresso || {};
-  const semMusica = G.inicio && G.inicio.tem_musica === false;
   $('#catalogo').innerHTML = cols.map((c) => {
     const sei = c.lista.filter((f) => ias[f.id]);
     const prontas = sei.filter((f) => ias[f.id].instalada).length;
     const ordem = [...c.lista].sort((a, b) => (ias[b.id] && ias[b.id].instalada ? 1 : 0) - (ias[a.id] && ias[a.id].instalada ? 1 : 0));
-    const conta = sei.length ? `${prontas} de ${sei.length} instaladas` : c.musica && semMusica ? 'em breve' : '';
+    const conta = sei.length ? `${prontas} de ${sei.length} instaladas` : '';
     const item = (f) => {
       const e = ias[f.id];
       let cls = '', est = '';
@@ -1471,7 +1486,6 @@ function renderCatalogo() {
     };
     return `<div class="cat-col ${c.tipo}">
     <h3>${ic(c.icone)}<span>${esc(c.titulo)}</span>${conta ? `<small>${esc(conta)}</small>` : ''}</h3>
-    ${c.musica && semMusica ? '<p class="nota cat-aviso">Os modelos do YuE2 e do Stable Audio 3 já baixam pela lista acima. A aba Música, onde eles são usados, chega na próxima atualização.</p>' : ''}
     ${c.lista.length ? `<ul>${ordem.map(item).join('')}</ul>`
       : `<p class="nota">${!G.presets ? 'Carregando as IAs do estúdio…' : c.tipo === 't-musica' ? 'As fichas dos motores de música aparecem quando o servidor do estúdio for atualizado. Abra a Música para ver os motores.' : 'Nenhuma IA nesta seção.'}</p>`}
   </div>`;
@@ -3268,6 +3282,38 @@ function musicaLigada() {
 // carregou uma vez, o src NUNCA é trocado: escondido ou não, a página dele continua viva e volta a funcionar
 // sozinha quando o painel responder de novo.
 const MUS_FALHAS_DESLIGADO = 3;
+// O cartão do meio da aba Música. Devolve true quando FALTA alguma coisa para a música existir nesta máquina
+// (aí o painel não é mostrado); com tudo no lugar, deixa o cartão no texto de "painel desligado" e devolve false.
+function cartaoMusica(em, on) {
+  const tit = $('#musicaOffTitulo'), txt = $('#musicaOffTexto'), bt = $('#ligarMusica'), ir = $('#musicaIrInicio'), nota = $('#musicaOffNota');
+  const falta = em ? em.falta : null;
+  const lista = ((em && em.ias) || []).map((i) => `${i.nome}${i.gb_falta ? ` (${num(i.gb_falta, 1)} GB)` : ''}`).join(TX(' ou '));
+  let titulo = T('tela.o-painel-de-musica-esta', 'O painel de música está desligado');
+  let texto = T('tela.ele-gera-musicas-com-letra', 'Ele gera músicas com letra cantada e trilhas instrumentais (YuE2 e Stable Audio 3), na mesma ComfyUI da imagem e do vídeo. Ligar leva uns 30 segundos.');
+  let rotulo = '';
+  if (falta === 'motor') {
+    titulo = TX('Falta instalar o motor');
+    texto = TX('A música usa o mesmo motor da imagem e do vídeo (a ComfyUI), e ele ainda não está instalado neste computador. Instale o motor pelo Início e volte aqui.');
+    rotulo = TX('Ir para o Início e instalar o motor');
+  } else if (falta === 'modelo') {
+    titulo = TX('Falta baixar uma IA de música');
+    texto = TX('Nenhuma IA de música foi baixada ainda. Baixe pelo Início, na lista de IAs aprovadas pelo projeto:') + ' ' + lista + '.';
+    rotulo = TX('Ir para o Início e baixar');
+  } else if (falta === 'painel') {
+    titulo = TX('O painel de música não veio nesta instalação');
+    texto = TX('Falta a pasta painel_musica do pacote. Baixe o pacote de novo (ou atualize) para ter a aba Música.');
+  }
+  tit.textContent = titulo; txt.textContent = texto;
+  bt.hidden = !!falta;
+  ir.hidden = !rotulo; if (rotulo) ir.querySelector('span:last-child').textContent = rotulo;
+  // avisos que não impedem de abrir: o nó da música não foi copiado, ou a ComfyUI ligada ainda não o carregou
+  let aviso2 = '';
+  if (em && em.no_ok === false) aviso2 = TX('Atenção: não consegui copiar o complemento da música para a ComfyUI. O YuE2 pode falhar.') + (em.no_erro ? ' (' + em.no_erro + ')' : '');
+  else if (em && em.reiniciar_comfy) aviso2 = TX('A ComfyUI ligada ainda não carregou o complemento da música. Desligue e ligue "Imagem e vídeo (ComfyUI)" no Início antes de gerar com o YuE2.');
+  nota.textContent = aviso2; nota.hidden = !aviso2;
+  G.mus.aviso = !falta && on === true ? aviso2 : '';  // com o painel na tela, o aviso vai na faixa de cima
+  return !!falta;
+}
 async function atualizarMusica(forcar) {
   let on = forcar ? null : musicaLigada();
   if (on == null) {
@@ -3279,15 +3325,19 @@ async function atualizarMusica(forcar) {
   if (on === true) M.falhas = 0;
   else if (on === false) M.falhas++;
   const temSrc = !!fr.getAttribute('src');
-  if (on === true && !temSrc) fr.src = MUSICA_URL;  // 1ª carga
+  // Falta o motor ou não há nenhuma IA de música baixada: a aba EXPLICA o que falta e leva ao lugar de resolver.
+  // (Antes de 14/11/2026 a aba simplesmente não existia no pacote.) Com o que falta resolvido, segue o fluxo normal.
+  const falta = cartaoMusica(musicaEstado(), on);
+  if (on === true && !temSrc && !falta) fr.src = musicaUrl();  // 1ª carga
   const desligado = on === false && (!M.carregou || M.falhas >= MUS_FALHAS_DESLIGADO);
   if (desligado && !M.carregou && temSrc) fr.removeAttribute('src');  // nunca carregou: não há nada a perder
-  $('#musicaOff').hidden = !desligado;
-  fr.hidden = desligado || !fr.getAttribute('src');
+  $('#musicaOff').hidden = !(desligado || falta);
+  fr.hidden = desligado || falta || !fr.getAttribute('src');
   let msg = '';
   if (!desligado && on === false) msg = 'O painel de música não respondeu agora há pouco. Continua na tela; tentando de novo…';
   else if (on === null && M.carregou) msg = 'Sem resposta do estúdio agora; o painel de música continua na tela.';
   else if (on === null && !fr.getAttribute('src')) msg = 'Verificando o painel de música…';
+  else if (M.aviso) msg = M.aviso;
   faixa.textContent = msg;
   faixa.hidden = !msg;
 }
@@ -3299,6 +3349,11 @@ function prepararEventos() {
   $('#prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); gerar(); } });
   $('#prompt').addEventListener('input', () => { if (E && presetAtual() && presetAtual().tipo === 'apresentador') estimarLogo(700); });
   $('#ligarMusica').onclick = (e) => ligarMusica(e.currentTarget);
+  // "Falta o motor" / "falta baixar uma IA": leva ao Início, na lista de onde se instala
+  $('#musicaIrInicio').onclick = () => {
+    location.hash = '#/';
+    setTimeout(() => { const el = $('#aprovTitulo'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
+  };
   $('#dicaOutra').onclick = proximaDica;
   if ($('#novVerTodas')) $('#novVerTodas').onclick = () => { G.novTodas = !G.novTodas; renderNovidades(); };
   // Início: "Ligar" dos serviços (linhas da máquina, "Ligar tudo" e o aviso de cada cartão)
