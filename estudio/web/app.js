@@ -1497,8 +1497,11 @@ function faixaInstalar(id) {
   // parava com 401 (o repositorio da Lightricks pede conta) e o cartao so voltava a
   // dizer "Falta instalar", sem uma palavra. Falha calada e pior que erro na cara.
   const pg = G.iasProgresso || {};
-  if (pg.erro && pg.erro_ia === id && !pg.baixando) {
-    return `<p class="ia-falta sem-link" role="alert">${ic('alerta')}<span>${esc(pg.erro)}</span></p>`;
+  // 14/11/2026: o erro vem com o NOME da IA e aqui era comparado com o ID - nunca batia, e
+  // o motivo nunca aparecia. Agora cada IA tem o seu erro (pg.erros), mesmo com a fila andando.
+  const meuErro = erroDaIA(pg, e.nome);
+  if (meuErro && !(pg.baixando && pg.baixando.ia === e.nome)) {
+    return `<p class="ia-falta sem-link" role="alert">${ic('alerta')}<span>${esc(meuErro)}</span></p>`;
   }
   const pr = pg.baixando;
   if (pr && pr.ia === e.nome) {
@@ -1580,6 +1583,12 @@ async function lerDestino() {
     if (fase && fase !== 'pronto') G.motorTimer = setTimeout(lerDestino, 1500);
   } catch (e) { /* servidor antigo, sem esta rota: o bloco simplesmente nao aparece */ }
 }
+// O erro de UMA ia. Servidor antigo so manda o ultimo (erro + erro_ia, com o nome).
+function erroDaIA(pg, nome) {
+  if (pg.erros && pg.erros[nome]) return pg.erros[nome];
+  return pg.erro && pg.erro_ia === nome ? pg.erro : '';
+}
+
 // A porcentagem e da IA INTEIRA (todos os arquivos dela), nao do arquivo da vez: por arquivo
 // ela chegava a 100 e voltava a 0, e parecia que o download tinha recomecado (14/11/2026).
 // Servidor antigo nao manda ia_total: ai vale a conta por arquivo, como era.
@@ -1725,7 +1734,10 @@ function renderAprovadas() {
       const a = andamentoDaIA(pr);
       estado = `<span class="aprov-baixando">${esc(T('ia.baixando', 'Baixando… {pc}%', { pc: a.pc }))}${a.qual}</span>`;
     } else if ((pg.fila || []).includes(e.nome)) estado = `<span class="aprov-baixando">${esc(TX('na fila'))}</span>`;
-    else if (pg.erro && pg.erro_ia === id) estado = `<span class="aprov-erro" role="alert">${esc(pg.erro)}</span>`;
+    else if (erroDaIA(pg, e.nome)) {
+      marcavel = true;      // da para marcar e tentar de novo depois de resolver
+      estado = `<span class="aprov-erro" role="alert">${esc(erroDaIA(pg, e.nome))}</span>`;
+    }
     else if (!e.da_para_baixar) estado = `<span class="aprov-erro">${esc(T('ia.faltaMao', 'Falta instalar — {gb} GB, baixar à mão', { gb: e.gb_falta }))}</span>`;
     else { estado = `<span class="aprov-falta">${esc(T('aprov.falta', 'falta baixar {gb} GB', { gb: e.gb_falta }))}</span>`; marcavel = true; }
     if (!marcavel) G.aprovSel.delete(id);

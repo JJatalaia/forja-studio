@@ -144,12 +144,12 @@ def _recado_do_portao(url, nome, com_token):
     if com_token:
         return (f"{nome}: o Hugging Face recusou o seu token para {repo or 'este modelo'}. "
                 f"Confira se você aceitou a licença em {onde} com a MESMA conta do token, "
-                f"e se o token ainda vale (API\\huggingface.txt). Veja REPOSITORIOS.md.")
+                f"e se o token ainda vale: cole de novo em \"Configurações de API\", na "
+                f"tela inicial, e clique em instalar outra vez.")
     return (f"{nome}: o repositório {repo or 'deste modelo'} pede conta no Hugging Face e "
-            f"aceitar a licença. Abra {onde}, entre na sua conta e aceite a licença; depois "
-            f"crie um token de leitura em https://huggingface.co/settings/tokens e salve a "
-            f"primeira linha dele em API\\huggingface.txt. Daí clique em instalar de novo. "
-            f"Está explicado em REPOSITORIOS.md.")
+            f"aceitar a licença. É de graça: na tela inicial, em \"Configurações de API\", "
+            f"o cartão do Hugging Face tem os três passos com os links. Cole o token lá e "
+            f"clique em instalar de novo. As outras IAs da fila continuam baixando.")
 
 
 def _achar_catalogo():
@@ -276,7 +276,8 @@ def todas(nomes):
 def progresso():
     with _trava:
         d = dict(_agora) if _agora else None
-        return {"baixando": d, "fila": list(_fila), "erro": _erro, "erro_ia": _erro_ia}
+        return {"baixando": d, "fila": list(_fila), "erro": _erro, "erro_ia": _erro_ia,
+                "erros": dict(_erros)}
 
 
 class _Lento(Exception):
@@ -299,6 +300,9 @@ def _conexao_ruim(velocidade, pode_tentar_as_cegas):
     if _melhor >= 2 * 1024 ** 2:
         return velocidade < _melhor * 0.10
     return pode_tentar_as_cegas and velocidade < 1024 ** 2
+
+
+_erros = {}     # {nome da IA: recado} - cada IA guarda o SEU erro; uma nao esconde a outra
 
 
 def _baixar_arquivo(nome, info, religadas=0):
@@ -389,49 +393,65 @@ def _trabalhar(nomes_por_ia):
                 if not _fila:
                     break
                 ia = _fila[0]
-            # A conta que a tela mostra e da IA INTEIRA. Por arquivo, a porcentagem chegava a
-            # 100 e voltava a 0 a cada arquivo, e parecia que o download tinha recomecado.
-            arquivos = arquivos_da(ia, cat)
-            ia_total = sum(v.get("bytes") or 0 for v in arquivos.values())
-            ia_antes = sum(v.get("bytes") or 0 for n, v in arquivos.items() if esta_completo(n, v))
-            for numero, (nome, info) in enumerate(arquivos.items(), 1):
-                if _parar:
-                    raise InterruptedError("parado por quem pediu")
-                if esta_completo(nome, info):
-                    continue
-                if not info.get("fonte"):
-                    raise OSError(f"{nome}: nao sei de onde baixar este arquivo")
+            try:
+                _baixar_uma_ia(ia, cat)
+            except InterruptedError:
+                raise                       # "Parar o download": para tudo mesmo
+            except Exception as exc:        # so ESTA falhou: guarda o motivo e segue a fila
+                print(f"[estúdio] {ia}: não baixou ({exc}). Seguindo para a próxima da fila.",
+                      flush=True)
                 with _trava:
-                    _agora = {"ia": ia, "arquivo": nome, "baixados": 0,
-                              "total": info.get("bytes") or 0, "comecou": time.time(),
-                              "ia_total": ia_total, "ia_antes": ia_antes,
-                              "numero": numero, "de": len(arquivos)}
-                religadas = 0
-                while True:
-                    try:
-                        _baixar_arquivo(nome, info, religadas)
-                        break
-                    except _Lento as lento:
-                        religadas += 1
-                        print(f"[estúdio] {nome}: conexão lenta ({lento}); pedindo outra "
-                              f"({religadas} de {RELIGADAS_POR_ARQUIVO}). Continua de onde parou.",
-                              flush=True)
-                        with _trava:
-                            if _agora:
-                                _agora["religadas"] = religadas
-                ia_antes += info.get("bytes") or 0
+                    _erros[ia] = str(exc)
+                    _erro, _erro_ia = str(exc), ia
             with _trava:
                 if _fila and _fila[0] == ia:
                     _fila.pop(0)
     except Exception as exc:
         with _trava:
-            _erro = str(exc)
-            _erro_ia = ia
+            if not isinstance(exc, InterruptedError):
+                _erro = str(exc)
+                _erro_ia = ia
     finally:
         with _trava:
             _agora = None
             _tocando = False
             _parar = False
+
+
+def _baixar_uma_ia(ia, cat):
+    """Baixa todos os arquivos que faltam de UMA ia. Levanta se algum falhar."""
+    global _agora
+    # A conta que a tela mostra e da IA INTEIRA. Por arquivo, a porcentagem chegava a
+    # 100 e voltava a 0 a cada arquivo, e parecia que o download tinha recomecado.
+    arquivos = arquivos_da(ia, cat)
+    ia_total = sum(v.get("bytes") or 0 for v in arquivos.values())
+    ia_antes = sum(v.get("bytes") or 0 for n, v in arquivos.items() if esta_completo(n, v))
+    for numero, (nome, info) in enumerate(arquivos.items(), 1):
+        if _parar:
+            raise InterruptedError("parado por quem pediu")
+        if esta_completo(nome, info):
+            continue
+        if not info.get("fonte"):
+            raise OSError(f"{nome}: nao sei de onde baixar este arquivo")
+        with _trava:
+            _agora = {"ia": ia, "arquivo": nome, "baixados": 0,
+                      "total": info.get("bytes") or 0, "comecou": time.time(),
+                      "ia_total": ia_total, "ia_antes": ia_antes,
+                      "numero": numero, "de": len(arquivos)}
+        religadas = 0
+        while True:
+            try:
+                _baixar_arquivo(nome, info, religadas)
+                break
+            except _Lento as lento:
+                religadas += 1
+                print(f"[estúdio] {nome}: conexão lenta ({lento}); pedindo outra "
+                      f"({religadas} de {RELIGADAS_POR_ARQUIVO}). Continua de onde parou.",
+                      flush=True)
+                with _trava:
+                    if _agora:
+                        _agora["religadas"] = religadas
+        ia_antes += info.get("bytes") or 0
 
 
 def instalar(ia):
@@ -461,6 +481,7 @@ def instalar(ia):
         if ia in _fila:
             return False, "Esta IA já está na fila."
         _fila.append(ia)
+        _erros.pop(ia, None)        # nova tentativa: o erro antigo DESTA ia sai da tela
         _erro = None
         _erro_ia = None
         if _tocando:
