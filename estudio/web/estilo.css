@@ -1086,3 +1086,10 @@ dialog::backdrop { background: rgba(5, 6, 9, .72); backdrop-filter: blur(3px); }
 .aprov-total.nao-cabe { color: var(--erro); }
 .aprov-instalar { display: inline-flex; align-items: center; gap: 8px; width: auto; padding: 10px 18px; }
 .aprov-instalar svg { width: 17px; height: 17px; }
+
+/* o motor (ComfyUI) instalando, dentro do bloco das aprovadas (13/11/2026) */
+.aprov-aviso { align-items: center; }
+.aprov-aviso .bt-sec { flex: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.aprov-aviso .bt-sec svg { width: 15px; height: 15px; margin: 0; }
+.aprov-aviso.motor-andando { color: var(--brasa); background: var(--brasa-suave); border-color: var(--brasa-borda); }
+.aprov-aviso .ia-barra { margin: 6px 0 0; }

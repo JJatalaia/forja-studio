@@ -62,6 +62,7 @@ from aiohttp import web
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # python_embeded não inclui a pasta do script
 import cofre  # noqa: E402  (os presets e workflows fechados: ver cofre.py)
 import ias  # noqa: E402  (instalar cada IA depois, pela tela: ver ias.py)
+import motor  # noqa: E402  (instalar a ComfyUI pelo botao: ver motor.py)
 import enquadrar  # noqa: E402
 import licenca  # noqa: E402  (conta e licenca: ver licenca.py)
 import atualizacao  # noqa: E402  (configuracao nova vinda do servidor)
@@ -4031,6 +4032,9 @@ def _estado_do_destino(recado=None):
             "padrao": not pref and not por_ambiente,
             "por_ambiente": por_ambiente,
             "motor_instalado": (COMFY_DIR / "main.py").is_file(),
+            # o que a tela precisa para oferecer "Instalar o motor" e mostrar o andamento
+            "motor": dict(motor.progresso(), versao=motor.VERSAO,
+                          gb=round(motor.BYTES / 1024 ** 3, 1), precisa_gb=motor.PRECISA_GB),
             "pasta_do_painel": str(ROOT),
             "nome_da_pasta": NOME_PASTA_IAS,
             "discos": _discos()}
@@ -4052,6 +4056,9 @@ async def api_ias_destino(req):
     if pg.get("baixando") or pg.get("fila"):
         return web.json_response({"erro": "Há um download em andamento. Espere terminar, ou pare o "
                                   "download, antes de trocar o disco."}, status=409)
+    if motor.progresso()["fase"] not in (None, "pronto"):
+        return web.json_response({"erro": "O motor está sendo instalado. Espere terminar antes de "
+                                  "trocar o disco."}, status=409)
     try:
         b = await req.json()
     except ValueError:
@@ -4085,6 +4092,22 @@ async def api_ias_destino(req):
         recado = (f"As IAs que você já baixou continuam em {antiga}. Elas não foram movidas: "
                   "o painel passa a procurar e a baixar no lugar novo.")
     return web.json_response(_estado_do_destino(recado))
+
+
+async def api_motor_instalar(req):
+    """Instala a ComfyUI (o motor) no disco escolhido. O andamento vem no /api/ias/destino."""
+    if os.environ.get("ESTUDIO_COMFY_DIR"):
+        return web.json_response({"ok": False, "mensagem": "A pasta da ComfyUI está definida no "
+                                  "caminhos.bat: instale a ComfyUI nela à mão (Passo 0 do INSTALAR.md)."},
+                                 status=409)
+    # COMFY_DIR = <base>\ComfyUI_windows_portable\ComfyUI  ->  o motor.py recebe a <base>
+    entrou, recado = motor.instalar(COMFY_DIR.parent.parent)
+    return web.json_response({"ok": entrou, "mensagem": recado}, status=200 if entrou else 409)
+
+
+async def api_motor_parar(req):
+    motor.parar()
+    return web.json_response({"ok": True})
 
 
 async def api_ias_instalar(req):
@@ -5131,6 +5154,7 @@ app.cleanup_ctx.append(ciclo)
 app.add_routes([
     web.get("/api/ias", api_ias), web.post("/api/ias/instalar", api_ias_instalar),
     web.get("/api/ias/destino", api_ias_destino), web.post("/api/ias/destino", api_ias_destino),
+    web.post("/api/motor/instalar", api_motor_instalar), web.post("/api/motor/parar", api_motor_parar),
     web.get("/api/ias/progresso", api_ias_progresso),
     web.post("/api/ias/parar", api_ias_parar),
     web.get("/api/presets", api_presets), web.get("/api/fichas", api_fichas),

@@ -1572,7 +1572,41 @@ async function lerDestino() {
     if (!r.ok) return;
     G.destino = await r.json();
     renderAprovadas();
+    // enquanto o motor instala, perguntar de novo: a barra anda e o aviso some no fim
+    const fase = (G.destino.motor || {}).fase;
+    clearTimeout(G.motorTimer);
+    if (fase && fase !== 'pronto') G.motorTimer = setTimeout(lerDestino, 1500);
   } catch (e) { /* servidor antigo, sem esta rota: o bloco simplesmente nao aparece */ }
+}
+// O motor (a ComfyUI) ainda nao esta no disco: em vez de mandar ler um manual, um botao.
+function htmlMotor(d) {
+  if (d.motor_instalado) return '';
+  const m = d.motor || {};
+  const FASES = { baixando: 'Baixando o motor…', conferindo: 'Conferindo a assinatura do arquivo…',
+    descompactando: 'Descompactando (leva alguns minutos)…', complementos: 'Instalando os complementos…' };
+  if (m.fase && m.fase !== 'pronto') {
+    const pc = m.fase === 'baixando' && m.total ? Math.floor((m.baixados / m.total) * 100) : null;
+    return `<div class="aprov-aviso motor-andando" role="status">${ic('baixar')}<div style="flex:1">
+      <span>${esc(TX(FASES[m.fase] || 'Instalando o motor…'))}${pc != null ? ` <b>${pc}%</b>` : ''}</span>
+      <div class="ia-barra"><i style="width:${pc != null ? pc : 100}%"></i></div></div>
+      <button type="button" class="bt-sec" data-motor-parar>${esc(TX('Parar'))}</button></div>`;
+  }
+  const semBotao = d.por_ambiente;
+  return `<div class="aprov-aviso" role="status">${ic('alerta')}<div style="flex:1">
+    <span>${esc(TX('O motor (a ComfyUI) ainda não está neste disco. Sem ele os modelos baixam, mas nada gera.'))}</span>
+    ${m.erro ? `<p class="aprov-erro" role="alert" style="text-align:left;margin:6px 0 0">${esc(m.erro)}</p>` : ''}</div>
+    ${semBotao ? '' : `<button type="button" class="bt-sec" data-motor-instalar>${ic('baixar')}${esc(T('aprov.motorBotao', 'Instalar o motor — {gb} GB', { gb: num(m.gb || 1.8, 1) }))}</button>`}</div>`;
+}
+async function instalarMotor() {
+  const d = G.destino || {}, m = d.motor || {};
+  if (!confirm(T('aprov.motorConfirma', 'Instalar o motor (ComfyUI {v}) no disco {u}:?\n\nBaixa {gb} GB e ocupa cerca de {p} GB depois de descompactado. Leva de 10 a 30 minutos, conforme a internet.',
+      { v: m.versao || '', u: d.unidade || '', gb: num(m.gb || 1.8, 1), p: m.precisa_gb || 12 }))) return;
+  try {
+    const r = await fetch('/api/motor/instalar', { method: 'POST' });
+    const resp = await r.json().catch(() => ({}));
+    aviso(resp.mensagem || (r.ok ? 'Começando a instalar o motor.' : 'Não deu para começar.'), r.ok ? 'ok' : 'erro', 8000);
+  } catch (e) { aviso('Não consegui falar com o estúdio.', 'erro'); }
+  lerDestino();
 }
 function renderAprovadas() {
   const onde = $('#aprovadas'), bloco = $('#blocoAprovadas');
@@ -1583,11 +1617,12 @@ function renderAprovadas() {
   if (!G.aprovSel) G.aprovSel = new Set();
   const pg = G.iasProgresso || {}, ocupado = !!(pg.baixando || (pg.fila || []).length);
   const noPainel = (d.pasta_do_painel || '').slice(0, 1).toUpperCase();
+  const motorAndando = !!((d.motor || {}).fase && d.motor.fase !== 'pronto');
 
   const discos = (d.discos || []).map((k) => {
     const sel = k.unidade === d.unidade;
     return `<button type="button" class="disco${sel ? ' sel' : ''}" data-disco="${esc(k.unidade)}" aria-pressed="${sel}"
-      ${d.por_ambiente || ocupado ? 'disabled' : ''}>
+      ${d.por_ambiente || ocupado || motorAndando ? 'disabled' : ''}>
       <b>${esc(k.unidade)}:</b><span>${esc(T('aprov.livres', '{gb} GB livres', { gb: num(k.livre_gb, 0) }))}</span>
       <small>${esc(T('aprov.deTotal', 'de {gb} GB', { gb: num(k.total_gb, 0) }))}${k.unidade === noPainel ? ' · ' + esc(TX('onde o painel está')) : ''}</small></button>`;
   }).join('');
@@ -1621,7 +1656,7 @@ function renderAprovadas() {
       <div class="discos">${discos}</div>
       <p class="fraco aprov-onde">${esc(TX('As IAs ficam em'))} <code>${esc(d.modelos)}</code></p>
       ${d.por_ambiente ? `<p class="fraco">${esc(TX('Esta pasta está definida no arquivo caminhos.bat. Para escolher por aqui, apague a linha ESTUDIO_COMFY_DIR de lá.'))}</p>` : ''}
-      ${d.motor_instalado ? '' : `<p class="aprov-aviso" role="status">${ic('alerta')}<span>${esc(TX('O motor (a ComfyUI) ainda não está nesta pasta. Os modelos podem ser baixados agora, mas para gerar é preciso instalar a ComfyUI aqui — veja o Passo 0 do INSTALAR.md.'))}</span></p>`}
+      ${htmlMotor(d)}
     </div>
     <div class="aprov-passo"><h3>${esc(TX('2. Quais você quer'))}</h3>
       <div class="aprov-lista">${linhas}</div>
@@ -1686,6 +1721,11 @@ document.addEventListener('click', (ev) => {
   const disco = alvo.closest('[data-disco]');
   if (disco && !disco.disabled) { trocarDisco(disco.dataset.disco); return; }
   if (alvo.closest('[data-instalar-aprovadas]')) { instalarAprovadas(); return; }
+  if (alvo.closest('[data-motor-instalar]')) { instalarMotor(); return; }
+  if (alvo.closest('[data-motor-parar]')) {
+    fetch('/api/motor/parar', { method: 'POST' }).then(() => setTimeout(lerDestino, 800));
+    return;
+  }
   if (alvo.closest('[data-marcar-todas]')) {
     const ias = G.ias || {}, podem = (G.aprovadasIds || []).filter((i) => ias[i] && !ias[i].instalada && ias[i].da_para_baixar);
     const todas = podem.every((i) => G.aprovSel.has(i));

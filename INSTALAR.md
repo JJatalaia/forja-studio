@@ -122,6 +122,12 @@ a dizer *"não consegui medir"* e libera o clone às cegas. Nada quebra calado: 
 
 ## Passo 0 — a ComfyUI
 
+> **Desde 13/11/2026 dá para pular este passo.** Na tela inicial do painel, no bloco
+> **"IAs aprovadas pelo projeto"**, escolha o disco e clique em **"Instalar o motor"**. Ele
+> baixa a ComfyUI oficial (v0.36.0, 1,8 GB), confere a assinatura do arquivo, descompacta e
+> põe os 2 complementos sozinho. Medido: 3 min 20 s numa internet rápida. O que vem abaixo
+> é o mesmo caminho feito à mão, para quem prefere ou já tem a ComfyUI.
+
 O Estúdio não substitui a ComfyUI: ele comanda a ComfyUI. Baixe a versão portátil do projeto
 oficial e descompacte **dentro da pasta deste projeto**, de modo a ficar assim:
 
