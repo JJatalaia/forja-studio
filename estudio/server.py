@@ -4023,8 +4023,14 @@ async def api_ias(req):
                 continue
             fora[p["id"]] = dict(ias.estado_de(p["nome"], cat), nome=p["nome"],
                                  aprovada=p["id"] in APROVADAS, aba=aba)
+    # as IAs de musica nao sao preset: entram pelo id da ficha, no fim da lista de aprovadas
+    musica = []
+    if cat:
+        for mid, nome in ias.MUSICA_IAS.items():
+            fora[mid] = dict(ias.estado_de(nome, cat), nome=nome, aprovada=True, aba="musica")
+            musica.append(mid)
     return web.json_response({"ok": True, "tem_catalogo": bool(cat), "ias": fora,
-                              "aprovadas": [i for i in APROVADAS if i in fora],
+                              "aprovadas": [i for i in APROVADAS if i in fora] + musica,
                               "progresso": ias.progresso()})
 
 
@@ -4285,13 +4291,6 @@ async def api_requisitos(req):
          "instalada": not falta_nomes and TEXTO.instalado(), "gb": round(falta_b / 1024 ** 3, 1),
          "nota": "Melhora o prompt, traduz, descreve imagem e escreve roteiro. Não precisa de conta nem de chave."},
     ]
-    if not TEM_MUSICA:
-        extras += [
-            {"id": "musica-yue2-int8", "nome": "YuE2 INT8 · música com letra", "instalada": False, "pode": False,
-             "nota": "Em breve: a instalação da música ainda está sendo construída."},
-            {"id": "musica-stable-audio3", "nome": "Stable Audio 3 · instrumental", "instalada": False,
-             "pode": False, "nota": "Em breve: a instalação da música ainda está sendo construída."},
-        ]
     return web.json_response({"ok": True, "itens": itens, "falta": falta, "extras": extras,
                               "andamento": requisitos.progresso()})
 
@@ -4339,6 +4338,7 @@ async def api_ias_instalar(req):
             for p in lista:
                 if p.get("id") == pid:
                     nome = p.get("nome")
+    nome = nome or ias.MUSICA_IAS.get(pid)
     if not nome:
         return web.json_response({"erro": "Não achei essa IA no painel."}, status=404)
     entrou, recado = ias.instalar(nome)

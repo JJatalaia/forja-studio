@@ -202,13 +202,44 @@ _tocando = False
 
 
 # --------------------------------------------------------------------------- o catalogo
+# As IAs de MUSICA (14/11/2026). Ficam aqui, e nao no modelos.json, porque aquele arquivo e
+# GERADO a partir do que esta instalado na maquina de origem - e la a musica morava numa
+# segunda ComfyUI, que o gerador nem olha. Os nos sao nativos da ComfyUI 0.36; so faltam os
+# arquivos. "id" e o mesmo id da ficha de musica (estudio/fichas.json).
+_HF_COMFY = "https://huggingface.co/Comfy-Org/"
+MUSICA_IAS = {"yue2-int8": "YuE2 INT8", "stable-audio3": "Stable Audio 3"}
+MUSICA_ARQUIVOS = {
+    "yue2_3b_int8_convrot.safetensors": {
+        "pasta": "checkpoints", "bytes": 3960938800, "usado_por": ["YuE2 INT8"],
+        "fonte": _HF_COMFY + "YuE2/resolve/main/checkpoints/yue2_3b_int8_convrot.safetensors"},
+    "sheetsage2_bf16.safetensors": {       # so o COVER usa; sem ele o painel esconde o cover
+        "pasta": "audio_encoders", "bytes": 1386868122, "usado_por": ["YuE2 INT8"],
+        "fonte": _HF_COMFY + "YuE2/resolve/main/audio_encoders/sheetsage2_bf16.safetensors"},
+    "stable_audio_3_medium.safetensors": {
+        "pasta": "checkpoints", "bytes": 9222116660, "usado_por": ["Stable Audio 3"],
+        "fonte": _HF_COMFY + "stable-audio-3/resolve/main/checkpoints/stable_audio_3_medium.safetensors"},
+    "t5gemma_b_b_ul2.safetensors": {
+        "pasta": "text_encoders", "bytes": 1187264003, "usado_por": ["Stable Audio 3"],
+        "fonte": _HF_COMFY + "stable-audio-3/resolve/main/text_encoders/t5gemma_b_b_ul2.safetensors"},
+    "qwen3.5_2b_bf16.safetensors": {
+        "pasta": "text_encoders", "bytes": 4548221488, "usado_por": ["Stable Audio 3"],
+        "fonte": _HF_COMFY + "Qwen3.5/resolve/main/text_encoders/qwen3.5_2b_bf16.safetensors"},
+}
+
+
 def catalogo():
     """{nome do arquivo: {fonte, pasta, bytes, usado_por}}. Vazio se nao houver catalogo."""
     try:
         d = json.loads(CATALOGO.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
-    return d.get("comfyui") or {}
+    cat = dict(d.get("comfyui") or {})
+    for nome, info in MUSICA_ARQUIVOS.items():
+        if nome in cat:        # o arquivo ja serve a outra IA: so acrescenta quem mais o usa
+            cat[nome] = dict(cat[nome], usado_por=list(cat[nome].get("usado_por") or []) + info["usado_por"])
+        else:
+            cat[nome] = info
+    return cat
 
 
 def caminho_de(nome, info):

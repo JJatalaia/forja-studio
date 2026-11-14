@@ -1458,7 +1458,7 @@ function renderCatalogo() {
     const sei = c.lista.filter((f) => ias[f.id]);
     const prontas = sei.filter((f) => ias[f.id].instalada).length;
     const ordem = [...c.lista].sort((a, b) => (ias[b.id] && ias[b.id].instalada ? 1 : 0) - (ias[a.id] && ias[a.id].instalada ? 1 : 0));
-    const conta = c.musica ? (semMusica ? 'em breve' : '') : sei.length ? `${prontas} de ${sei.length} instaladas` : '';
+    const conta = sei.length ? `${prontas} de ${sei.length} instaladas` : c.musica && semMusica ? 'em breve' : '';
     const item = (f) => {
       const e = ias[f.id];
       let cls = '', est = '';
@@ -1471,7 +1471,7 @@ function renderCatalogo() {
     };
     return `<div class="cat-col ${c.tipo}">
     <h3>${ic(c.icone)}<span>${esc(c.titulo)}</span>${conta ? `<small>${esc(conta)}</small>` : ''}</h3>
-    ${c.musica && semMusica ? '<p class="nota cat-aviso">Os motores de música ainda não instalam pelo painel. As fichas ficam aqui para você conhecer.</p>' : ''}
+    ${c.musica && semMusica ? '<p class="nota cat-aviso">Os modelos do YuE2 e do Stable Audio 3 já baixam pela lista acima. A aba Música, onde eles são usados, chega na próxima atualização.</p>' : ''}
     ${c.lista.length ? `<ul>${ordem.map(item).join('')}</ul>`
       : `<p class="nota">${!G.presets ? 'Carregando as IAs do estúdio…' : c.tipo === 't-musica' ? 'As fichas dos motores de música aparecem quando o servidor do estúdio for atualizado. Abra a Música para ver os motores.' : 'Nenhuma IA nesta seção.'}</p>`}
   </div>`;
@@ -1907,7 +1907,7 @@ function renderAprovadas() {
     </div>
     <div class="aprov-passo"><h3>${esc(TX('2. Quais você quer'))}</h3>
       <div class="aprov-lista">${linhas}</div>
-      ${linhasX ? `<h4 class="aprov-sub">Voz, texto e música</h4><div class="aprov-lista">${linhasX}</div>` : ''}
+      ${linhasX ? `<h4 class="aprov-sub">Voz e texto</h4><div class="aprov-lista">${linhasX}</div>` : ''}
       ${recados.join('')}
       ${faltam > 1 && !ocupado ? `<button type="button" class="aprov-todas" data-marcar-todas>${esc(marcadas.length === faltam ? TX('Desmarcar todas') : TX('Marcar todas'))}</button>` : ''}
     </div>
