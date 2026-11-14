@@ -58,6 +58,21 @@
       <button type="button" class="porta-esqueci" id="portaEsqueci" data-i18n="tela.esqueci-minha-senha">Esqueci minha senha</button>
     </form>
 
+    <!-- 13/11/2026: o codigo de 6 numeros que chega no e-mail. Aparece no lugar do
+         formulario quando o servidor aceita a senha mas ainda nao tem o e-mail confirmado -
+         no cadastro novo e na atualizacao de cadastro das contas antigas. -->
+    <form class="porta-form porta-codigo" id="portaCodigo" autocomplete="off" novalidate hidden>
+      <p class="porta-codigo-txt" id="codigoTxt"></p>
+      <label>Código de 6 números
+        <input type="text" id="cCodigo" name="codigo" inputmode="numeric" pattern="[0-9]*"
+               autocomplete="one-time-code" maxlength="7" placeholder="000000">
+      </label>
+      <p class="porta-erro" id="codigoErro" role="alert" hidden></p>
+      <button type="submit" class="gerar porta-bt" id="codigoBt">Confirmar e entrar</button>
+      <button type="button" class="porta-esqueci" id="codigoDeNovo">Mandar outro código</button>
+      <button type="button" class="porta-esqueci" id="codigoVoltar">Voltar</button>
+    </form>
+
     <p class="porta-pe" id="portaPe"></p>
   </section>
 </div>

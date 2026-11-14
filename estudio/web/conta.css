@@ -163,3 +163,10 @@
 .atu-indo { background: var(--painel); border-color: var(--borda-forte); }
 .atu-pronto { background: rgba(52, 211, 153, .1); border-color: rgba(52, 211, 153, .45); }
 .atu-erro { background: rgba(248, 113, 113, .1); border-color: rgba(248, 113, 113, .45); }
+
+/* o codigo de confirmacao do e-mail (13/11/2026) */
+/* display:grid e display:flex ganham do atributo hidden: sem estas linhas o formulario
+   e as abas NAO somem quando o codigo aparece. */
+.porta-form[hidden], .porta-abas[hidden], .porta-sub[hidden] { display: none; }
+.porta-codigo-txt { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--texto); }
+.porta-codigo #cCodigo { font-size: 26px; letter-spacing: .35em; text-align: center; font-variant-numeric: tabular-nums; }

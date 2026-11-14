@@ -4185,7 +4185,8 @@ async def api_conta_criar(req):
         r = await licenca.criar_conta(
             (b.get("nome") or "").strip(), (b.get("email") or "").strip(),
             (b.get("telefone") or "").strip(), b.get("senha") or "")
-        await destrancar_presets()
+        if not r.get("precisa_confirmar"):      # falta o codigo do e-mail: ainda nao entrou
+            await destrancar_presets()
         return web.json_response(r)
     except licenca.ErroDeConta as exc:
         return web.json_response({"erro": str(exc)}, status=exc.status if exc.status < 500 else 502)
@@ -4195,8 +4196,30 @@ async def api_conta_entrar(req):
     b = await req.json()
     try:
         r = await licenca.entrar((b.get("email") or "").strip(), b.get("senha") or "")
+        if not r.get("precisa_confirmar"):
+            await destrancar_presets()
+        return web.json_response(r)
+    except licenca.ErroDeConta as exc:
+        return web.json_response({"erro": str(exc)}, status=exc.status if exc.status < 500 else 502)
+
+
+async def api_conta_codigo(req):
+    """Os 6 numeros que chegaram no e-mail. Bateu: a pessoa esta dentro."""
+    b = await req.json()
+    try:
+        r = await licenca.confirmar_codigo((b.get("email") or "").strip(),
+                                           re.sub(r"\D", "", str(b.get("codigo") or "")))
         await destrancar_presets()
         return web.json_response(r)
+    except licenca.ErroDeConta as exc:
+        return web.json_response({"erro": str(exc)}, status=exc.status if exc.status < 500 else 502)
+
+
+async def api_conta_reenviar_codigo(req):
+    b = await req.json()
+    try:
+        await licenca.reenviar_codigo((b.get("email") or "").strip())
+        return web.json_response({"ok": True})
     except licenca.ErroDeConta as exc:
         return web.json_response({"erro": str(exc)}, status=exc.status if exc.status < 500 else 502)
 
@@ -5163,6 +5186,8 @@ app.add_routes([
     web.post("/api/atualizacao/aplicar", api_atualizacao_aplicar),
     web.post("/api/conta/criar", api_conta_criar),
     web.post("/api/conta/entrar", api_conta_entrar),
+    web.post("/api/conta/codigo", api_conta_codigo),
+    web.post("/api/conta/reenviar-codigo", api_conta_reenviar_codigo),
     web.post("/api/conta/sair", api_conta_sair),
     web.get("/api/novidades", api_novidades), web.post("/api/upload", api_upload),
     web.get("/api/entrada/{nome}", api_entrada), web.post("/api/gerar", api_gerar), web.post("/api/enquadrar", api_enquadrar),

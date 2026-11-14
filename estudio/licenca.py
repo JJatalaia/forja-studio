@@ -470,7 +470,10 @@ async def criar_conta(nome, email, telefone, senha):
     if quantos_campos() < 2:
         raise ErroDeConta(_ultimo_erro or "Nao consegui identificar esta maquina.", 400)
     r = await _pedir("/api/conta/criar", {"nome": nome, "email": email, "telefone": telefone,
-                                          "senha": senha, "maquina": impressao()})
+                                          "senha": senha, "maquina": impressao(),
+                                          "sabe_codigo": True})
+    if r.get("precisa_confirmar"):
+        return _falta_o_codigo(r)
     _guardar_resposta(r, r.get("token"))
     return estado()
 
@@ -479,9 +482,40 @@ async def entrar(email, senha):
     if quantos_campos() < 2:
         raise ErroDeConta(_ultimo_erro or "Nao consegui identificar esta maquina.", 400)
     r = await _pedir("/api/conta/entrar", {"email": email, "senha": senha,
-                                           "maquina": impressao()})
+                                           "maquina": impressao(), "sabe_codigo": True})
+    if r.get("precisa_confirmar"):
+        return _falta_o_codigo(r)
     _guardar_resposta(r, r.get("token"))
     return estado()
+
+
+# ------------------------------------------------- o codigo de confirmacao (13/11/2026)
+def _falta_o_codigo(r):
+    """O servidor aceitou a senha (ou o cadastro) mas quer o codigo do e-mail.
+
+    NAO e login: nao ha licenca para guardar. A tela recebe isto e mostra o campo dos 6
+    numeros. `motivo` e "cadastro" (conta nova) ou "atualizacao" (conta antiga, de antes de
+    o e-mail confirmado virar obrigatorio).
+    """
+    return {"entrou": False, "precisa_confirmar": True, "email": r.get("email"),
+            "motivo": r.get("motivo") or "cadastro", "enviado": bool(r.get("enviado")),
+            "espere": bool(r.get("espere")), "minutos": r.get("minutos") or 30,
+            "servidor": SERVIDOR, "campos_da_maquina": quantos_campos()}
+
+
+async def confirmar_codigo(email, codigo):
+    """Troca o codigo certo pela licenca: a partir daqui a pessoa esta dentro."""
+    if quantos_campos() < 2:
+        raise ErroDeConta(_ultimo_erro or "Nao consegui identificar esta maquina.", 400)
+    r = await _pedir("/api/conta/confirmar-codigo", {"email": email, "codigo": codigo,
+                                                     "maquina": impressao()})
+    _guardar_resposta(r, r.get("token"))
+    return estado()
+
+
+async def reenviar_codigo(email):
+    await _pedir("/api/conta/reenviar-codigo", {"email": email})
+    return True
 
 
 async def renovar():

@@ -127,8 +127,10 @@
       const corpo = E.modo === 'criar'
         ? { nome: $('#cNome').value.trim(), email, telefone: $('#cTel').value.trim(), senha }
         : { email, senha };
-      E.estado = await pedir(E.modo === 'criar' ? '/api/conta/criar' : '/api/conta/entrar', corpo);
+      const d = await pedir(E.modo === 'criar' ? '/api/conta/criar' : '/api/conta/entrar', corpo);
       $('#cSenha').value = '';
+      if (d && d.precisa_confirmar) { pedirCodigo(d); return; }
+      E.estado = d;
       aplicar(E.estado);
     } catch (e) {
       erro(String(e.message || e));
@@ -138,6 +140,88 @@
       $('#portaBt').disabled = false;
       trocarModo(E.modo);
     }
+  }
+
+  // ------------------------------------------- o codigo do e-mail (13/11/2026)
+  // O servidor aceitou a senha (ou o cadastro) mas so entrega a licenca depois dos 6
+  // numeros. Sao dois casos com o MESMO campo e textos diferentes:
+  //   cadastro     conta nova: o codigo termina o cadastro;
+  //   atualizacao  conta de antes de o e-mail confirmado virar obrigatorio.
+  function erroCodigo(msg, bom) {
+    const p = $('#codigoErro');
+    p.classList.toggle('porta-erro-ok', !!bom);
+    p.textContent = msg || '';
+    p.hidden = !msg;
+  }
+  function pedirCodigo(d) {
+    E.codigo = d;
+    const email = String(d.email || '').replace(/[<>&]/g, '');
+    let txt;
+    if (d.motivo === 'atualizacao') {
+      txt = '<b>Estamos fazendo uma atualização de cadastro.</b> Mandamos um código de 6 números '
+        + 'para <b>' + email + '</b>. Por favor, confirme o código: sem ele não dá para entrar.'
+        + '<br><br>Se você não tem mais acesso a esse e-mail, crie uma conta nova com um '
+        + 'e-mail que você usa.';
+    } else {
+      txt = 'Mandamos um código de 6 números para <b>' + email + '</b>. Digite ele aqui para '
+        + 'terminar o cadastro. Se não achar, olhe no spam.';
+    }
+    if (d.espere) txt += '<br><br>Já mandamos um código há pouco: use o que chegou.';
+    else if (!d.enviado) txt += '<br><br><b>Não consegui mandar o e-mail agora.</b> Espere um '
+      + 'minuto e clique em "Mandar outro código".';
+    $('#codigoTxt').innerHTML = txt;
+    $('#codigoVoltar').textContent = d.motivo === 'atualizacao' ? 'Criar uma conta nova' : 'Voltar';
+    $('#portaTitulo').textContent = d.motivo === 'atualizacao' ? 'Atualização de cadastro' : 'Confirme o seu e-mail';
+    $('#portaSub').hidden = true;
+    $$('.porta-abas').forEach((a) => { a.hidden = true; });
+    $('#portaForm').hidden = true;
+    $('#portaCodigo').hidden = false;
+    $('#cCodigo').value = '';
+    erroCodigo('');
+    $('#cCodigo').focus();
+  }
+  function sairDoCodigo(modo) {
+    E.codigo = null;
+    $('#portaCodigo').hidden = true;
+    $('#portaForm').hidden = false;
+    $('#portaSub').hidden = false;
+    $$('.porta-abas').forEach((a) => { a.hidden = false; });
+    $('#portaTitulo').textContent = 'Entre na sua conta';
+    trocarModo(modo || 'entrar');
+  }
+  async function enviarCodigo(ev) {
+    ev.preventDefault();
+    if (E.ocupado || !E.codigo) return;
+    const codigo = $('#cCodigo').value.replace(/\D/g, '');
+    if (codigo.length !== 6) { erroCodigo('O código tem 6 números.'); return; }
+    E.ocupado = true;
+    $('#codigoBt').disabled = true;
+    $('#codigoBt').textContent = 'Conferindo…';
+    erroCodigo('');
+    try {
+      E.estado = await pedir('/api/conta/codigo', { email: E.codigo.email, codigo });
+      sairDoCodigo('entrar');
+      aplicar(E.estado);
+    } catch (e) {
+      erroCodigo(String(e.message || e));
+    } finally {
+      E.ocupado = false;
+      $('#codigoBt').disabled = false;
+      $('#codigoBt').textContent = 'Confirmar e entrar';
+    }
+  }
+  async function outroCodigo() {
+    if (!E.codigo) return;
+    const bt = $('#codigoDeNovo');
+    bt.disabled = true;
+    try {
+      await pedir('/api/conta/reenviar-codigo', { email: E.codigo.email });
+      erroCodigo('Pronto: se dois minutos já passaram desde o último, um código novo está a caminho. '
+        + 'O anterior deixa de valer.', true);
+    } catch (e) {
+      erroCodigo(String(e.message || e));
+    }
+    setTimeout(() => { bt.disabled = false; }, 20000);   // nao deixa metralhar o botao
   }
 
   // ------------------------------------------------------- a conta depois de entrar
@@ -222,6 +306,9 @@
     $('#abaEntrar').addEventListener('click', () => trocarModo('entrar'));
     $('#abaCriar').addEventListener('click', () => trocarModo('criar'));
     $('#portaForm').addEventListener('submit', enviar);
+    $('#portaCodigo').addEventListener('submit', enviarCodigo);
+    $('#codigoDeNovo').addEventListener('click', outroCodigo);
+    $('#codigoVoltar').addEventListener('click', () => sairDoCodigo(E.codigo && E.codigo.motivo === 'atualizacao' ? 'criar' : 'entrar'));
     const esq = $('#portaEsqueci');
     if (esq) esq.addEventListener('click', esqueciSenha);
     const olho = $('#cVer');
