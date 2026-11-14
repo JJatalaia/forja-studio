@@ -113,6 +113,18 @@ def _pasta_da_voz():
 
 
 voz_studio.OUTRAS[:] = [_pasta_da_voz()]
+
+
+def _apontar_o_texto():
+    """Os modelos de texto moram no disco das IAs. Instalacao antiga (ao lado do painel) fica."""
+    antiga = ROOT / "modelos_texto"
+    pasta = antiga if (antiga / "modelos.ini").is_file() else COMFY_DIR.parent.parent / "modelos_texto"
+    texto.usar_pasta(pasta)
+    requisitos.TEXTO["pasta_modelos"] = str(pasta)
+    texto.escrever_ini()        # caminho completo dentro: refaz se a pasta mudou
+
+
+_apontar_o_texto()
 # Instância de TESTE: ESTUDIO_DADOS aponta para uma CÓPIA dos dados (histórico/tempos/vozes) e ESTUDIO_WEB para a
 # pasta da interface em desenvolvimento, para testar sem mexer no estúdio de produção (8194).
 DADOS = Path(os.environ["ESTUDIO_DADOS"]) if os.environ.get("ESTUDIO_DADOS") else AQUI
@@ -4098,6 +4110,7 @@ async def api_ias_destino(req):
     PY_VIDEO = COMFY_DIR.parent / "python_embeded" / "python.exe"
     ias.MODELOS = COMFY_DIR / "models"
     voz_studio.OUTRAS[:] = [_pasta_da_voz()]
+    _apontar_o_texto()
     recado = None
     if antiga != ias.MODELOS and antiga.is_dir() and any(antiga.rglob("*.safetensors")):
         recado = (f"As IAs que você já baixou continuam em {antiga}. Elas não foram movidas: "
@@ -4217,7 +4230,27 @@ async def api_requisitos(req):
                                 "rotulo": "Baixar o VoiceStudio — 222 MB"},
                       "link": {"url": v["pagina"], "rotulo": "Página oficial do VoiceStudio"}})
 
-    # ---- 6. as chaves
+    # ---- 6. a IA de texto
+    falta_b, falta_nomes = requisitos.texto_falta()
+    if not falta_nomes and TEXTO.instalado():
+        itens.append({"id": "texto", "nome": "IA de texto (escreve e traduz)", "estado": "ok",
+                      "resumo": f"Instalada em {texto.MODELOS_DIR}.", "passos": []})
+    else:
+        gb = f"{falta_b / 1024 ** 3:.1f}".replace(".", ",")
+        itens.append({"id": "texto", "nome": "IA de texto (escreve e traduz)", "estado": "opcional",
+                      "resumo": "Não instalada. É ela que melhora o seu prompt, traduz, descreve uma imagem "
+                                "e escreve roteiro, tudo na sua máquina. Opcional: sem ela esses botões "
+                                "ficam parados e o resto funciona.",
+                      "passos": [f"Clique em Instalar: o painel baixa {gb} GB (o programa llama.cpp e dois "
+                                 "modelos Qwen, licença Apache 2.0) e confere cada arquivo.",
+                                 f"Os modelos vão para {texto.MODELOS_DIR}, no disco que você escolheu "
+                                 "em \"IAs aprovadas pelo projeto\". Para mudar, troque o disco lá antes.",
+                                 "Se a internet cair, clique de novo: continua de onde parou.",
+                                 "Não precisa de conta nem de chave."],
+                      "botao": {"acao": "instalar", "qual": "texto",
+                                "rotulo": f"Instalar a IA de texto — {gb} GB"}})
+
+    # ---- 7. as chaves
     tem_hf = ias.tem_token()
     itens.append({"id": "chaves", "nome": "Contas e chaves de API",
                   "estado": "ok" if tem_hf else "opcional",

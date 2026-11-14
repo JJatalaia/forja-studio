@@ -55,6 +55,37 @@ VOICESTUDIO = {
     "pagina": "https://github.com/debpalash/VoiceStudio",
 }
 
+# A IA de texto: o llama.cpp oficial (b10964) + os tres arquivos de modelo. Tudo com o
+# SHA-256 publicado. "pasta_modelos" quem preenche e o server.py (o disco das IAs).
+_LLAMA = "https://github.com/ggml-org/llama.cpp/releases/download/b10964/"
+_HF = "https://huggingface.co/unsloth/"
+LLAMA_DIR = RAIZ / "_ferramentas" / "llama.cpp"
+TEXTO = {
+    "pasta_modelos": None,
+    "programas": [      # (arquivo, para qual subpasta, bytes, sha256)
+        {"nome": "llama-b10964-bin-win-cpu-x64.zip", "para": "cpu", "bytes": 18427629,
+         "sha256": "917f39c076402c421224824607397af20f53625a60defc20e8dd22446bf4c5d7"},
+        {"nome": "llama-b10964-bin-win-cuda-13.3-x64.zip", "para": "gpu", "bytes": 149703589,
+         "sha256": "cd63ae76ad78a1540aa0f30f6c6284bab14c146d99a58f70c3f0a38cb9c62351"},
+        {"nome": "cudart-llama-bin-win-cuda-13.3-x64.zip", "para": "gpu", "bytes": 390970417,
+         "sha256": "1462a050eb4c684921ba51dcc4cc488a036674c3e73e9945ee705b854808d03e"},
+    ],
+    "modelos": [
+        {"nome": "mmproj-F16.gguf", "pasta": "qwen3.5-9b", "bytes": 918166080,
+         "url": _HF + "Qwen3.5-9B-GGUF/resolve/main/mmproj-F16.gguf",
+         "sha256": "f70dc3509053962b0d0d3ee8a7eacebf5d60aa560cad78254ae8698516ae029f"},
+        {"nome": "Qwen3.5-9B-UD-Q4_K_XL.gguf", "pasta": "qwen3.5-9b", "bytes": 5966095584,
+         "url": _HF + "Qwen3.5-9B-GGUF/resolve/main/Qwen3.5-9B-UD-Q4_K_XL.gguf",
+         "sha256": "6f5d30666c2d8ae16a306e616d95341dcf3cc46810df84d7e6f5a7d1e4c1b293"},
+        {"nome": "Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf", "pasta": "qwen3.6-35b-a3b", "bytes": 13211155424,
+         "url": _HF + "Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf",
+         "sha256": "9c964e657212fea1f24905dd7b0a89b82fd807d19fab0b41da14251b07b88fbe"},
+    ],
+}
+for _p in TEXTO["programas"]:
+    _p["url"] = _LLAMA + _p["nome"]
+
+_base = 0       # bytes ja contados dos arquivos anteriores (instalacao com varios arquivos)
 _trava = threading.Lock()
 _estado = {"id": None, "fase": None, "baixados": 0, "total": 0, "erro": None, "erro_de": None,
            "pronto": None}
@@ -129,11 +160,13 @@ def _baixar(info, destino):
                     f.write(bloco)
                     feito += len(bloco)
                     with _trava:
-                        _estado["baixados"] = feito
+                        _estado["baixados"] = _base + feito
     if parte.stat().st_size != info["bytes"]:
         raise OSError(f"O download de {info['nome']} veio incompleto. Clique de novo: ele "
                       "continua de onde parou.")
     _fase(fase="conferindo")
+    if _parar:
+        raise _Parado()
     h = hashlib.sha256()
     with open(parte, "rb") as f:
         for bloco in iter(lambda: f.read(1024 * 1024 * 4), b""):
@@ -185,7 +218,73 @@ def _baixar_voicestudio():
             "VoiceStudio uma vez e volte aqui.")
 
 
-_COMO = {"ffmpeg": (_instalar_ffmpeg, FFMPEG), "voz": (_baixar_voicestudio, VOICESTUDIO)}
+def texto_falta():
+    """(bytes que ainda faltam baixar, lista do que falta) da IA de texto."""
+    falta, nomes = 0, []
+    for p in TEXTO["programas"]:
+        marca = "llama-server.exe" if p["nome"].startswith("llama-") else "cudart64_13.dll"
+        if not (LLAMA_DIR / p["para"] / marca).is_file():
+            falta += p["bytes"]
+            nomes.append(p["nome"])
+    pasta = TEXTO["pasta_modelos"]
+    for m in TEXTO["modelos"]:
+        arq = Path(pasta) / m["pasta"] / m["nome"] if pasta else None
+        if not (arq and arq.is_file() and arq.stat().st_size == m["bytes"]):
+            falta += m["bytes"]
+            nomes.append(m["nome"])
+    return falta, nomes
+
+
+def _instalar_texto():
+    global _base
+    pasta = TEXTO["pasta_modelos"]
+    if not pasta:
+        raise OSError("Nao sei em que disco por os modelos de texto.")
+    pasta = Path(pasta)
+    falta, nomes = texto_falta()
+    pasta.mkdir(parents=True, exist_ok=True)
+    # o que ja esta pela metade conta a favor: nao precisa de espaco de novo
+    meio = sum(f.stat().st_size for f in pasta.rglob("*.baixando"))
+    livre = shutil.disk_usage(pasta).free
+    if livre < falta - meio + 2 * 1024 ** 3:
+        raise OSError("Faltam %.1f GB livres em %s para a IA de texto (precisa de %.1f GB). "
+                      "Libere espaco ou escolha outro disco em \"IAs aprovadas\"."
+                      % ((falta - meio + 2 * 1024 ** 3 - livre) / 1024 ** 3, pasta.anchor,
+                         (falta - meio) / 1024 ** 3))
+    _base = 0
+    for p in TEXTO["programas"]:
+        if p["nome"] not in nomes:
+            continue
+        _fase(fase="baixando", arquivo=p["nome"])
+        zip_local = BAIXADOS / p["nome"]
+        _baixar(p, zip_local)
+        _fase(fase="descompactando")
+        destino = LLAMA_DIR / p["para"]
+        destino.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(zip_local) as z:
+            for item in z.infolist():       # os pacotes sao planos; nada de subpasta nem ".."
+                nome = item.filename.replace("\\", "/").rsplit("/", 1)[-1]
+                if not nome or item.is_dir():
+                    continue
+                with z.open(item) as origem, open(destino / nome, "wb") as f:
+                    shutil.copyfileobj(origem, f)
+        zip_local.unlink(missing_ok=True)
+        _base += p["bytes"]
+    for m in TEXTO["modelos"]:
+        if m["nome"] not in nomes:
+            continue
+        _fase(fase="baixando", arquivo=m["nome"])
+        _baixar(m, pasta / m["pasta"] / m["nome"])
+        _base += m["bytes"]
+    _fase(fase="configurando")
+    import texto                    # so aqui: o texto.py puxa o aiohttp
+    if not texto.escrever_ini():
+        raise OSError("Baixei tudo, mas nao consegui gravar a configuracao dos modelos.")
+    return "A IA de texto esta instalada. Ela liga sozinha quando voce pedir um texto."
+
+
+_COMO = {"ffmpeg": (_instalar_ffmpeg, FFMPEG), "voz": (_baixar_voicestudio, VOICESTUDIO),
+         "texto": (_instalar_texto, None)}
 
 
 def _trabalhar(qual):
@@ -212,9 +311,11 @@ def instalar(qual):
     with _trava:
         if _estado["id"]:
             return False, "Ja ha um download em andamento. Espere terminar."
-        _estado.update({"id": qual, "fase": "baixando", "baixados": 0,
-                        "total": _COMO[qual][1]["bytes"], "erro": None, "erro_de": None,
-                        "pronto": None})
+        total = texto_falta()[0] if qual == "texto" else _COMO[qual][1]["bytes"]
+        _estado.update({"id": qual, "fase": "baixando", "baixados": 0, "arquivo": None,
+                        "total": total, "erro": None, "erro_de": None, "pronto": None})
+    global _base
+    _base = 0
     _parar = False
     threading.Thread(target=_trabalhar, args=(qual,), daemon=True).start()
     return True, "Comecando a baixar."

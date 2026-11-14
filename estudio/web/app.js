@@ -1601,7 +1601,7 @@ function renderPreparar() {
   const and = d.andamento || {};
   const ROTULO = { ok: 'pronto', falta: 'falta', aviso: 'atenção', opcional: 'opcional' };
   const FASE = { baixando: 'Baixando…', conferindo: 'Conferindo a assinatura do arquivo…',
-    descompactando: 'Descompactando…', abrindo: 'Abrindo o instalador…' };
+    descompactando: 'Descompactando…', abrindo: 'Abrindo o instalador…', configurando: 'Configurando…' };
   const nFalta = (d.falta || []).length;
   $('#prepSub').textContent = nFalta
     ? T('prep.falta', 'Falta {n} passo(s) para o estúdio funcionar inteiro.', { n: nFalta })
@@ -1611,7 +1611,10 @@ function renderPreparar() {
     let acao = '';
     if (meu) {
       const pc = and.fase === 'baixando' && and.total ? Math.floor((and.baixados / and.total) * 100) : null;
-      acao = `<div class="prep-andando"><span>${esc(TX(FASE[and.fase] || 'Trabalhando…'))}${pc != null ? ` <b>${pc}%</b>` : ''}</span>
+      const gb = (n) => (n / 1073741824).toFixed(1).replace('.', ',');
+      const quanto = pc != null && and.total > 1073741824 ? ` · ${gb(and.baixados)} / ${gb(and.total)} GB` : '';
+      acao = `<div class="prep-andando"><span>${esc(TX(FASE[and.fase] || 'Trabalhando…'))}${pc != null ? ` <b>${pc}%</b>` : ''}${quanto}</span>
+        ${and.arquivo ? `<small class="prep-arq">${esc(and.arquivo)}</small>` : ''}
         <div class="ia-barra"><i style="width:${pc != null ? pc : 100}%"></i></div>
         <button type="button" class="bt-sec" data-prep-parar>${esc(TX('Parar'))}</button></div>`;
     } else if (it.botao) {

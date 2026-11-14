@@ -52,6 +52,61 @@ LOGS = Path(os.environ["ESTUDIO_LOGS"]) if os.environ.get("ESTUDIO_LOGS") else R
 CACHE = ROOT / "_cache"
 LIMITE_LOG = 20 * 1024 * 1024
 
+
+
+def usar_pasta(pasta):
+    """Troca a pasta dos modelos de texto (o server.py aponta para o disco das IAs).
+
+    14/11/2026: os modelos pesam 18,7 GB e moravam sempre ao lado do painel, ou seja, no C:.
+    Agora vao para o disco que a pessoa escolheu, junto das outras IAs.
+    """
+    global MODELOS_DIR, MODELOS_INI
+    MODELOS_DIR = Path(pasta)
+    MODELOS_INI = MODELOS_DIR / "modelos.ini"
+
+
+def escrever_ini():
+    """(Re)escreve o modelos.ini com os caminhos DESTA instalacao. Devolve True se escreveu.
+
+    O arquivo guarda caminho completo, entao nao pode viajar pronto: e gerado aqui. So
+    escreve quando os dois modelos estao no disco - sem eles o arquivo so enganaria o
+    "esta instalado?".
+    """
+    for m in MODELOS.values():
+        if not (MODELOS_DIR / m["pasta"] / m["arquivo"]).is_file():
+            return False
+    r, p = MODELOS["rapido"], MODELOS["principal"]
+    linhas = [
+        "; Gerado pelo Forja Studio. Nao edite: ele e reescrito quando o estudio liga.",
+        "version = 1",
+        "",
+        "[*]",
+        "flash-attn = on",
+        "parallel = 1",
+        "",
+        "[rapido]",
+        "model = %s" % (MODELOS_DIR / r["pasta"] / r["arquivo"]),
+        "mmproj = %s" % (MODELOS_DIR / r["pasta"] / r["mmproj"]),
+        "ctx-size = 16384",
+        "",
+        "[principal]",
+        "model = %s" % (MODELOS_DIR / p["pasta"] / p["arquivo"]),
+        "ctx-size = 16384",
+        "cache-type-k = q4_0",
+        "cache-type-v = q4_0",
+        "",
+    ]
+    novo = "\n".join(linhas)
+    try:
+        if MODELOS_INI.is_file() and MODELOS_INI.read_text(encoding="utf-8") == novo:
+            return True
+        MODELOS_INI.write_text(novo, encoding="utf-8")
+    except OSError as e:
+        print(f"[texto] nao consegui escrever {MODELOS_INI}: {e}", flush=True)
+        return False
+    return True
+
+
 PORTA_GPU = int(os.environ.get("ESTUDIO_TEXTO_PORTA_GPU") or 8180)
 PORTA_CPU = int(os.environ.get("ESTUDIO_TEXTO_PORTA_CPU") or 8181)
 URL_GPU = f"http://127.0.0.1:{PORTA_GPU}"
