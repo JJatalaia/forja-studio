@@ -1558,6 +1558,8 @@ async function lerIAs() {
     // abas e estoura quando a pessoa esta na tela inicial (nao ha aba aberta). Com ele na
     // frente, o bloco nunca se redesenhava depois de trocar o disco nem durante o download.
     try { renderAprovadas(); } catch (e) { /* bloco ausente nesta tela */ }
+    if (!G.iasProgresso.baixando && G.estavaBaixando) lerRequisitos();   // terminou: a lista muda
+    G.estavaBaixando = !!G.iasProgresso.baixando;
     renderIAs();
   } catch (e) { /* sem rota: servidor antigo. A tela funciona, só sem o aviso. */ }
 }
@@ -1578,6 +1580,80 @@ async function lerDestino() {
     if (fase && fase !== 'pronto') G.motorTimer = setTimeout(lerDestino, 1500);
   } catch (e) { /* servidor antigo, sem esta rota: o bloco simplesmente nao aparece */ }
 }
+// ============================================ Preparar esta maquina (14/11/2026)
+// Cada pre-requisito numa linha: o estado, o que falta e, quando falta, o passo a passo e o
+// botao. Regra do dono: nada que a pessoa precise baixar ou cadastrar pode morar so num manual.
+async function lerRequisitos() {
+  try {
+    const r = await fetch('/api/requisitos');
+    if (!r.ok) return;
+    G.requisitos = await r.json();
+    renderPreparar();
+    clearTimeout(G.reqTimer);
+    if ((G.requisitos.andamento || {}).id) G.reqTimer = setTimeout(lerRequisitos, 1500);
+  } catch (e) { /* servidor antigo: o bloco nao aparece */ }
+}
+function renderPreparar() {
+  const onde = $('#preparar'), bloco = $('#blocoPreparar'), d = G.requisitos;
+  if (!onde || !bloco) return;
+  bloco.hidden = !d || !(d.itens || []).length;
+  if (bloco.hidden) return;
+  const and = d.andamento || {};
+  const ROTULO = { ok: 'pronto', falta: 'falta', aviso: 'atenção', opcional: 'opcional' };
+  const FASE = { baixando: 'Baixando…', conferindo: 'Conferindo a assinatura do arquivo…',
+    descompactando: 'Descompactando…', abrindo: 'Abrindo o instalador…' };
+  const nFalta = (d.falta || []).length;
+  $('#prepSub').textContent = nFalta
+    ? T('prep.falta', 'Falta {n} passo(s) para o estúdio funcionar inteiro.', { n: nFalta })
+    : TX('O essencial está pronto. O que aparece como opcional você instala se quiser.');
+  onde.innerHTML = d.itens.map((it, i) => {
+    const meu = and.id && (and.id === it.id || (and.id === 'voz' && it.id === 'voz'));
+    let acao = '';
+    if (meu) {
+      const pc = and.fase === 'baixando' && and.total ? Math.floor((and.baixados / and.total) * 100) : null;
+      acao = `<div class="prep-andando"><span>${esc(TX(FASE[and.fase] || 'Trabalhando…'))}${pc != null ? ` <b>${pc}%</b>` : ''}</span>
+        <div class="ia-barra"><i style="width:${pc != null ? pc : 100}%"></i></div>
+        <button type="button" class="bt-sec" data-prep-parar>${esc(TX('Parar'))}</button></div>`;
+    } else if (it.botao) {
+      const b = it.botao;
+      const attr = b.acao === 'instalar' ? `data-prep-instalar="${esc(b.qual)}"`
+        : b.acao === 'ir' ? `data-prep-ir="${esc(b.para)}"` : `data-prep-link="${esc(b.url)}"`;
+      acao = `<button type="button" class="bt-sec prep-bt" ${attr} ${and.id ? 'disabled' : ''}>${ic(b.acao === 'instalar' ? 'baixar' : b.acao === 'link' ? 'externo' : 'baixo')}${esc(TX(b.rotulo))}</button>`;
+    }
+    const erro = and.erro && and.erro_de === it.id ? `<p class="aprov-erro" role="alert" style="text-align:left">${esc(and.erro)}</p>` : '';
+    const pronto = and.pronto && and.pronto.id === it.id ? `<p class="prep-feito">${esc(and.pronto.recado)}</p>` : '';
+    const passos = (it.passos || []).length
+      ? `<ol class="prep-passos">${it.passos.map((p) => `<li>${esc(TX(p))}</li>`).join('')}</ol>` : '';
+    const link = it.link ? `<a class="prep-link" href="${esc(it.link.url)}" target="_blank" rel="noopener">${esc(TX(it.link.rotulo))}</a>` : '';
+    return `<div class="prep-item prep-${esc(it.estado)}">
+      <span class="prep-num">${i + 1}</span>
+      <div class="prep-corpo">
+        <div class="prep-topo"><b>${esc(TX(it.nome))}</b><span class="prep-selo">${esc(TX(ROTULO[it.estado] || it.estado))}</span></div>
+        <p class="prep-resumo">${esc(TX(it.resumo))}</p>${passos}${erro}${pronto}${link}
+      </div>
+      <div class="prep-acao">${acao}</div></div>`;
+  }).join('');
+  pintarIcones(onde);
+}
+document.addEventListener('click', (ev) => {
+  const alvo = ev.target.closest ? ev.target : null;
+  if (!alvo) return;
+  const inst = alvo.closest('[data-prep-instalar]');
+  if (inst && !inst.disabled) {
+    fetch('/api/requisitos/instalar', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ qual: inst.dataset.prepInstalar }) })
+      .then((r) => r.json().then((d) => { if (!r.ok) aviso(d.mensagem || 'Não deu para começar.', 'erro', 8000); }))
+      .catch(() => aviso('Não consegui falar com o estúdio.', 'erro'))
+      .then(lerRequisitos);
+    return;
+  }
+  const ir = alvo.closest('[data-prep-ir]');
+  if (ir) { const el = document.getElementById(ir.dataset.prepIr); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const lk = alvo.closest('[data-prep-link]');
+  if (lk) { window.open(lk.dataset.prepLink, '_blank', 'noopener'); return; }
+  if (alvo.closest('[data-prep-parar]')) fetch('/api/requisitos/parar', { method: 'POST' }).then(() => setTimeout(lerRequisitos, 800));
+});
+
 // O motor (a ComfyUI) ainda nao esta no disco: em vez de mandar ler um manual, um botao.
 function htmlMotor(d) {
   if (d.motor_instalado) return '';
@@ -1786,7 +1862,7 @@ function htmlCardIA(p, f) {
 document.addEventListener('idioma-mudou', () => {
   // Cada um destes desenha um pedaco que o JavaScript escreve, e por isso nao e alcancado
   // pelo data-i18n do HTML. Cada um no seu try: um que falhe nao pode derrubar os outros.
-  [renderIAs, renderEscolhas, renderCatalogo, renderChaves, renderAprovadas].forEach((f) => {
+  [renderIAs, renderEscolhas, renderCatalogo, renderChaves, renderAprovadas, renderPreparar].forEach((f) => {
     try { f(true); } catch (e) { /* secao que ainda nao existe nesta tela */ }
   });
   try { if (G.rota && ROTAS[G.rota]) {
@@ -3229,6 +3305,7 @@ function esconderAbasSemIA() {
   await Promise.all([carregarFichas(), carregarVozes(), carregarNovidades()]);
   lerIAs();   // quais IAs estao no disco e quanto falta baixar (nao segura a tela)
   lerDestino();   // em que disco elas ficam, e quanto ha livre em cada um
+  lerRequisitos();   // o que esta maquina ainda precisa para funcionar inteira
   // (o cabeçalho continua "verificando…" até o 1º pulso completo: sem a fila do estúdio ele poderia dizer "Livre" à toa)
   try { G.sistema = await api('/api/sistema', { timeout: 9000 }); } catch (e) { /* o pulso tenta de novo */ }
   if (G.rota === 'inicio' && rotaDoHash() === 'inicio' && !G.irDepois) {

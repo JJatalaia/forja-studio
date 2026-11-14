@@ -72,6 +72,12 @@ NOMES_IDIOMA = {
 }
 
 
+# Pastas a mais onde procurar o VoiceStudio. O server.py poe aqui a do disco que a pessoa
+# escolheu para as IAs (<disco>\ForjaStudio-IAs\VoiceStudio): e para la que o botao da
+# tela inicial manda o instalador.
+OUTRAS = []
+
+
 def achar_backend():
     """A pasta do motor do VoiceStudio instalado, ou None.
 
@@ -86,6 +92,10 @@ def achar_backend():
     # instalado AO LADO do projeto -- e onde ele costuma estar
     _irmao = Path(__file__).resolve().parent.parent.parent / "VoiceStudio"
     tentativas.append(_irmao / "runtime" / "project")
+    tentativas.extend(Path(p) / "runtime" / "project" for p in OUTRAS)
+    la = os.environ.get("LOCALAPPDATA")
+    if la:      # onde o instalador poe quando a pessoa nao escolhe pasta
+        tentativas.append(Path(la) / "Programs" / "VoiceStudio" / "runtime" / "project")
     if os.environ.get("ESTUDIO_VOZ_DIR"):
         tentativas.insert(0, Path(os.environ["ESTUDIO_VOZ_DIR"]))
     for p in tentativas:
@@ -104,8 +114,8 @@ def ligar(saida_audio=None):
     """
     proj = achar_backend()
     if not proj:
-        return False, ("Não achei o VoiceStudio instalado. Baixe o VoiceStudio-0.5.7-win-x64.exe "
-                       "da página de releases e rode o assistente uma vez.")
+        return False, ("Não achei o VoiceStudio instalado. Na tela inicial, em \"Preparar esta máquina\", "
+                       "clique em \"Baixar o VoiceStudio\" e siga os passos.")
     porta = URL.rsplit(":", 1)[-1]
     amb = dict(os.environ,
                OMNIVOICE_PORT=porta, VOICESTUDIO_URL=URL, OMNIVOICE_HOST="127.0.0.1",

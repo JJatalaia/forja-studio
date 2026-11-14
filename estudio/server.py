@@ -63,6 +63,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # python_embeded não 
 import cofre  # noqa: E402  (os presets e workflows fechados: ver cofre.py)
 import ias  # noqa: E402  (instalar cada IA depois, pela tela: ver ias.py)
 import motor  # noqa: E402  (instalar a ComfyUI pelo botao: ver motor.py)
+import requisitos  # noqa: E402  (ffmpeg e VoiceStudio pelo botao: ver requisitos.py)
+requisitos.ativar_ffmpeg()     # o ffmpeg da pasta do estudio vale para este processo
 import enquadrar  # noqa: E402
 import licenca  # noqa: E402  (conta e licenca: ver licenca.py)
 import atualizacao  # noqa: E402  (configuracao nova vinda do servidor)
@@ -103,6 +105,14 @@ def _comfy_dir_inicial():
 
 COMFY_DIR = _comfy_dir_inicial()
 ias.MODELOS = COMFY_DIR / "models"      # o download vai para o MESMO lugar que o motor le
+
+
+def _pasta_da_voz():
+    """Onde o VoiceStudio fica: ao lado das IAs, no disco que a pessoa escolheu."""
+    return COMFY_DIR.parent.parent / "VoiceStudio"
+
+
+voz_studio.OUTRAS[:] = [_pasta_da_voz()]
 # Instância de TESTE: ESTUDIO_DADOS aponta para uma CÓPIA dos dados (histórico/tempos/vozes) e ESTUDIO_WEB para a
 # pasta da interface em desenvolvimento, para testar sem mexer no estúdio de produção (8194).
 DADOS = Path(os.environ["ESTUDIO_DADOS"]) if os.environ.get("ESTUDIO_DADOS") else AQUI
@@ -4087,11 +4097,159 @@ async def api_ias_destino(req):
     COMFY_DIR = _comfy_dir_inicial()
     PY_VIDEO = COMFY_DIR.parent / "python_embeded" / "python.exe"
     ias.MODELOS = COMFY_DIR / "models"
+    voz_studio.OUTRAS[:] = [_pasta_da_voz()]
     recado = None
     if antiga != ias.MODELOS and antiga.is_dir() and any(antiga.rglob("*.safetensors")):
         recado = (f"As IAs que você já baixou continuam em {antiga}. Elas não foram movidas: "
                   "o painel passa a procurar e a baixar no lugar novo.")
     return web.json_response(_estado_do_destino(recado))
+
+
+def _porta_aberta(porta, segundos=0.3):
+    import socket
+    try:
+        with socket.create_connection(("127.0.0.1", porta), timeout=segundos):
+            return True
+    except OSError:
+        return False
+
+
+async def api_requisitos(req):
+    """Tudo que esta maquina precisa para o estudio funcionar INTEIRO, em ordem de fazer.
+
+    14/11/2026, regra do dono: tudo que e preciso baixar, instalar ou cadastrar aparece na
+    tela inicial, com o estado, o passo a passo e o link direto. Antes, o ffmpeg e o
+    VoiceStudio so existiam num manual - e a pessoa descobria que faltavam no meio de um
+    trabalho, por uma mensagem de erro.
+
+    estado: "ok" (verde), "falta" (precisa fazer), "aviso" (funciona, mas olhe), "opcional".
+    """
+    itens = []
+
+    # ---- 1. a placa de video
+    try:
+        nv = await gpu_nvidia_smi()
+    except Exception:
+        nv = None
+    if nv:
+        gb = nv[1] / 1024 ** 3
+        itens.append({"id": "placa", "nome": "Placa de vídeo NVIDIA",
+                      "estado": "ok" if gb >= 11.5 else "aviso",
+                      "resumo": f"{nv[0]} — {gb:.0f} GB" + ("" if gb >= 11.5 else
+                                " (com menos de 12 GB só a parte de imagem costuma caber)"),
+                      "passos": []})
+    else:
+        itens.append({"id": "placa", "nome": "Placa de vídeo NVIDIA", "estado": "falta",
+                      "resumo": "Não encontrei uma placa NVIDIA com o driver instalado. Sem ela as IAs não geram.",
+                      "passos": ["Confira se o computador tem uma placa NVIDIA (GeForce RTX).",
+                                 "Baixe e instale o driver mais novo no site da NVIDIA.",
+                                 "Reinicie o computador e abra o estúdio de novo."],
+                      "botao": {"acao": "link", "url": "https://www.nvidia.com/pt-br/drivers/",
+                                "rotulo": "Abrir o site do driver"}})
+
+    # ---- 2. o ffmpeg
+    onde = requisitos.ffmpeg_onde()
+    itens.append({"id": "ffmpeg", "nome": "ffmpeg (converte áudio e vídeo)",
+                  "estado": "ok" if onde else "falta",
+                  "resumo": ("Instalado." if onde else
+                             "Falta. Sem ele o painel não consegue ler os áudios e vídeos que você envia."),
+                  "passos": [] if onde else ["Clique em Instalar: o painel baixa (118 MB), confere "
+                                             "o arquivo e põe na pasta do estúdio. Não mexe no Windows."],
+                  **({} if onde else {"botao": {"acao": "instalar", "qual": "ffmpeg",
+                                                "rotulo": "Instalar o ffmpeg — 118 MB"}})})
+
+    # ---- 3. o motor de imagem e video
+    tem_motor = (COMFY_DIR / "main.py").is_file()
+    itens.append({"id": "motor", "nome": "Motor de imagem e vídeo (ComfyUI)",
+                  "estado": "ok" if tem_motor else "falta",
+                  "resumo": (f"Instalado em {COMFY_DIR.parent}." if tem_motor else
+                             "Falta. É ele que gera as imagens e os vídeos."),
+                  "passos": [] if tem_motor else ["Logo abaixo, em \"IAs aprovadas pelo projeto\", escolha o disco.",
+                                                  "Clique em \"Instalar o motor\" (1,8 GB)."],
+                  **({} if tem_motor else {"botao": {"acao": "ir", "para": "blocoAprovadas",
+                                                     "rotulo": "Ir para a instalação do motor"}})})
+
+    # ---- 4. as IAs
+    cat = ias.catalogo()
+    prontas = total = 0
+    for lista in (PRESETS or {}).values():
+        if isinstance(lista, list):
+            for p in lista:
+                if p.get("id") in APROVADAS and p.get("nome"):
+                    total += 1
+                    prontas += bool(ias.estado_de(p["nome"], cat).get("instalada"))
+    if total:
+        itens.append({"id": "ias", "nome": "IAs (os modelos)",
+                      "estado": "ok" if prontas else "falta",
+                      "resumo": (f"{prontas} de {total} das aprovadas instaladas." if prontas else
+                                 "Nenhuma instalada ainda. Cada IA é um download à parte."),
+                      "passos": [] if prontas == total else
+                      ["Em \"IAs aprovadas pelo projeto\", marque as que quer.",
+                       "Clique em \"Instalar as marcadas\". Dá para usar o estúdio enquanto baixa."],
+                      **({} if prontas == total else {"botao": {"acao": "ir", "para": "blocoAprovadas",
+                                                                "rotulo": "Escolher as IAs"}})})
+
+    # ---- 5. a voz
+    voz_no_ar = _porta_aberta(_porta_url(voz_studio.URL) or 3900)
+    voz_instalada = voz_no_ar or voz_studio.achar_backend() is not None
+    v = requisitos.VOICESTUDIO
+    if voz_no_ar:
+        itens.append({"id": "voz", "nome": "Motor de voz (VoiceStudio)", "estado": "ok",
+                      "resumo": "Ligado. Na aba Narração, confira a licença do motor ativo antes de publicar.",
+                      "passos": []})
+    elif voz_instalada:
+        itens.append({"id": "voz", "nome": "Motor de voz (VoiceStudio)", "estado": "aviso",
+                      "resumo": "Instalado, mas desligado. A aba Narração liga ele sozinha quando você usar.",
+                      "passos": []})
+    else:
+        itens.append({"id": "voz", "nome": "Motor de voz (VoiceStudio)", "estado": "opcional",
+                      "resumo": "Não instalado. É o que faz a narração local, de graça. Opcional: sem ele "
+                                "só a aba Narração fica parada.",
+                      "passos": [f"Clique em Baixar: o painel baixa o instalador oficial (222 MB, versão {v['versao']}), "
+                                 "confere o arquivo e abre.",
+                                 "No instalador do VoiceStudio, avance até o fim. A pasta já vem "
+                                 "preenchida no disco que você escolheu para as IAs.",
+                                 "Abra o VoiceStudio uma vez: na primeira abertura ele baixa os modelos de voz (cerca de 22 GB).",
+                                 "Dentro dele, troque o motor para o VoxCPM 2. O que vem ligado (OmniVoice) "
+                                 "tem licença que NÃO permite vídeo monetizado.",
+                                 "Volte aqui: esta linha fica verde."],
+                      "botao": {"acao": "instalar", "qual": "voz",
+                                "rotulo": "Baixar o VoiceStudio — 222 MB"},
+                      "link": {"url": v["pagina"], "rotulo": "Página oficial do VoiceStudio"}})
+
+    # ---- 6. as chaves
+    tem_hf = ias.tem_token()
+    itens.append({"id": "chaves", "nome": "Contas e chaves de API",
+                  "estado": "ok" if tem_hf else "opcional",
+                  "resumo": ("Token do Hugging Face guardado." if tem_hf else
+                             "Opcionais. Só o LTX 2.5 precisa de uma: o token gratuito do Hugging Face."),
+                  "passos": [] if tem_hf else ["Em \"Configurações de API\", no fim desta página, cada chave tem "
+                                               "os links diretos: onde criar a conta, onde aceitar a licença "
+                                               "e onde gerar a chave."],
+                  **({} if tem_hf else {"botao": {"acao": "ir", "para": "blocoChaves",
+                                                  "rotulo": "Ver as chaves"}})})
+
+    falta = [i["id"] for i in itens if i["estado"] == "falta"]
+    return web.json_response({"ok": True, "itens": itens, "falta": falta,
+                              "andamento": requisitos.progresso()})
+
+
+async def api_requisitos_instalar(req):
+    try:
+        b = await req.json()
+    except ValueError:
+        b = {}
+    qual = str(b.get("qual") or "")
+    if qual == "voz":
+        # o instalador ja abre com a pasta no disco que a pessoa escolheu para as IAs
+        requisitos.VOICESTUDIO["destino"] = str(_pasta_da_voz())
+    entrou, recado = requisitos.instalar(qual)
+    return web.json_response({"ok": entrou, "mensagem": recado}, status=200 if entrou else 409)
+
+
+async def api_requisitos_parar(req):
+    requisitos.parar()
+    return web.json_response({"ok": True})
 
 
 async def api_motor_instalar(req):
@@ -5198,6 +5356,8 @@ app.add_routes([
     web.get("/api/ias", api_ias), web.post("/api/ias/instalar", api_ias_instalar),
     web.get("/api/ias/destino", api_ias_destino), web.post("/api/ias/destino", api_ias_destino),
     web.post("/api/motor/instalar", api_motor_instalar), web.post("/api/motor/parar", api_motor_parar),
+    web.get("/api/requisitos", api_requisitos), web.post("/api/requisitos/instalar", api_requisitos_instalar),
+    web.post("/api/requisitos/parar", api_requisitos_parar),
     web.get("/api/ias/progresso", api_ias_progresso),
     web.post("/api/ias/parar", api_ias_parar),
     web.get("/api/presets", api_presets), web.get("/api/fichas", api_fichas),

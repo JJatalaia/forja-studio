@@ -237,6 +237,16 @@ Me entregue o resultado como um .bat que eu clico na Área de Trabalho.</pre>
     <!-- 13/11/2026: as IAs que o projeto ja usou e aprova, com a escolha do DISCO. Antes o
          painel baixava tudo dentro da propria pasta, sem perguntar - e quem nao tinha
          espaco no C: nao tinha o que fazer. Desenhado pelo app.js (renderAprovadas). -->
+    <!-- 14/11/2026: tudo que esta maquina precisa para o estudio funcionar inteiro, em
+         ordem de fazer, com o passo a passo e o botao. Desenhado pelo app.js (renderPreparar). -->
+    <section class="bloco-inicio preparar" id="blocoPreparar" aria-labelledby="prepTitulo" hidden>
+      <div class="bloco-cab">
+        <h2 id="prepTitulo" data-i18n="tela.preparar">Preparar esta máquina</h2>
+        <p class="fraco" id="prepSub"></p>
+      </div>
+      <div id="preparar"></div>
+    </section>
+
     <section class="bloco-inicio aprovadas" id="blocoAprovadas" aria-labelledby="aprovTitulo" hidden>
       <div class="bloco-cab">
         <h2 id="aprovTitulo" data-i18n="tela.ias-aprovadas">IAs aprovadas pelo projeto</h2>

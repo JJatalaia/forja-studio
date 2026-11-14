@@ -1093,3 +1093,34 @@ dialog::backdrop { background: rgba(5, 6, 9, .72); backdrop-filter: blur(3px); }
 .aprov-aviso .bt-sec svg { width: 15px; height: 15px; margin: 0; }
 .aprov-aviso.motor-andando { color: var(--brasa); background: var(--brasa-suave); border-color: var(--brasa-borda); }
 .aprov-aviso .ia-barra { margin: 6px 0 0; }
+
+/* ---------------- Preparar esta maquina (14/11/2026) ---------------- */
+.prep-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; margin-top: 8px;
+  background: var(--fundo-2); border: 1px solid var(--borda); border-left-width: 3px; border-radius: 12px; }
+.prep-item:first-child { margin-top: 0; }
+.prep-ok { border-left-color: var(--ok); }
+.prep-falta { border-left-color: var(--brasa); }
+.prep-aviso { border-left-color: var(--aviso); }
+.prep-opcional { border-left-color: var(--borda-forte); }
+.prep-num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 12.5px; font-weight: 700; background: var(--painel-2); color: var(--fraco); }
+.prep-ok .prep-num { background: rgba(52, 211, 153, .16); color: var(--ok); }
+.prep-falta .prep-num { background: var(--brasa-suave); color: var(--brasa); }
+.prep-corpo { flex: 1; min-width: 0; }
+.prep-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.prep-topo b { font-size: 14px; }
+.prep-selo { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--painel-2); color: var(--fraco); }
+.prep-ok .prep-selo { color: var(--ok); }
+.prep-falta .prep-selo { color: var(--brasa); background: var(--brasa-suave); }
+.prep-aviso .prep-selo { color: var(--aviso); }
+.prep-resumo { margin: 4px 0 0; font-size: 13px; color: var(--fraco); }
+.prep-passos { margin: 8px 0 0; padding-left: 20px; font-size: 13px; color: var(--texto); }
+.prep-passos li { margin: 4px 0; line-height: 1.5; }
+.prep-link { display: inline-block; margin-top: 6px; font-size: 12.5px; color: var(--info); }
+.prep-feito { margin: 8px 0 0; font-size: 13px; color: var(--ok); }
+.prep-acao { flex: none; max-width: 260px; }
+.prep-bt { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.prep-bt svg { width: 15px; height: 15px; margin: 0; }
+.prep-andando { display: grid; gap: 6px; min-width: 200px; font-size: 12.5px; color: var(--brasa); }
+.prep-andando .ia-barra { margin: 0; }
+@media (max-width: 760px) { .prep-item { flex-wrap: wrap; } .prep-acao { max-width: none; width: 100%; padding-left: 36px; } }
