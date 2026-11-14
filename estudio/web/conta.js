@@ -154,7 +154,7 @@
       $('#cSenha').value = '';
       if (d && d.precisa_confirmar) { pedirCodigo(d); return; }
       E.estado = d;
-      aplicar(E.estado);
+      if (aplicar(E.estado)) recarregar();
     } catch (e) {
       erro(String(e.message || e));
       pe(E.estado);
@@ -249,7 +249,7 @@
       }
       E.estado = await pedir('/api/conta/codigo', { email: E.codigo.email, codigo });
       sairDoCodigo('entrar');
-      aplicar(E.estado);
+      if (aplicar(E.estado)) recarregar();
     } catch (e) {
       erroCodigo(String(e.message || e));
     } finally {
@@ -340,6 +340,15 @@
       pe(estado);
     }
     return dentro;
+  }
+
+  // Acabou de entrar: a pagina foi montada ANTES do login, com o cofre dos presets fechado,
+  // e por isso mostrava "Nenhuma IA nesta secao" e so a musica na lista (14/11/2026, na
+  // reinstalacao do dono - parecia que as IAs instaladas tinham sumido). Carrega de novo,
+  // agora com tudo aberto.
+  function recarregar() {
+    document.documentElement.classList.add('conferindo');
+    location.reload();
   }
 
   // ------------------------------------------------------------------ comeco
