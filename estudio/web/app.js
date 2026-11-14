@@ -1058,8 +1058,8 @@ function renderMaquina() {
   $('#maqParcial').hidden = !I.parcial;
   $('#liberarTextoNota').hidden = !!I.legado;
   const auto = +I.liberar_memoria_min || 0;
-  $('#maqAuto').textContent = I.memoria_liberada ? 'Já liberada: nenhum modelo carregado.'
-    : auto > 0 ? `Libera sozinho após ${num(auto, 0)} min sem gerar.` : '';
+  $('#maqAuto').textContent = I.memoria_liberada ? 'já está liberada'
+    : auto > 0 ? `libera sozinha em ${num(auto, 0)} min` : '';
 }
 // aviso discreto quando o estúdio não responde: a tela continua com o que já tinha e tenta de novo sozinha
 function renderSemResposta() {
@@ -1096,13 +1096,16 @@ function podeLigar(acao) {
   if (!I.legado) return true;
   return acao === 'musica' && ((I.sistema || {}).servicos || {}).painel_musica === false;
 }
+// 14/11/2026 (padronizar): no cartão vai o nome CURTO, para todos caberem na mesma fileira e do mesmo
+// tamanho. O nome inteiro (com "ComfyUI", "VoiceStudio") fica na dica do mouse e no leitor de tela.
+const NOME_CURTO_MOTOR = { video: 'Imagem e vídeo', painel_musica: 'Música', voz: 'Voz', hermes: 'Hermes', telegram: 'Telegram' };
 const ICONE_DO_MOTOR = { voz: 'onda', video: 'video', painel_musica: 'musica', comfy_musica: 'musica', ace: 'musica', hermes: 'servidor', telegram: 'enviar' };
 function linhaServico(s) {
   const acao = ACAO_DO_SERV[s.chave] || 'video';
   const legado = G.inicio && G.inicio.legado;
   const cab = (cls, estado, direita, msg = '') => `<div class="servico motor ${cls}">
       <span class="motor-ic">${ic(ICONE_DO_MOTOR[s.chave] || 'servidor')}</span>
-      <div class="motor-txt"><b class="servico-nome"${s.porta ? ` title="${esc(TX('porta'))} ${esc(s.porta)}"` : ''}>${esc(TX(s.nome))}</b>
+      <div class="motor-txt"><b class="servico-nome" title="${esc(TX(s.nome))}${s.porta ? ` · ${esc(TX('porta'))} ${esc(s.porta)}` : ''}">${esc(TX(NOME_CURTO_MOTOR[s.chave] || s.nome))}</b>
         <small class="servico-estado">${estado}</small></div>
       <span class="motor-acao">${direita}</span>${msg}</div>`;
   const chave = (ligado, attr, rotulo) => `<button type="button" class="chave${ligado ? ' on' : ''}" role="switch" aria-checked="${ligado}" ${attr}
@@ -1383,7 +1386,7 @@ function montarMaquina() {
       <span class="motor-acao texto-acoes" id="textoAcoes">
         <button type="button" class="chave" role="switch" aria-checked="false" id="btTextoLigar" hidden aria-label="Ligar a IA de texto"><span class="sr-only">Ligar agora</span></button>
         <button type="button" class="chave on" role="switch" aria-checked="true" id="btTextoDesligar" hidden aria-label="Desligar a IA de texto"><span class="sr-only">${esc(TX('Desligar'))}</span></button>
-        <button type="button" class="bt-sec" id="btTextoInstalar" data-prep-ir="blocoPreparar" hidden>${ic('baixar')}<span>Instalar</span></button>
+        <button type="button" class="bt-motor" id="btTextoInstalar" data-prep-ir="blocoPreparar" hidden><span>Instalar</span></button>
       </span>
       <p class="texto-extra nota" id="textoExtra" hidden></p>
       <details class="mini-ajuda" id="textoOpcoes"><summary>Opções</summary>
@@ -1395,8 +1398,8 @@ function montarMaquina() {
     <div id="maqFila"></div>
     <div class="liberar motor">
       <span class="motor-ic">${ic('raio')}</span>
-      <div class="motor-txt"><b>Memória da placa</b><small id="maqAuto"></small></div>
-      <span class="motor-acao"><button type="button" class="bt-sec" id="btLiberar">Liberar</button></span>
+      <div class="motor-txt"><b title="Memória da placa de vídeo e da RAM">Memória</b><small id="maqAuto"></small></div>
+      <span class="motor-acao"><button type="button" class="bt-motor" id="btLiberar">Liberar</button></span>
       <details class="mini-ajuda"><summary>O que isso faz</summary>
         <p class="nota">Tira os modelos da placa de vídeo e da RAM. Use antes de gerar música, quando o PC estiver lento ou ao terminar uma série. Só funciona com nada gerando; a próxima geração carrega o modelo de novo (demora mais).<span id="liberarTextoNota"> A IA de texto “Pronta” continua ligada (para tirar, use a chave dela).</span></p>
         <p class="nota" id="maqParcial" hidden>Algumas informações (RAM, discos, serviços da música) aparecem quando o servidor do estúdio for atualizado.</p>

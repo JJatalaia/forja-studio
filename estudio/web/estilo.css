@@ -1515,3 +1515,46 @@ details.nov.destaque, details.nov.destaque[open] { background: none; border-colo
   .fila-abrir { position: static; transform: none; display: inline-block; margin-bottom: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .chave, .chave::before { transition: none; animation: none; } }
+
+/* ================================================================================
+   INÍCIO v3.3 (14/11/2026): os cartões de motor PADRONIZADOS.
+   O dono, com print: "bora padronizar os botões?". Havia cinco cartões de alturas e
+   larguras diferentes, um deles sozinho na segunda fileira, e três tipos de botão.
+   Agora: todos na mesma fileira, do mesmo tamanho, com o comando (chave ou botão) na mesma
+   posição e da mesma altura; o estado sempre numa palavra só, em minúsculas.
+   ================================================================================ */
+.bancada > .motores { grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 12px; align-items: stretch; }
+.motor, .bancada .motores .maq-linha.motor, .bancada .motores .liberar.motor, .bancada .motores .forja-fornos .servico.motor {
+  grid-template-columns: 36px minmax(0, 1fr) auto; grid-auto-rows: min-content; align-content: start; align-items: center;
+  gap: 6px 11px; min-height: 86px; padding: 14px 13px 12px 14px; }
+.motor-ic { width: 36px; height: 36px; }
+.motor-txt b { font-size: 13.5px; line-height: 1.25; }
+.motor-txt small, .motor .servico-estado, .motor .texto-status { font-size: 12px; text-transform: lowercase; }
+/* a IA de texto dizia uma frase inteira ("Em espera — liga sozinha quando você usar"): no
+   cartão fica só o estado, como nos outros. A frase continua lá para o leitor de tela. */
+.motor .texto-status > span { font-size: 0; }
+.motor .texto-status > span > b, .motor .texto-status > span > span { font-size: 12px; font-weight: 400; color: var(--fraco); }
+.motor .texto-status .t-ok { color: var(--ok); }
+.motor .texto-status .t-aviso { color: var(--brasa); }
+.motor .texto-status .t-erro { color: var(--erro); }
+.motor > .texto-extra { font-size: 12px; line-height: 1.4; }
+/* o comando de cada cartão ocupa a mesma caixa: 48 x 28, seja chave ou botão */
+.motor-acao { min-width: 48px; min-height: 28px; justify-content: flex-end; }
+.bt-motor, .bancada .motores .liberar.motor .bt-motor { display: inline-flex; align-items: center; justify-content: center;
+  width: auto; min-width: 48px; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  color: var(--acento); background: var(--acento-suave); border: 1px solid var(--acento-borda); cursor: pointer;
+  transition: background .2s ease, border-color .2s ease; }
+.bt-motor:hover { background: rgba(64, 206, 232, .22); border-color: var(--acento); }
+.bt-motor:active { transform: translateY(1px); }
+.bt-motor[aria-disabled="true"] { color: var(--fraco); background: none; border-color: var(--borda-forte); cursor: not-allowed; }
+/* o que abre e fecha (Opções, O que isso faz) fica sempre na última linha do cartão */
+.motor > .mini-ajuda { margin: 2px 0 0; }
+.motor > .mini-ajuda > summary { font-size: 11.5px; }
+/* os dois botões do cabeçalho com a mesma forma do "Abrir a fila" */
+.motores .maq-rot .bt-ligar, .motores .maq-rot .bt-desligar { height: 28px; padding: 0 13px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.motores .maq-rot .bt-desligar { background: none; border: 1px solid var(--borda); color: var(--fraco); }
+.motores .maq-rot .bt-desligar:hover { color: var(--texto); border-color: var(--borda-forte); }
+.fila-abrir { height: 28px; padding: 0 13px; display: inline-flex; align-items: center; font-weight: 600; font-size: 12px; }
+@media (max-width: 720px) { .bancada > .motores { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .bancada > .motores { grid-template-columns: minmax(0, 1fr); } }
