@@ -1814,6 +1814,7 @@ function renderAprovadas() {
       <small>${esc(T('aprov.deTotal', 'de {gb} GB', { gb: num(k.total_gb, 0) }))}${k.unidade === noPainel ? ' · ' + esc(TX('onde o painel está')) : ''}</small></button>`;
   }).join('');
 
+  const comToken = [], comErro = [];
   const linhas = ids.map((id) => {
     const e = ias[id], pr = pg.baixando;
     let estado, marcavel = false;
@@ -1824,7 +1825,12 @@ function renderAprovadas() {
     } else if ((pg.fila || []).includes(e.nome)) estado = `<span class="aprov-baixando">${esc(TX('na fila'))}</span>`;
     else if (erroDaIA(pg, e.nome)) {
       marcavel = true;      // da para marcar e tentar de novo depois de resolver
-      estado = `<span class="aprov-erro" role="alert">${esc(erroDaIA(pg, e.nome))}</span>`;
+      // 14/11/2026: o recado inteiro saia espremido aqui, por cima do nome. Na linha vai so
+      // a etiqueta; a explicacao fica embaixo da lista, na largura toda (ver "recados").
+      const token = (pg.erros_tipo || {})[e.nome] === 'token';
+      (token ? comToken : comErro).push(e);
+      estado = token ? `<span class="aprov-token">${ic('alerta')}falta o token</span>`
+        : `<span class="aprov-erro">${ic('alerta')}não baixou</span>`;
     }
     else if (!e.da_para_baixar) estado = `<span class="aprov-erro">${esc(T('ia.faltaMao', 'Falta instalar — {gb} GB, baixar à mão', { gb: e.gb_falta }))}</span>`;
     else { estado = `<span class="aprov-falta">${esc(T('aprov.falta', 'falta baixar {gb} GB', { gb: e.gb_falta }))}</span>`; marcavel = true; }
@@ -1833,6 +1839,19 @@ function renderAprovadas() {
       <input type="checkbox" data-aprov="${esc(id)}" ${G.aprovSel.has(id) ? 'checked' : ''} ${marcavel && !ocupado ? '' : 'disabled'}>
       <span class="aprov-nome">${esc(nomeCurto(e.nome))}</span>${estado}</label>`;
   }).join('');
+
+  // os recados, uma vez so e na largura toda
+  const recados = [];
+  if (comToken.length) {
+    const nomes = comToken.map((e) => nomeCurto(e.nome)).join(' e ');
+    const gbT = Math.max(...comToken.map((e) => e.gb_falta || 0));
+    recados.push(`<div class="aprov-recado token" role="status">${ic('alerta')}<div>
+      <b>${comToken.length > 1 ? 'Faltam' : 'Falta'} só o token do Hugging Face para ${esc(nomes)}</b>
+      <p>O resto já baixou. Falta um arquivo${gbT ? ` de ${num(gbT, 1)} GB` : ''} que só desce com a sua conta do Hugging Face, que é de graça. Cole o token em “Configurações de API”; depois marque ${comToken.length > 1 ? 'as duas' : 'a IA'} aqui e clique em “Instalar as marcadas”.</p></div>
+      <button type="button" class="bt-sec" data-prep-ir="blocoChaves">${ic('baixo')}Colocar o token</button></div>`);
+  }
+  comErro.forEach((e) => recados.push(`<div class="aprov-recado erro" role="alert">${ic('alerta')}<div>
+      <b>${esc(nomeCurto(e.nome))} não baixou</b><p>${esc(erroDaIA(pg, e.nome))}</p></div></div>`));
 
   const marcadas = ids.filter((i) => G.aprovSel.has(i));
   const soma = marcadas.reduce((s, i) => s + (ias[i].gb_falta || 0), 0);
@@ -1850,6 +1869,7 @@ function renderAprovadas() {
     </div>
     <div class="aprov-passo"><h3>${esc(TX('2. Quais você quer'))}</h3>
       <div class="aprov-lista">${linhas}</div>
+      ${recados.join('')}
       ${faltam > 1 && !ocupado ? `<button type="button" class="aprov-todas" data-marcar-todas>${esc(marcadas.length === faltam ? TX('Desmarcar todas') : TX('Marcar todas'))}</button>` : ''}
     </div>
     <div class="aprov-passo aprov-fim">

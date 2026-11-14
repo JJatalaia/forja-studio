@@ -1338,3 +1338,21 @@ details.nov.destaque, details.nov.destaque[open] { background: none; border-colo
   .inicio .escolha, .inicio .escolha-aviso, details.nov > summary::after { transition: none; }
   .inicio .escolha:hover, .inicio .escolha:focus-visible { transform: none; }
 }
+
+/* ---- o recado de uma IA que nao baixou: embaixo da lista, na largura toda (14/11/2026).
+   Antes o texto inteiro ia espremido na linha da IA, por cima do nome. */
+.aprov-linha .aprov-nome { min-width: 0; flex: 1 1 auto; }
+.aprov-linha .aprov-erro, .aprov-token { display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 12px; font-weight: 600; white-space: nowrap; text-align: left; }
+.aprov-token { color: var(--brasa); }
+.aprov-linha .aprov-erro .ic, .aprov-token .ic { width: 13px; height: 13px; }
+.aprov-recado { display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 14px 16px; border-radius: 12px;
+  background: var(--brasa-suave); border: 1px solid var(--brasa-borda); }
+.aprov-recado > .ic { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--brasa); }
+.aprov-recado > div { flex: 1; min-width: 0; }
+.aprov-recado b { font-size: 13.5px; }
+.aprov-recado p { margin-top: 4px; font-size: 13px; line-height: 1.55; color: #cfd4df; max-width: 80ch; overflow-wrap: anywhere; }
+.aprov-recado .bt-sec { flex: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; align-self: center; }
+.aprov-recado.erro { background: rgba(248, 113, 113, .08); border-color: rgba(248, 113, 113, .32); }
+.aprov-recado.erro > .ic { color: var(--erro); }
+@media (max-width: 720px) { .aprov-recado { flex-wrap: wrap; } .aprov-recado .bt-sec { margin-left: 30px; } }

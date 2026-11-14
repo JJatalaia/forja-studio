@@ -277,7 +277,7 @@ def progresso():
     with _trava:
         d = dict(_agora) if _agora else None
         return {"baixando": d, "fila": list(_fila), "erro": _erro, "erro_ia": _erro_ia,
-                "erros": dict(_erros)}
+                "erros": dict(_erros), "erros_tipo": dict(_erros_tipo)}
 
 
 class _Portao(OSError):
@@ -307,6 +307,7 @@ def _conexao_ruim(velocidade, pode_tentar_as_cegas):
 
 
 _erros = {}     # {nome da IA: recado} - cada IA guarda o SEU erro; uma nao esconde a outra
+_erros_tipo = {}  # {nome da IA: "token" | "erro"} - a tela trata "falta o token" como tarefa, nao defeito
 
 
 def _baixar_arquivo(nome, info, religadas=0):
@@ -406,6 +407,7 @@ def _trabalhar(nomes_por_ia):
                       flush=True)
                 with _trava:
                     _erros[ia] = str(exc)
+                    _erros_tipo[ia] = "token" if isinstance(exc, _Portao) else "erro"
                     _erro, _erro_ia = str(exc), ia
             with _trava:
                 if _fila and _fila[0] == ia:
@@ -493,6 +495,7 @@ def instalar(ia):
             return False, "Esta IA já está na fila."
         _fila.append(ia)
         _erros.pop(ia, None)        # nova tentativa: o erro antigo DESTA ia sai da tela
+        _erros_tipo.pop(ia, None)
         _erro = None
         _erro_ia = None
         if _tocando:
