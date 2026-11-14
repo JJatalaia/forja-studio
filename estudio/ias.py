@@ -354,7 +354,12 @@ def _trabalhar(nomes_por_ia):
                 if not _fila:
                     break
                 ia = _fila[0]
-            for nome, info in arquivos_da(ia, cat).items():
+            # A conta que a tela mostra e da IA INTEIRA. Por arquivo, a porcentagem chegava a
+            # 100 e voltava a 0 a cada arquivo, e parecia que o download tinha recomecado.
+            arquivos = arquivos_da(ia, cat)
+            ia_total = sum(v.get("bytes") or 0 for v in arquivos.values())
+            ia_antes = sum(v.get("bytes") or 0 for n, v in arquivos.items() if esta_completo(n, v))
+            for numero, (nome, info) in enumerate(arquivos.items(), 1):
                 if _parar:
                     raise InterruptedError("parado por quem pediu")
                 if esta_completo(nome, info):
@@ -363,8 +368,11 @@ def _trabalhar(nomes_por_ia):
                     raise OSError(f"{nome}: nao sei de onde baixar este arquivo")
                 with _trava:
                     _agora = {"ia": ia, "arquivo": nome, "baixados": 0,
-                              "total": info.get("bytes") or 0, "comecou": time.time()}
+                              "total": info.get("bytes") or 0, "comecou": time.time(),
+                              "ia_total": ia_total, "ia_antes": ia_antes,
+                              "numero": numero, "de": len(arquivos)}
                 _baixar_arquivo(nome, info)
+                ia_antes += info.get("bytes") or 0
             with _trava:
                 if _fila and _fila[0] == ia:
                     _fila.pop(0)

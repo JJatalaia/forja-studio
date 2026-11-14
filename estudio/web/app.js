@@ -1502,9 +1502,9 @@ function faixaInstalar(id) {
   }
   const pr = pg.baixando;
   if (pr && pr.ia === e.nome) {
-    const pc = pr.total ? Math.floor((pr.baixados / pr.total) * 100) : 0;
-    return `<div class="ia-baixando"><div class="ia-barra"><i style="width:${pc}%"></i></div>
-      <span>${esc(T('ia.baixando', 'Baixando… {pc}%', { pc }))} <b>${esc(gbCurto(pr.baixados))}</b> ${esc(T('ia.de', 'de'))} ${esc(gbCurto(pr.total))}</span></div>`;
+    const a = andamentoDaIA(pr);
+    return `<div class="ia-baixando"><div class="ia-barra"><i style="width:${a.pc}%"></i></div>
+      <span>${esc(T('ia.baixando', 'Baixando… {pc}%', { pc: a.pc }))} <b>${esc(gbCurto(a.feito))}</b> ${esc(T('ia.de', 'de'))} ${esc(gbCurto(a.total))}${a.qual}</span></div>`;
   }
   if (!e.da_para_baixar) {
     return `<span class="ia-falta sem-link" title="${esc(T('ia.semLinkDica', 'Faltam {n} arquivo(s) sem endereço de download conhecido. Veja IAS-INSTALADAS.md.', { n: e.sem_link.length }))}">
@@ -1580,6 +1580,17 @@ async function lerDestino() {
     if (fase && fase !== 'pronto') G.motorTimer = setTimeout(lerDestino, 1500);
   } catch (e) { /* servidor antigo, sem esta rota: o bloco simplesmente nao aparece */ }
 }
+// A porcentagem e da IA INTEIRA (todos os arquivos dela), nao do arquivo da vez: por arquivo
+// ela chegava a 100 e voltava a 0, e parecia que o download tinha recomecado (14/11/2026).
+// Servidor antigo nao manda ia_total: ai vale a conta por arquivo, como era.
+function andamentoDaIA(pr) {
+  const total = pr.ia_total || pr.total || 0;
+  const feito = pr.ia_total ? (pr.ia_antes || 0) + (pr.baixados || 0) : (pr.baixados || 0);
+  const pc = total ? Math.min(100, Math.floor((feito / total) * 100)) : 0;
+  const qual = pr.de > 1 ? ' · ' + esc(T('ia.arquivo', 'arquivo {n} de {de}', { n: pr.numero, de: pr.de })) : '';
+  return { pc, feito, total, qual };
+}
+
 // ============================================ Preparar esta maquina (14/11/2026)
 // Cada pre-requisito numa linha: o estado, o que falta e, quando falta, o passo a passo e o
 // botao. Regra do dono: nada que a pessoa precise baixar ou cadastrar pode morar so num manual.
@@ -1711,8 +1722,8 @@ function renderAprovadas() {
     let estado, marcavel = false;
     if (e.instalada) estado = `<span class="aprov-ok">${ic('ok')}${esc(TX('instalada'))}</span>`;
     else if (pr && pr.ia === e.nome) {
-      const pc = pr.total ? Math.floor((pr.baixados / pr.total) * 100) : 0;
-      estado = `<span class="aprov-baixando">${esc(T('ia.baixando', 'Baixando… {pc}%', { pc }))}</span>`;
+      const a = andamentoDaIA(pr);
+      estado = `<span class="aprov-baixando">${esc(T('ia.baixando', 'Baixando… {pc}%', { pc: a.pc }))}${a.qual}</span>`;
     } else if ((pg.fila || []).includes(e.nome)) estado = `<span class="aprov-baixando">${esc(TX('na fila'))}</span>`;
     else if (pg.erro && pg.erro_ia === id) estado = `<span class="aprov-erro" role="alert">${esc(pg.erro)}</span>`;
     else if (!e.da_para_baixar) estado = `<span class="aprov-erro">${esc(T('ia.faltaMao', 'Falta instalar — {gb} GB, baixar à mão', { gb: e.gb_falta }))}</span>`;
