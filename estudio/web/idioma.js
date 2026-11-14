@@ -174,9 +174,9 @@
     'tela.vazio-aleatoria-repita-a-mesma': '(empty = random; repeat the same one to redo it '
       + 'identically)',
     'tela.o-painel-de-musica-esta': 'The music panel is off',
-    'tela.ele-gera-musicas-com-letra': 'It makes songs with sung lyrics, instrumentals, and '
-      + 'separates the voice (YuE2, ACE-Step, MiniMax Music, Stable Audio). Turning it on '
-      + 'takes about 30 seconds.',
+    'tela.ele-gera-musicas-com-letra': 'It makes songs with sung lyrics and instrumental '
+      + 'tracks (YuE2 and Stable Audio 3), on the same ComfyUI as image and video. Turning '
+      + 'it on takes about 30 seconds.',
     'tela.ligar-musica': 'Turn on music',
     'tela.o-que-a-maquina-esta': 'What the machine is making right now',
     'tela.limpar-historico': 'Clear history',
@@ -417,9 +417,9 @@
     'tela.vazio-aleatoria-repita-a-mesma': '(vacío = al azar; repite la misma para rehacerla '
       + 'igual)',
     'tela.o-painel-de-musica-esta': 'El panel de música está apagado',
-    'tela.ele-gera-musicas-com-letra': 'Hace canciones con letra cantada, instrumentales, y '
-      + 'separa la voz (YuE2, ACE-Step, MiniMax Music, Stable Audio). Encenderlo tarda unos '
-      + '30 segundos.',
+    'tela.ele-gera-musicas-com-letra': 'Hace canciones con letra cantada y pistas '
+      + 'instrumentales (YuE2 y Stable Audio 3), en la misma ComfyUI de la imagen y del vídeo. '
+      + 'Encenderlo tarda unos 30 segundos.',
     'tela.ligar-musica': 'Encender la música',
     'tela.o-que-a-maquina-esta': 'Lo que el ordenador está generando ahora',
     'tela.limpar-historico': 'Borrar el historial',
@@ -618,8 +618,8 @@
     'Texto vira voz falada no seu computador, de graça: criar uma voz pela descrição ou clonar a sua.':
       'Text becomes a spoken voice on your computer, for free: create a voice from a '
       + 'description or clone your own.',
-    'Músicas com letra cantada, instrumentais, covers e separação da voz (YuE2, ACE-Step e outros).':
-      'Songs with sung lyrics, instrumentals, covers and voice separation (YuE2, ACE-Step and others).',
+    'Músicas com letra cantada, trilhas instrumentais e covers (YuE2 e Stable Audio 3).':
+      'Songs with sung lyrics, instrumental tracks and covers (YuE2 and Stable Audio 3).',
 
     // nomes das seções
     'Início': 'Home', 'Imagem': 'Image', 'Vídeo': 'Video', 'Pessoa falando': 'Talking person',
@@ -728,8 +728,8 @@
     'Ligar tudo o que está desligado': 'Turn on everything that is off',
     'Desligar todas as IAs para liberar memória': 'Turn off every AI to free memory',
     'Ligar a IA de imagem e vídeo (ComfyUI)': 'Turn on the image and video AI (ComfyUI)',
-    'Ligar as IAs de música (painel, ComfyUI de música e ACE-Step)':
-      'Turn on the music AIs (panel, music ComfyUI and ACE-Step)',
+    'Ligar a música (o painel de música e a ComfyUI)':
+      'Turn on music (the music panel and ComfyUI)',
     'Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)':
       'Turn off every AI to free memory? (The page stays open. To use them again, click Turn on.)',
     'Desliga para liberar memória; liga de novo pelo botão Ligar':
@@ -738,8 +738,29 @@
     'Abrir o painel do Hermes': 'Open the Hermes panel',
     'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…':
       'Starting the image and video ComfyUI (takes 1–2 min)…',
-    'Ligando a música (painel, ComfyUI de música e ACE-Step)…':
-      'Starting the music (panel, music ComfyUI and ACE-Step)…',
+    'Ligando a música (o painel e a ComfyUI)…':
+      'Starting the music (the panel and ComfyUI)…',
+    // ---- a aba Música explica o que falta (14/11/2026)
+    ' ou ': ' or ',
+    'Falta instalar o motor': 'The engine is not installed yet',
+    'A música usa o mesmo motor da imagem e do vídeo (a ComfyUI), e ele ainda não está instalado neste computador. Instale o motor pelo Início e volte aqui.':
+      'Music uses the same engine as image and video (ComfyUI), and it is not installed on '
+      + 'this computer yet. Install the engine from Home and come back here.',
+    'Ir para o Início e instalar o motor': 'Go to Home and install the engine',
+    'Falta baixar uma IA de música': 'No music AI has been downloaded yet',
+    'Nenhuma IA de música foi baixada ainda. Baixe pelo Início, na lista de IAs aprovadas pelo projeto:':
+      'No music AI has been downloaded yet. Download one from Home, in the list of AIs approved by the project:',
+    'Ir para o Início e baixar': 'Go to Home and download',
+    'O painel de música não veio nesta instalação': 'The music panel is missing from this install',
+    'Falta a pasta painel_musica do pacote. Baixe o pacote de novo (ou atualize) para ter a aba Música.':
+      'The painel_musica folder of the package is missing. Download the package again (or update) to get the Music tab.',
+    'Atenção: não consegui copiar o complemento da música para a ComfyUI. O YuE2 pode falhar.':
+      'Warning: I could not copy the music add-on into ComfyUI. YuE2 may fail.',
+    'A ComfyUI ligada ainda não carregou o complemento da música. Desligue e ligue "Imagem e vídeo (ComfyUI)" no Início antes de gerar com o YuE2.':
+      'The running ComfyUI has not loaded the music add-on yet. Turn "Image and video (ComfyUI)" off and on in Home before generating with YuE2.',
+    'Painel de música ligado. A ComfyUI está ligando (1 a 2 min); a primeira música espera na fila.':
+      'Music panel is on. ComfyUI is starting (1 to 2 min); the first song waits in the queue.',
+    'Painel de música ligado, mas a ComfyUI não ligou: ': 'Music panel is on, but ComfyUI did not start: ',
     'Ligando a IA de texto no processador…': 'Starting the text AI on the processor…',
     'Ligando o Hermes (painel web, uns 6 s)…': 'Starting Hermes (web panel, about 6 s)…',
     'Ligando o Telegram do Hermes (uns 20 s)…': 'Starting the Hermes Telegram (about 20 s)…',
@@ -905,9 +926,8 @@
     'Texto vira voz falada no seu computador, de graça: criar uma voz pela descrição ou clonar a sua.':
       'El texto se convierte en voz hablada en tu ordenador, gratis: crea una voz por '
       + 'descripción o clona la tuya.',
-    'Músicas com letra cantada, instrumentais, covers e separação da voz (YuE2, ACE-Step e outros).':
-      'Canciones con letra cantada, instrumentales, versiones y separación de la voz (YuE2, '
-      + 'ACE-Step y otros).',
+    'Músicas com letra cantada, trilhas instrumentais e covers (YuE2 e Stable Audio 3).':
+      'Canciones con letra cantada, pistas instrumentales y versiones (YuE2 y Stable Audio 3).',
 
     'Início': 'Inicio', 'Imagem': 'Imagen', 'Vídeo': 'Vídeo', 'Pessoa falando': 'Persona hablando',
     'Narração': 'Narración', 'Canal automático': 'Canal automático',
@@ -1015,8 +1035,8 @@
     'Ligar tudo o que está desligado': 'Encender todo lo que está apagado',
     'Desligar todas as IAs para liberar memória': 'Apagar todas las IAs para liberar memoria',
     'Ligar a IA de imagem e vídeo (ComfyUI)': 'Encender la IA de imagen y vídeo (ComfyUI)',
-    'Ligar as IAs de música (painel, ComfyUI de música e ACE-Step)':
-      'Encender las IAs de música (panel, ComfyUI de música y ACE-Step)',
+    'Ligar a música (o painel de música e a ComfyUI)':
+      'Encender la música (el panel de música y ComfyUI)',
     'Desligar todas as IAs para liberar memória? (A página continua aberta. Para usar de novo, clique em Ligar.)':
       '¿Apagar todas las IAs para liberar memoria? (La página sigue abierta. Para usarlas otra '
       + 'vez, pulsa Encender.)',
@@ -1026,8 +1046,29 @@
     'Abrir o painel do Hermes': 'Abrir el panel de Hermes',
     'Ligando a ComfyUI de imagem e vídeo (leva 1–2 min)…':
       'Encendiendo la ComfyUI de imagen y vídeo (tarda 1–2 min)…',
-    'Ligando a música (painel, ComfyUI de música e ACE-Step)…':
-      'Encendiendo la música (panel, ComfyUI de música y ACE-Step)…',
+    'Ligando a música (o painel e a ComfyUI)…':
+      'Encendiendo la música (el panel y ComfyUI)…',
+    // ---- la pestaña Música explica lo que falta (14/11/2026)
+    ' ou ': ' o ',
+    'Falta instalar o motor': 'Falta instalar el motor',
+    'A música usa o mesmo motor da imagem e do vídeo (a ComfyUI), e ele ainda não está instalado neste computador. Instale o motor pelo Início e volte aqui.':
+      'La música usa el mismo motor de la imagen y del vídeo (ComfyUI), y todavía no está '
+      + 'instalado en este ordenador. Instala el motor desde Inicio y vuelve aquí.',
+    'Ir para o Início e instalar o motor': 'Ir a Inicio e instalar el motor',
+    'Falta baixar uma IA de música': 'Falta descargar una IA de música',
+    'Nenhuma IA de música foi baixada ainda. Baixe pelo Início, na lista de IAs aprovadas pelo projeto:':
+      'Todavía no se ha descargado ninguna IA de música. Descárgala desde Inicio, en la lista de IAs aprobadas por el proyecto:',
+    'Ir para o Início e baixar': 'Ir a Inicio y descargar',
+    'O painel de música não veio nesta instalação': 'El panel de música no vino en esta instalación',
+    'Falta a pasta painel_musica do pacote. Baixe o pacote de novo (ou atualize) para ter a aba Música.':
+      'Falta la carpeta painel_musica del paquete. Descarga el paquete de nuevo (o actualiza) para tener la pestaña Música.',
+    'Atenção: não consegui copiar o complemento da música para a ComfyUI. O YuE2 pode falhar.':
+      'Atención: no pude copiar el complemento de música a ComfyUI. YuE2 puede fallar.',
+    'A ComfyUI ligada ainda não carregou o complemento da música. Desligue e ligue "Imagem e vídeo (ComfyUI)" no Início antes de gerar com o YuE2.':
+      'La ComfyUI encendida todavía no cargó el complemento de música. Apaga y enciende "Imagen y vídeo (ComfyUI)" en Inicio antes de generar con YuE2.',
+    'Painel de música ligado. A ComfyUI está ligando (1 a 2 min); a primeira música espera na fila.':
+      'Panel de música encendido. ComfyUI se está encendiendo (1 a 2 min); la primera canción espera en la cola.',
+    'Painel de música ligado, mas a ComfyUI não ligou: ': 'Panel de música encendido, pero ComfyUI no se encendió: ',
     'Ligando a IA de texto no processador…': 'Encendiendo la IA de texto en el procesador…',
     'Ligando o Hermes (painel web, uns 6 s)…': 'Encendiendo Hermes (panel web, unos 6 s)…',
     'Ligando o Telegram do Hermes (uns 20 s)…': 'Encendiendo el Telegram de Hermes (unos 20 s)…',
@@ -1120,6 +1161,7 @@
   // Frases que terminam em ": " e ganham o recado do servidor colado no fim.
   var PREFIXOS = ['Não consegui apagar a voz: ', 'Não consegui cancelar: ',
     'Não consegui ligar a música: ', 'Não consegui ligar agora: ', 'Não consegui remover: ',
+    'Painel de música ligado, mas a ComfyUI não ligou: ',
     'Não consegui guardar a preferência: ', 'Não deu certo: '];
 
   // pt-BR porque é o português que está escrito no HTML; os outros vão como estão.

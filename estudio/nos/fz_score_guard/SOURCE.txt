@@ -1,0 +1,5 @@
+abc_tools.py downloaded 2026-09-18 from:
+https://raw.githubusercontent.com/multimodal-art-projection/YuE/main/skills/yue2-music/scripts/abc_tools.py
+Upstream: multimodal-art-projection/YuE
+The helper validates a bounded native ABC dialect, not all ABC notation.
+The local wrapper does not judge musical quality or validate generated audio.

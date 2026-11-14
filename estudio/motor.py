@@ -56,6 +56,11 @@ BIBLIOTECAS = ("gguf>=0.13.0",)
 PRECISA_GB = 12          # 1,8 do .7z + ~6 descompactado + folga para o pip e os temporarios
 PASTA = "ComfyUI_windows_portable"
 
+# Os nos que SAO NOSSOS e viajam dentro do pacote (estudio/nos/<nome>/). Nao ha o que baixar:
+# e so copiar para a custom_nodes da ComfyUI. Hoje e um so, o `fz_score_guard`, que a musica
+# do YuE2 usa para conferir a partitura antes de sintetizar (ver nos_do_pacote, la embaixo).
+NOS = Path(__file__).resolve().parent / "nos"
+
 _trava = threading.Lock()
 _estado = {"fase": None, "baixados": 0, "total": BYTES, "erro": None, "comecou": None}
 _parar = False
@@ -192,6 +197,69 @@ def _bibliotecas(base):
                       + (r.stderr or r.stdout or "").strip()[-300:])
 
 
+# ------------------------------------------------------------------- os nos do pacote
+def _iguais(a, b):
+    """Os dois arquivos tem o mesmo conteudo? (a data nao serve: copia e clone do git mudam a data)"""
+    try:
+        if a.stat().st_size != b.stat().st_size:
+            return False
+        return a.read_bytes() == b.read_bytes()      # sao arquivos de poucos KB
+    except OSError:
+        return False
+
+
+def nos_do_pacote(comfy_dir, avisar=print):
+    r"""Copia os nos do pacote (estudio\nos\*) para <ComfyUI>\custom_nodes. Devolve um resumo.
+
+    14/11/2026. A aba Musica passou a usar a MESMA ComfyUI da imagem e do video, e o YuE2
+    precisa de um no pequeno, nosso (`fz_score_guard`), que nao existe em repositorio nenhum
+    para o motor baixar. Entao ele viaja no pacote e e copiado em tres horas:
+      1. no fim da instalacao do motor (`_trabalhar`);
+      2. quando o estudio sobe (motor ja instalado por fora, ou pacote atualizado);
+      3. logo antes de o estudio ligar a ComfyUI.
+    Copia so o que FALTA ou esta DIFERENTE do pacote - assim uma atualizacao do pacote troca
+    o no antigo, e quem ja esta em dia nao tem arquivo regravado a toa.
+
+    NUNCA falha calado: cada copia e cada erro saem em `avisar` (o log do estudio), e o
+    resumo volta para a tela poder dizer o que houve.
+      {"ok": bool, "copiados": [nomes], "em_dia": [nomes], "erro": str|None,
+       "reiniciar": bool}   <- reiniciar: copiou agora, a ComfyUI ligada so enxerga ao reiniciar
+    """
+    res = {"ok": True, "copiados": [], "em_dia": [], "erro": None, "reiniciar": False}
+    comfy_dir = Path(comfy_dir)
+    if not (comfy_dir / "main.py").is_file():
+        res.update(ok=False, erro="a ComfyUI ainda nao esta instalada em %s" % comfy_dir)
+        return res          # sem motor nao ha onde copiar: quem instala o motor copia no fim
+    try:
+        pastas = sorted(p for p in NOS.iterdir() if p.is_dir() and (p / "__init__.py").is_file())
+    except OSError as exc:
+        res.update(ok=False, erro="nao consegui ler a pasta dos nos do pacote (%s): %s" % (NOS, exc))
+        avisar("[estudio] NOS DO PACOTE: " + res["erro"])
+        return res
+    for origem in pastas:
+        destino = comfy_dir / "custom_nodes" / origem.name
+        try:
+            arquivos = [a for a in origem.rglob("*")
+                        if a.is_file() and "__pycache__" not in a.parts and a.suffix != ".pyc"]
+            diferentes = [a for a in arquivos if not _iguais(a, destino / a.relative_to(origem))]
+            if not diferentes:
+                res["em_dia"].append(origem.name)
+                continue
+            for a in diferentes:
+                alvo = destino / a.relative_to(origem)
+                alvo.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(a, alvo)
+            res["copiados"].append(origem.name)
+            res["reiniciar"] = True
+            avisar("[estudio] no do pacote copiado para a ComfyUI: %s (%d arquivo(s)) -> %s"
+                   % (origem.name, len(diferentes), destino))
+        except OSError as exc:
+            res.update(ok=False, erro="nao consegui copiar o no %s para %s: %s"
+                       % (origem.name, destino, exc))
+            avisar("[estudio] NOS DO PACOTE: " + res["erro"])
+    return res
+
+
 # ----------------------------------------------------------------------------- o trabalho
 def _trabalhar(base):
     global _parar
@@ -217,6 +285,11 @@ def _trabalhar(base):
                 raise _Parado()
             _complemento(nome, repo, commit, base)
         _bibliotecas(base)
+        # os nos que viajam no pacote (o da musica). Falha aqui PARA a instalacao com a frase
+        # na tela: motor "pronto" sem o no deixaria a musica do YuE2 quebrada sem ninguem saber.
+        nos = nos_do_pacote(base / PASTA / "ComfyUI")
+        if not nos["ok"]:
+            raise OSError("O motor foi instalado, mas " + (nos["erro"] or "os nos do pacote nao foram copiados") + ".")
         arquivo.unlink(missing_ok=True)       # so depois de tudo certo: 1,8 GB a menos
         _fase("pronto", erro=None)
     except _Parado:

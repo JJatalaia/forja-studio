@@ -2,7 +2,12 @@
 
 Roda com o Python da ComfyUI de vídeo (já tem aiohttp), porta 8194:
   ComfyUI_windows_portable\\python_embeded\\python.exe -s estudio\\server.py
-Fala com a ComfyUI de vídeo (8188) e embute o painel de música (8190).
+Fala com a ComfyUI (8188) e embute o painel de música (painel_musica\\, porta 8190).
+
+Música (14/11/2026): o painel de música vem no pacote (pasta painel_musica\\, ao lado desta) e usa a MESMA ComfyUI
+da imagem e do vídeo. Quem liga o painel é o estúdio, com o Python da ComfyUI, e passa tudo o que depende da
+máquina por variável de ambiente (ver ambiente_do_painel). O painel nunca liga nem desliga a ComfyUI: pede aqui
+(POST /api/servicos/ligar {"servico": "video"}). Não existem mais a "ComfyUI de música" (8189) nem o ACE-Step.
 
 Variáveis de ambiente (todas opcionais):
   ESTUDIO_PORTA        porta (padrão 8194; instâncias de TESTE usam 8195–8199)
@@ -10,25 +15,26 @@ Variáveis de ambiente (todas opcionais):
   ESTUDIO_WEB          pasta da interface (padrão: estudio\\web)
   ESTUDIO_COMFY_URL    endereço da ComfyUI de vídeo (padrão http://127.0.0.1:8188)
   ESTUDIO_COMFY_DIR    pasta da ComfyUI com input\\ e output\\ (padrão: ComfyUI_windows_portable\\ComfyUI)
-  ESTUDIO_MUSICA_URL   endereço do painel de música (padrão http://127.0.0.1:8190)
+  ESTUDIO_MUSICA_URL   endereço do painel de música (padrão http://127.0.0.1:8190). O estúdio liga o painel NESTA
+                       porta (passa PAINEL_PORTA), então trocar aqui troca a porta do painel inteiro, tela e tudo
   ESTUDIO_LIBERAR_MIN  minutos sem nenhum trabalho até descarregar os modelos da ComfyUI (padrão 10; 0 desliga)
   ESTUDIO_TEXTO_*      IA de texto (llama.cpp): portas e tempos — ver estudio\\texto.py
   ESTUDIO_TEXTO_AUTO_S segundos depois de iniciar para ligar a IA de texto "sempre pronta" (padrão 20)
   ESTUDIO_LOGS         pasta dos logs dos serviços que o estúdio liga (padrão outputs\\; testes usam outra)
-  Só para TESTE (portas 8195–8199), para nunca ligar uma 2ª ComfyUI/painel/ACE de verdade:
-  ESTUDIO_COMFY_MUSICA_URL, ESTUDIO_ACE_URL            endereços da ComfyUI de música e do ACE-Step
-  ESTUDIO_COMANDO_COMFY, ESTUDIO_COMANDO_PAINEL,       linha de comando que o botão "Ligar" usa no lugar da de
-  ESTUDIO_COMANDO_COMFY_MUSICA, ESTUDIO_COMANDO_ACE    verdade (ex.: um servidorzinho falso numa porta livre)
+  Só para TESTE (instância em outra porta), para nunca ligar uma 2ª ComfyUI de verdade:
+  ESTUDIO_COMANDO_COMFY, ESTUDIO_COMANDO_PAINEL        linha de comando que o botão "Ligar" usa no lugar da de
+                                                       verdade (ex.: um servidorzinho falso numa porta livre)
+  (o painel de música de verdade a instância de teste só liga se ESTUDIO_MUSICA_URL apontar para outra porta)
 
-IA de texto (23/09/2026): POST /api/texto e GET /api/texto/estado (CORS liberado para o painel 8190). O estúdio liga
+IA de texto (23/09/2026): POST /api/texto e GET /api/texto/estado (CORS liberado para o painel de música). O estúdio liga
 os llama-server sob demanda (placa 8180 / processador 8181), responde ocupado=true enquanto o texto usa a placa e
 descarrega o modelo de texto antes de QUALQUER envio para a ComfyUI (ver texto.py).
 
 Home com botões de ligar (23/09/2026):
   POST /api/servicos/ligar {"servico": "video"|"musica"|"texto"|"tudo"}  liga o que estiver desligado (responde na
        hora; o progresso aparece no /api/inicio como "ligando" com o tempo). "video" usa a MESMA linha de comando do
-       lançador "Abrir Estudio.ps1" (lida de lá); "musica" liga o painel 8190 (que liga a ComfyUI de música e o
-       ACE-Step ao abrir) e, com o painel no ar, liga o que continuar desligado com a mesma linha de comando do painel.
+       lançador "Abrir Estudio.ps1" (lida de lá); "musica" liga o painel de música E a ComfyUI (a música usa a
+       mesma da imagem e do vídeo).
   POST /api/texto/ligar      liga a IA de texto no PROCESSADOR com o Qwen3.5-9B já carregado e marca "manter ligada"
   POST /api/texto/desligar   desliga os dois servidores de texto e desmarca
   GET/POST /api/preferencias {"texto_sempre_ligada": true} (config.json em ESTUDIO_DADOS): com ela ligada, o estúdio
@@ -132,11 +138,13 @@ WEB = Path(os.environ["ESTUDIO_WEB"]) if os.environ.get("ESTUDIO_WEB") else AQUI
 VOZES_DIR = DADOS / "vozes"  # biblioteca de vozes clonadas: o áudio de referência fica guardado aqui
 VOZES_JSON = DADOS / "vozes.json"
 FICHAS_JSON = AQUI / "fichas.json"  # fichas das IAs (texto da tela, fonte única)
-PAINEL_JOBS = ROOT / "painel_yue2" / "jobs.json"  # só leitura: contagem de músicas na tela inicial
 COMFY = os.environ.get("ESTUDIO_COMFY_URL") or "http://127.0.0.1:8188"
-MUSICA = os.environ.get("ESTUDIO_MUSICA_URL") or "http://127.0.0.1:8190"
-COMFY_MUSICA = os.environ.get("ESTUDIO_COMFY_MUSICA_URL") or "http://127.0.0.1:8189"
-ACE = os.environ.get("ESTUDIO_ACE_URL") or "http://127.0.0.1:8193"
+MUSICA = (os.environ.get("ESTUDIO_MUSICA_URL") or "http://127.0.0.1:8190").rstrip("/")
+# A música (14/11/2026): o painel vem no pacote e os dados de quem usa (lista de músicas, envios) ficam na pasta
+# de dados do estúdio, FORA da pasta do código - a pasta do código é trocada inteira numa atualização.
+PAINEL_DIR = ROOT / "painel_musica"
+MUSICA_DADOS = DADOS / "musica"
+PAINEL_JOBS = MUSICA_DADOS / "jobs.json"  # só leitura: contagem de músicas na tela inicial
 PORTA = int(os.environ.get("ESTUDIO_PORTA", 8194))
 try:
     LIBERAR_MIN = float(os.environ.get("ESTUDIO_LIBERAR_MIN") or 10)
@@ -1038,6 +1046,8 @@ async def vigia():
             except Exception:
                 COMFY_ESTADO["online"] = False
                 COMFY_ESTADO["fora_desde"] = COMFY_ESTADO["fora_desde"] or time.time()
+            if TEM_MUSICA and volta % 4 == 0:  # 1 vez por minuto: a ComfyUI ligada carregou o nó da música?
+                await conferir_no_carregado()
             ativos = trabalhos_ativos()
             if ativos or TAREFAS_ATIVAS or (q and (q.get("queue_running") or q.get("queue_pending"))):
                 ATIVIDADE["ultima"] = time.time()
@@ -1084,12 +1094,18 @@ async def musica_ocupada():
     PAINEL_INFO["esperando_desde"] = None
     PAINEL_INFO["tipo"] = None
     PAINEL_INFO["termina_em"] = None
+    PAINEL_INFO["na_fila"] = 0
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(MUSICA + "/api/ocupado", timeout=aiohttp.ClientTimeout(total=2)) as r:
                 if r.status != 200:
                     return False, None
                 d = await r.json(content_type=None)
+                # quantas músicas o painel tem gerando OU esperando a vez. "ocupado" é só a que usa a placa
+                # agora; uma música parada na fila não segura a placa, mas segura o "Desligar" da ComfyUI.
+                nf = d.get("na_fila")
+                if isinstance(nf, int) and not isinstance(nf, bool) and nf > 0:
+                    PAINEL_INFO["na_fila"] = nf
                 ed = d.get("esperando_desde")
                 if isinstance(ed, (int, float)) and not isinstance(ed, bool) and ed > 0:
                     PAINEL_INFO["esperando_desde"] = float(ed)
@@ -1365,8 +1381,19 @@ async def api_presets(req):
         ag[aba] = [n for n in lista if not any(x.startswith(sem_acento(n)) or sem_acento(n).startswith(x)
                                                for x in nomes)]
     dados["aguardando_teste"] = ag
-    dados["musica_fichas"] = [f for f in (fichas().get("ias") or {}).values() if f.get("aba") == "musica"]
+    dados["musica_fichas"] = [f for k, f in (fichas().get("ias") or {}).items() if eh_musica_do_pacote(k, f)]
     return web.json_response(dados)
+
+
+def eh_musica_do_pacote(fid, f):
+    """Esta ficha e de uma IA de musica que o pacote TRAZ?
+
+    A fichas.json veio do estudio de origem com 8 fichas de musica (ACE-Step, ACE XL, MiniMax,
+    Treblo, separador...). O pacote so leva duas: as do ias.MUSICA_IAS, as mesmas que o painel
+    de musica mostra (PAINEL_MOTORES). As outras nao podem aparecer no catalogo do Inicio nem
+    nas dicas: anunciariam uma IA que nao da para instalar aqui.
+    """
+    return (f or {}).get("aba") == "musica" and fid in ias.MUSICA_IAS
 
 
 def ids_ativos():
@@ -1410,14 +1437,16 @@ async def api_fichas(req):
     Filtra pelo que ESTA no presets.json, nao pelo que foi marcado como desligado: no pacote
     do GitHub as IAs cortadas nem aparecem no presets.json, e as fichas delas ficavam orfas --
     o catalogo do Inicio e as dicas chegaram a anunciar um FLUX.2 que nao viaja (02/11/2026).
-    As fichas de musica nao tem preset e passam direto.
+    As fichas de musica nao tem preset: passam as das IAs de musica que o pacote traz
+    (eh_musica_do_pacote); as dos motores que nao vem (ACE-Step, MiniMax, Treblo...) ficam fora.
     """
     dados = copy.deepcopy(fichas())
     vivos = ids_ativos()
-    ias = dados.get("ias")
-    if isinstance(ias, dict) and vivos:
-        dados["ias"] = {k: v for k, v in ias.items()
-                        if (v or {}).get("aba") not in ("imagem", "video") or k in vivos}
+    todas = dados.get("ias")
+    if isinstance(todas, dict):
+        dados["ias"] = {k: v for k, v in todas.items()
+                        if ((v or {}).get("aba") != "musica" or eh_musica_do_pacote(k, v))
+                        and (not vivos or (v or {}).get("aba") not in ("imagem", "video") or k in vivos)}
     return web.json_response(dados)
 
 
@@ -2882,6 +2911,7 @@ def _gpu(st):
 
 async def api_sistema(req):
     info = {"comfy": False, "musica": await online(MUSICA), "ultimo_preset": ULTIMO_PRESET["id"],
+            "musica_url": MUSICA, "musica_estado": estado_musica(),
             "comfy_ligando": "video" in LIGANDO,
             "texto": {"na_placa": TEXTO.ocupando_placa(), "fase": TEXTO.fase, "instalado": TEXTO.instalado()}}
     try:
@@ -2968,32 +2998,27 @@ LANCADOR = ROOT / "Abrir Estudio.ps1"
 # Sai do COMFY_DIR, e nao da pasta do painel: ate 13/11/2026 o botao "Ligar" procurava o
 # Python da ComfyUI sempre dentro do painel, mesmo com a ComfyUI apontada para outro disco.
 PY_VIDEO = COMFY_DIR.parent / "python_embeded" / "python.exe"
-PY_YUE2 = ROOT / "python_yue2" / "python.exe"
-ACE_DIR = ROOT / "ACE-Step-1.5"
 # a linha que o lançador usa (se não der para ler o lançador, esta cópia vale)
 ARGS_COMFY_VIDEO_PADRAO = (r"-s ComfyUI\main.py --windows-standalone-build --disable-auto-launch --listen 127.0.0.1 "
                            r"--port 8188 --fast fp16_accumulation --use-ck-attention")
-# as mesmas variáveis que o painel usa para ligar o ACE-Step (painel_yue2\server.py, startup)
-ACE_ENV = {"ACESTEP_CONFIG_PATH": "acestep-v15-turbo", "ACESTEP_LM_MODEL_PATH": "acestep-5Hz-lm-0.6B",
-           "ACESTEP_LM_BACKEND": "pt", "ACESTEP_NO_INIT": "true", "ACESTEP_BATCH_SIZE": "1",
-           "ACESTEP_OFFLOAD_TO_CPU": "true", "ACESTEP_OFFLOAD_DIT_TO_CPU": "true", "ACESTEP_LM_OFFLOAD_TO_CPU": "true"}
 # o mesmo que _setup\ambiente_E.ps1 (temporários e caches no E:)
 PASTAS_CACHE = (("TEMP", "temp"), ("TMP", "temp"), ("HF_HOME", "huggingface"), ("PIP_CACHE_DIR", "pip"),
                 ("TORCH_HOME", "torch"), ("TRITON_CACHE_DIR", "triton"), ("CUDA_CACHE_PATH", "cuda"),
                 ("UV_CACHE_DIR", "uv"), ("XDG_CACHE_HOME", "xdg"), ("GRADIO_TEMP_DIR", r"temp\gradio"),
                 ("MPLCONFIGDIR", "matplotlib"))
-# A ComfyUI de imagem e video e o coracao: sempre aparece. A musica e um projeto SEPARADO
-# (painel_yue2 + ComfyUI_YuE2, pastas irmas): quem nao instalou nao ve a aba nem os cartoes,
-# em vez de ver tres servicos quebrados que nunca vao ligar.
-TEM_MUSICA = (ROOT / "painel_yue2").is_dir() and (ROOT / "ComfyUI_YuE2").is_dir()
-CHAVES_SERVICO = ("video", "painel_musica", "comfy_musica", "ace") if TEM_MUSICA else ("video",)
-NOMES_SERVICO = {"video": "Imagem e vídeo (ComfyUI)", "painel_musica": "Painel de música",
-                 "comfy_musica": "ComfyUI de música", "ace": "ACE-Step (música)"}
-COMANDO_TESTE = {"video": "ESTUDIO_COMANDO_COMFY", "painel_musica": "ESTUDIO_COMANDO_PAINEL",
-                 "comfy_musica": "ESTUDIO_COMANDO_COMFY_MUSICA", "ace": "ESTUDIO_COMANDO_ACE"}
+# A ComfyUI e o coracao: sempre aparece. A musica (14/11/2026) vem no pacote, na pasta
+# painel_musica, e usa a MESMA ComfyUI - entao so existe UM servico a mais, o painel. Ate
+# 13/11 a musica era um projeto separado (painel_yue2 + ComfyUI_YuE2 + ACE-Step, tres servicos)
+# que o pacote nao levava, e a aba sumia. Agora a aba existe sempre que a pasta do painel
+# existir; se faltar o motor ou o modelo, a propria aba diz o que falta (estado_musica).
+TEM_MUSICA = (PAINEL_DIR / "server.py").is_file()
+CHAVES_SERVICO = ("video", "painel_musica") if TEM_MUSICA else ("video",)
+NOMES_SERVICO = {"video": "Imagem e vídeo (ComfyUI)", "painel_musica": "Painel de música"}
+COMANDO_TESTE = {"video": "ESTUDIO_COMANDO_COMFY", "painel_musica": "ESTUDIO_COMANDO_PAINEL"}
+PORTA_PAINEL_PADRAO = 8190
 LIGANDO = {}        # chave -> {"desde": epoch, "pid": int | None}
-AGUARDA_PAINEL = {}  # chave -> epoch: ComfyUI de música / ACE esperando o painel abrir (ele os liga ao iniciar)
 ERRO_SERVICO = {}   # chave -> {"msg": texto em português, "quando": epoch}
+NOS_PACOTE = {"ok": None, "erro": None, "reiniciar": False}  # o que houve na última cópia dos nós do pacote
 TRAVA_SERVICO = {k: asyncio.Lock() for k in CHAVES_SERVICO}
 _PROCS = {"t": 0.0, "lista": []}
 _NVSMI = {"t": 0.0, "d": None}
@@ -3074,29 +3099,117 @@ def ambiente_e(extra=None):
     return env
 
 
+def ambiente_do_painel():
+    """O que o painel de música precisa saber DESTA máquina, passado por variável de ambiente.
+
+    É o contrato inteiro entre o estúdio e o painel (painel_musica\\server.py lê exatamente estas):
+      PAINEL_PORTA        a porta do ESTUDIO_MUSICA_URL (a tela do estúdio abre o quadro nela)
+      PAINEL_COMFY_DIR    a pasta da ComfyUI (o disco que a pessoa escolheu): input, output e models saem dela
+      PAINEL_COMFY_URL    a ComfyUI que o estúdio usa (a mesma da imagem e do vídeo)
+      PAINEL_ESTUDIO_URL  este estúdio (o painel pergunta /api/ocupado, pede /api/servicos/ligar e /api/texto)
+      PAINEL_DADOS        <dados do estúdio>\\musica: jobs.json e uploads.json de quem usa, fora do código
+      PAINEL_MOTORES      as IAs de música que o pacote traz (ias.MUSICA_IAS), na ordem
+      PAINEL_FICHAS       a mesma fichas.json que o estúdio mostra
+    O ambiente_e() tira todo PAINEL_* herdado antes de aplicar estas: o painel sobe sempre igual.
+    """
+    return {"PAINEL_PORTA": str(_porta_url(MUSICA) or PORTA_PAINEL_PADRAO),
+            "PAINEL_COMFY_DIR": str(COMFY_DIR), "PAINEL_COMFY_URL": COMFY,
+            "PAINEL_ESTUDIO_URL": f"http://127.0.0.1:{PORTA}",
+            "PAINEL_DADOS": str(MUSICA_DADOS),
+            "PAINEL_MOTORES": ",".join(ias.MUSICA_IAS),
+            "PAINEL_FICHAS": str(FICHAS_JSON)}
+
+
+def copiar_nos_do_pacote(motivo):
+    """Garante os nós do pacote (hoje, o fz_score_guard da música) na custom_nodes da ComfyUI. Ver motor.nos_do_pacote.
+    O resultado fica em NOS_PACOTE para a aba Música poder dizer se algo deu errado; nunca levanta exceção."""
+    if not (COMFY_DIR / "main.py").is_file():
+        return None  # sem motor não há onde copiar; a instalação do motor copia no fim
+    try:
+        res = motor.nos_do_pacote(COMFY_DIR, avisar=lambda m: print(m, flush=True))
+    except Exception as exc:  # o nó é da música: uma falha aqui não pode impedir o estúdio de subir
+        res = {"ok": False, "erro": f"erro inesperado ao copiar os nós do pacote: {exc!r}", "copiados": [],
+               "em_dia": [], "reiniciar": False}
+        print(f"[estudio] NOS DO PACOTE ({motivo}): {res['erro']}", flush=True)
+    NOS_PACOTE.update(ok=res["ok"], erro=res.get("erro"))
+    if res["ok"] and not res["copiados"]:
+        print(f"[estudio] nos do pacote em dia na ComfyUI ({motivo}): {', '.join(res['em_dia']) or 'nenhum'}",
+              flush=True)
+    return res
+
+
+async def conferir_no_carregado():
+    """A ComfyUI LIGADA enxerga o nó da música? Copiar o arquivo não basta: ela só lê a custom_nodes ao subir.
+
+    Pergunta à própria ComfyUI (/object_info/FZScoreGuard) em vez de adivinhar pela ordem em que as coisas ligaram:
+    cobre o pacote atualizado com a ComfyUI no ar e a ComfyUI aberta por fora do estúdio. Com ela desligada não há o
+    que reiniciar. O resultado vai para a aba Música (estado_musica: "reiniciar_comfy")."""
+    antes = NOS_PACOTE.get("reiniciar")
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(COMFY + "/object_info/FZScoreGuard", timeout=aiohttp.ClientTimeout(total=4)) as r:
+                if r.status != 200:
+                    return
+                d = await r.json(content_type=None)
+        NOS_PACOTE["reiniciar"] = not (isinstance(d, dict) and d.get("FZScoreGuard"))
+    except Exception:
+        NOS_PACOTE["reiniciar"] = False  # ComfyUI desligada: na próxima subida ela já carrega
+    if NOS_PACOTE["reiniciar"] and not antes:
+        print("[estudio] ATENCAO: a ComfyUI ligada ainda nao carregou o no da musica (fz_score_guard). O YuE2 so "
+              "funciona depois de desligar e ligar 'Imagem e video (ComfyUI)' no Inicio.", flush=True)
+
+
+async def nos_ao_iniciar():
+    """Ao subir o estúdio: copia os nós do pacote (motor instalado por fora, pacote atualizado) e confere a ComfyUI."""
+    await asyncio.to_thread(copiar_nos_do_pacote, "ao iniciar o estudio")
+    await conferir_no_carregado()
+
+
+def estado_musica():
+    """O que falta para a aba Música funcionar NESTA máquina (a tela explica em vez de sumir).
+
+    {"tem_painel", "motor_instalado", "ias": [{"id", "nome", "pronta", "gb_falta", "gb_total"}], "alguma_pronta",
+     "no_ok", "no_erro", "reiniciar_comfy", "falta": None | "painel" | "motor" | "modelo"}
+    "pronta" = dá para GERAR com ela (ias.musica_pronta: o YuE2 sem o arquivo do cover já conta).
+    """
+    try:
+        cat = ias.catalogo()
+        lista = []
+        for mid, nome in ias.MUSICA_IAS.items():
+            e = ias.estado_de(nome, cat) if cat else {}
+            lista.append({"id": mid, "nome": nome, "pronta": ias.musica_pronta(mid),
+                          "gb_falta": e.get("gb_falta"), "gb_total": e.get("gb_total")})
+    except Exception as exc:
+        print(f"[estúdio] estado da música: {exc!r}", flush=True)
+        lista = []
+    tem_motor = (COMFY_DIR / "main.py").is_file()
+    alguma = any(i["pronta"] for i in lista)
+    falta = "painel" if not TEM_MUSICA else "motor" if not tem_motor else "modelo" if not alguma else None
+    return {"tem_painel": TEM_MUSICA, "motor_instalado": tem_motor, "ias": lista, "alguma_pronta": alguma,
+            "no_ok": NOS_PACOTE["ok"], "no_erro": NOS_PACOTE["erro"],
+            # copiamos o nó com a ComfyUI ligada: ela só enxerga depois de desligar e ligar
+            "reiniciar_comfy": bool(NOS_PACOTE.get("reiniciar")), "falta": falta}
+
+
 def servico_def(chave):
-    """Como ligar e conferir cada serviço (as mesmas linhas de comando do lançador e do painel de música)."""
+    """Como ligar e conferir cada serviço (a ComfyUI com a linha de comando do lançador; o painel de música com o
+    Python da ComfyUI e o ambiente do ambiente_do_painel)."""
     if chave == "video":
         d = {"nome": "A ComfyUI de vídeo", "url": COMFY + "/system_stats", "porta": _porta_url(COMFY), "limite": 480,
              "cmd": f'"{PY_VIDEO}" {args_comfy_video()}', "cwd": COMFY_DIR.parent, "exe": PY_VIDEO,
              "saida": "comfy_video_stdout.log", "erro": "comfy_video_stderr.log", "log_novo": True,
              "console_escondido": True, "extra_env": None, "porta_real": 8188}
-    elif chave == "painel_musica":
-        d = {"nome": "O painel de música", "url": MUSICA + "/", "porta": _porta_url(MUSICA), "limite": 120,
-             "cmd": [str(PY_YUE2), "-s", str(ROOT / "painel_yue2" / "server.py")], "cwd": ROOT, "exe": PY_YUE2,
-             "saida": "painel_launcher.log", "extra_env": None, "porta_real": 8190}
-    elif chave == "comfy_musica":
-        d = {"nome": "A ComfyUI de música", "url": COMFY_MUSICA + "/system_stats", "porta": _porta_url(COMFY_MUSICA),
-             "limite": 480, "cmd": [str(PY_YUE2), "-s", str(ROOT / "ComfyUI_YuE2" / "main.py"), "--listen",
-                                    "127.0.0.1", "--port", "8189", "--disable-api-nodes"],
-             "cwd": ROOT / "ComfyUI_YuE2", "exe": PY_YUE2, "saida": "yue2_painel_backend.log", "extra_env": None,
-             "porta_real": 8189}
-    else:
-        py_ace = ACE_DIR / ".venv" / "Scripts" / "python.exe"
-        d = {"nome": "O ACE-Step", "url": ACE + "/health", "porta": _porta_url(ACE), "limite": 480,
-             "cmd": [str(py_ace), "-u", "-m", "acestep.api_server", "--host", "127.0.0.1", "--port", "8193",
-                     "--no-init"], "cwd": ACE_DIR, "exe": py_ace, "saida": "acestep_api.log", "extra_env": ACE_ENV,
-             "porta_real": 8193}
+    else:  # painel_musica
+        porta = _porta_url(MUSICA)
+        d = {"nome": "O painel de música", "url": MUSICA + "/", "porta": porta, "limite": 120,
+             # o Python da ComfyUI já tem tudo o que o painel usa (aiohttp, psutil, numpy, scipy)
+             "cmd": [str(PY_VIDEO), "-s", str(PAINEL_DIR / "server.py")], "cwd": ROOT, "exe": PY_VIDEO,
+             "saida": "painel_musica.log", "extra_env": ambiente_do_painel(),
+             # a porta do painel é a que o estúdio manda (PAINEL_PORTA): nunca "configurado numa porta diferente"
+             "porta_real": porta,
+             # instância de teste do estúdio: só liga o painel de verdade se ele foi apontado para OUTRA porta
+             # (na 8190 ele disputaria com o painel de quem está usando o estúdio de produção)
+             "liga_no_teste": porta not in (None, PORTA_PAINEL_PADRAO)}
     teste = os.environ.get(COMANDO_TESTE[chave])
     d["teste"] = bool(teste)
     if teste:
@@ -3141,12 +3254,9 @@ def _processos_python(fresco=False):
 def _eh_o_servico(chave, cmd):
     c = cmd.lower().replace("/", "\\")
     if chave == "video":
-        return "comfyui\\main.py" in c and "--port 8188" in c and "comfyui_yue2" not in c
-    if chave == "painel_musica":
-        return "painel_yue2\\server.py" in c or "painel_yue2\\launch.py" in c
-    if chave == "comfy_musica":
-        return "comfyui_yue2" in c and "main.py" in c and "--port 8189" in c
-    return "acestep.api_server" in c and "--port 8193" in c
+        return "comfyui\\main.py" in c and "--port 8188" in c
+    # o painel DESTA instalação (caminho inteiro): uma cópia de teste noutra pasta não conta como "já subindo"
+    return str(PAINEL_DIR / "server.py").lower().replace("/", "\\") in c
 
 
 async def processo_subindo(chave, fresco=False):
@@ -3243,7 +3353,7 @@ async def _ligar_servico(chave):
                 return await online(d["url"], 3) or await asyncio.to_thread(porta_aberta, d["porta"])
             if await no_ar():
                 return  # já está no ar (ou já abriu a porta): nada a fazer
-            if PORTA != 8194 and not d["teste"]:
+            if PORTA != 8194 and not d["teste"] and not d.get("liga_no_teste"):
                 raise ErroServico(f"Instância de teste: {nome[0].lower() + nome[1:]} não é ligado de verdade "
                                   f"(defina {COMANDO_TESTE[chave]} com um comando de teste).")
             if not d["teste"] and d["porta"] != d["porta_real"]:
@@ -3255,9 +3365,18 @@ async def _ligar_servico(chave):
                 LIGANDO[chave].update(pid=sub[0], desde=min(LIGANDO[chave]["desde"], sub[1]))
             else:
                 if d.get("exe") and not Path(d["exe"]).is_file():
+                    if chave == "painel_musica":
+                        raise ErroServico("O painel de música roda com o Python do motor (ComfyUI), que ainda não "
+                                          f"está instalado neste computador (falta {d['exe']}). Instale o motor "
+                                          "pelo Início e ligue a música de novo.")
                     raise ErroServico(f"{nome} não está instalado neste computador (falta {d['exe']}).")
                 if await no_ar():  # confere de novo logo antes de abrir
                     return
+                if chave == "video" and not d["teste"]:
+                    # a ComfyUI só lê a custom_nodes ao subir: o nó da música tem que estar lá ANTES
+                    await asyncio.to_thread(copiar_nos_do_pacote, "antes de ligar a ComfyUI")
+                if chave == "painel_musica":
+                    await asyncio.to_thread(MUSICA_DADOS.mkdir, parents=True, exist_ok=True)
                 proc = await asyncio.to_thread(_abrir_processo, d)
                 LIGANDO[chave]["pid"] = proc.pid
                 _PROCS["t"] = 0.0
@@ -3291,38 +3410,6 @@ async def _ligar_servico(chave):
         LIGANDO.pop(chave, None)
 
 
-def completar_musica(estados=None):
-    """Agenda _completar_musica(). Quem está desligado entre a ComfyUI de música e o ACE-Step já aparece como
-    "ligando" enquanto espera o painel abrir (é o painel que liga os dois ao iniciar)."""
-    agora = time.time()
-    for k in ("comfy_musica", "ace"):
-        if estados is None or (estados.get(k) or {}).get("estado") in ("desligado", "erro"):
-            AGUARDA_PAINEL.setdefault(k, agora)
-            ERRO_SERVICO.pop(k, None)
-    em_segundo_plano(_completar_musica())
-
-
-async def _completar_musica():
-    """Depois que o painel de música abre: liga a ComfyUI de música e o ACE-Step se continuarem desligados. (O painel
-    abre os dois sozinho ao iniciar, então normalmente só acompanha o que ele abriu.)"""
-    try:
-        t0 = time.time()
-        while not await online(MUSICA + "/"):
-            if time.time() - t0 > 200 or ("painel_musica" in ERRO_SERVICO and "painel_musica" not in LIGANDO):
-                return  # o painel não ligou (o erro já aparece na linha dele)
-            await asyncio.sleep(2)
-        await asyncio.sleep(3)  # dá tempo de os processos que o painel abriu aparecerem
-        for chave in ("comfy_musica", "ace"):
-            d = servico_def(chave)
-            if not await online(d["url"], 3):
-                pedir_ligar(chave)
-                if chave in LIGANDO and chave in AGUARDA_PAINEL:  # o tempo conta desde o clique
-                    LIGANDO[chave]["desde"] = min(LIGANDO[chave]["desde"], AGUARDA_PAINEL[chave])
-    finally:
-        for chave in ("comfy_musica", "ace"):
-            AGUARDA_PAINEL.pop(chave, None)
-
-
 def demora_msg(d):
     return f"Está demorando mais que o normal (o HD pode estar ocupado); continua ligando. {_onde_logs(d)}"
 
@@ -3331,7 +3418,7 @@ async def estados_servicos():
     """{chave: {"estado": "ligado"|"ligando"|"desligado"|"erro", "nome", "mensagem"?, "desde"?, "lento"?}}."""
     defs = {k: servico_def(k) for k in CHAVES_SERVICO}
     on = dict(zip(CHAVES_SERVICO, await asyncio.gather(*(online(defs[k]["url"]) for k in CHAVES_SERVICO))))
-    faltam = [k for k in CHAVES_SERVICO if not on[k] and k not in LIGANDO and k not in AGUARDA_PAINEL]
+    faltam = [k for k in CHAVES_SERVICO if not on[k] and k not in LIGANDO]
     abertas = dict(zip(faltam, await asyncio.gather(*(asyncio.to_thread(porta_aberta, defs[k]["porta"])
                                                       for k in faltam)))) if faltam else {}
     res = {}
@@ -3346,8 +3433,6 @@ async def estados_servicos():
             e.update(estado="ligando", desde=LIGANDO[k]["desde"])
             if LIGANDO[k].get("demorando"):
                 e.update(demorando=True, mensagem=demora_msg(defs[k]))
-        elif k in AGUARDA_PAINEL:
-            e.update(estado="ligando", desde=AGUARDA_PAINEL[k], aguardando_painel=True)
         else:
             sub = await processo_subindo(k)
             if sub:
@@ -3359,12 +3444,6 @@ async def estados_servicos():
             else:
                 e["estado"] = "desligado"
         res[k] = e
-    # Economia de memória: com o painel no ar, a ComfyUI de música e o ACE-Step ficam desligados até alguém pedir
-    # uma música (o painel liga os dois sozinho e desliga depois de 15 min sem uso) — isso é "em espera", não defeito.
-    if (res.get("painel_musica") or {}).get("estado") == "ligado":
-        for k in ("comfy_musica", "ace"):
-            if (res.get(k) or {}).get("estado") == "desligado":
-                res[k].update(estado="em espera", mensagem="Liga sozinho quando você gerar música.")
     return res
 
 
@@ -3450,8 +3529,7 @@ async def montar_inicio():
                # (que nao leva os projetos de musica) mostrava "Painel de musica - desligado -
                # Ligar" para servicos que nem existem la. A tela esconde o que nao tem chave.
                "servicos": {"video": st is not None or ligado.get("video", False),
-                            **{k: ligado.get(k, False) for k in ("painel_musica", "comfy_musica", "ace")
-                               if k in CHAVES_SERVICO}}}
+                            **{k: ligado.get(k, False) for k in ("painel_musica",) if k in CHAVES_SERVICO}}}
     ativos = _tente(trabalhos_ativos, [], "fila")
     rodando = next((j for j in ativos if j.get("estado") == "rodando"), None)
     visiveis = [j for j in JOBS if isinstance(j, dict) and not j.get("lixeira")]
@@ -3475,7 +3553,9 @@ async def montar_inicio():
         "liberar_memoria_min": LIBERAR_MIN, "memoria_liberada": ATIVIDADE["liberado"],
         "texto": _tente(TEXTO.estado_publico, None, "IA de texto"),
         "preferencias": _tente(ler_pref, dict(PREF_PADRAO), "preferências"),
-        "tem_musica": TEM_MUSICA,  # sem os projetos de música, a aba some da tela
+        "tem_musica": TEM_MUSICA,  # só é falso se a pasta painel_musica não existir (aí a aba some da tela)
+        # o endereço do painel (a tela abre o quadro nele) e o que falta para a música funcionar nesta máquina
+        "musica_url": MUSICA, "musica_estado": _tente(estado_musica, None, "estado da música"),
         "agora": time.time(),
     }
 
@@ -3487,17 +3567,6 @@ async def api_inicio(req):
         print(f"[estúdio] /api/inicio: {exc!r}", flush=True)
         return web.json_response({"sistema": {"servicos": {}}, "servicos": {}, "fila": {}, "contagem": {},
                                   "recentes": [], "musicas_recentes": [], "incompleto": True, "agora": time.time()})
-
-
-async def painel_manter_ligado(servico):
-    """Pede ao painel de música (8190) para ligar o ACE ou a ComfyUI de música e marcar como em uso."""
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post("http://127.0.0.1:8190/api/manter-ligado", json={"servicos": [servico]},
-                              timeout=aiohttp.ClientTimeout(total=15)) as r:
-                return r.status == 200
-    except Exception:
-        return False
 
 
 # ---------------------------------------------------------------- Hermes (IA que conversa) — liga/desliga pelo Início
@@ -3585,8 +3654,9 @@ def hermes_desligar():
 
 
 async def api_servicos_ligar(req):
-    """POST {"servico": "video"|"musica"|"comfy_musica"|"ace"|"texto"|"hermes"|"tudo"}: liga o que estiver desligado e
-    responde na hora. "musica" liga só o painel (ele liga a ComfyUI de música e o ACE-Step quando precisa); "tudo" = vídeo + painel."""
+    """POST {"servico": "video"|"musica"|"painel"|"texto"|"hermes"|"tudo"}: liga o que estiver desligado e responde na
+    hora. "video" é a ComfyUI (o painel de música também pede por aqui quando precisa dela); "musica" liga o painel
+    de música E a ComfyUI (a música usa a mesma da imagem e do vídeo); "painel" só o painel; "tudo" = os dois."""
     try:
         b = await req.json()
     except ValueError:
@@ -3612,43 +3682,33 @@ async def api_servicos_ligar(req):
         return web.json_response({"ok": True, "ligando": ["hermes"], "mensagem": "Ligando o Hermes…",
                                   "servicos": {**(await estados_servicos()), "hermes": estado_hermes(), "telegram": estado_telegram()},
                                   "texto": TEXTO.estado_simples()})
-    grupos = {"video": ("video",), "musica": ("musica",), "painel": ("musica",), "comfy_musica": ("comfy_musica",),
-              "ace": ("ace",), "texto": ("texto",), "tudo": ("video", "musica")}
+    # "musica" = o painel + a ComfyUI: desde 14/11/2026 a música gera na MESMA ComfyUI da imagem e do vídeo, então
+    # ligar só o painel deixaria a primeira música esperando alguém ligar a ComfyUI.
+    grupos = {"video": ("video",), "musica": ("video", "painel_musica"), "painel": ("painel_musica",),
+              "texto": ("texto",), "tudo": ("video", "painel_musica")}
     if not isinstance(alvo, str) or alvo not in grupos:
-        return web.json_response({"erro": "Serviço desconhecido. Use video, musica, comfy_musica, ace, texto ou tudo."}, status=400)
+        return web.json_response({"erro": "Serviço desconhecido. Use video, musica, painel, texto ou tudo."}, status=400)
     estados = await estados_servicos()
     ligou = []
     precisa = lambda k: (estados.get(k) or {}).get("estado") in ("desligado", "erro")  # noqa: E731
     for g in grupos[alvo]:
-        if g == "video" and precisa("video"):
-            if pedir_ligar("video"):
-                ligou.append("video")
-        elif g == "musica":
-            ep = (estados.get("painel_musica") or {}).get("estado")
-            # só o painel: ele liga a ComfyUI de música e o ACE-Step sozinho quando alguém pede uma música
-            if ep in ("desligado", "erro") and pedir_ligar("painel_musica"):
-                ligou.append("painel_musica")
-            elif ep == "ligado" and g == "musica":
-                # painel já no ar e o dono apertou "Ligar música": deixa o ACE e a ComfyUI de música prontos
-                # (ficam ligados até DESLIGAR_MIN sem uso; antes só ligavam na hora de gerar)
-                for sv, nome in (("ace", "ace"), ("comfy", "comfy_musica")):
-                    if (estados.get(nome) or {}).get("estado") != "ligado" and await painel_manter_ligado(sv):
-                        ligou.append(nome)
-        elif g in ("comfy_musica", "ace"):  # botão da própria linha: o dono quer ligar agora
-            if (estados.get(g) or {}).get("estado") in ("desligado", "erro", "em espera"):
-                # com o painel no ar, quem liga é ele: assim marca a música "em uso" e o vigia de memória não
-                # desliga logo em seguida (antes ligava e caía em segundos se a última música fosse antiga)
-                if await painel_manter_ligado("comfy" if g == "comfy_musica" else "ace"):
-                    ligou.append(g)
-                elif pedir_ligar(g):
-                    ligou.append(g)
+        if g in ("video", "painel_musica"):
+            # sem a pasta do painel o serviço nem existe (CHAVES_SERVICO): não tenta ligar o que não há
+            if g in CHAVES_SERVICO and precisa(g) and pedir_ligar(g):
+                ligou.append(g)
         elif g == "texto":
             s = TEXTO.estado_simples()
             if s["estado"] in ("em espera", "erro") and s.get("pode_ligar") and texto_pode_ligar():
                 TEXTO.iniciar_ligar()
                 ligou.append("texto")
+    # Por que a tentativa ANTERIOR falhou (ex.: "o motor não está instalado"). O pedido de agora apaga o erro e
+    # marca "ligando" na hora, então sem isto quem pede de tempos em tempos (o painel de música, a cada 30 s com
+    # música na fila) nunca chegaria a ver o motivo.
+    anteriores = {k: e.get("mensagem") for k, e in estados.items()
+                  if isinstance(e, dict) and e.get("estado") == "erro" and e.get("mensagem")}
     return web.json_response({"ok": True, "ligando": ligou,
                               "mensagem": "Ligando…" if ligou else "Já estava tudo ligado (ou ligando).",
+                              "erro_anterior": anteriores,
                               "servicos": await estados_servicos(), "texto": TEXTO.estado_simples()})
 
 
@@ -3690,13 +3750,11 @@ def _pastas_do_projeto():
 
 def _e_nosso(linha_de_comando):
     linha = (linha_de_comando or "").lower()
-    if "acestep.api_server" in linha:
-        return True
     return any(p in linha for p in _pastas_do_projeto())
 
 
 def _encerrar_na_porta(porta):
-    """Encerra o programa DO PROJETO que escuta na porta (e o lançador pai do venv do ACE). Nunca mexe em outros."""
+    """Encerra o programa DO PROJETO que escuta na porta. Nunca mexe em outros."""
     import psutil
     n = 0
     for c in psutil.net_connections(kind="tcp"):
@@ -3708,9 +3766,6 @@ def _encerrar_na_porta(porta):
             if not _e_nosso(linha):
                 continue
             alvos = [proc]
-            pai = proc.parent()
-            if pai and "acestep.api_server" in " ".join(pai.cmdline()):
-                alvos.append(pai)
             for a in alvos:
                 a.terminate()
             _, vivos = psutil.wait_procs(alvos, timeout=15)
@@ -3733,9 +3788,10 @@ async def _fila_vazia(url):
 
 
 async def api_servicos_desligar(req):
-    """POST {"servico": "video"|"musica"|"painel"|"comfy_musica"|"ace"|"texto"|"tudo"}: desliga para liberar memória.
-    Recusa (com aviso em português) se houver geração em andamento. "tudo" = vídeo + ComfyUI de música + ACE + texto
-    (o painel e a própria página continuam, são leves)."""
+    """POST {"servico": "video"|"musica"|"painel"|"texto"|"tudo"}: desliga para liberar memória.
+    Recusa (com aviso em português) se houver geração em andamento. "video" é a ComfyUI, que também gera a música:
+    com música gerando ou na fila ela não desliga. "musica" e "painel" desligam só o painel de música (quem segura a
+    memória da placa é a ComfyUI). "tudo" = ComfyUI + texto (o painel e a própria página continuam, são leves)."""
     try:
         b = await req.json()
     except ValueError:
@@ -3754,26 +3810,28 @@ async def api_servicos_desligar(req):
         return web.json_response({"ok": True, "mensagem": "Hermes desligado.",
                                   "servicos": {**(await estados_servicos()), "hermes": estado_hermes(), "telegram": estado_telegram()},
                                   "texto": TEXTO.estado_simples()})
-    grupos = {"video": ["video"], "musica": ["comfy_musica", "ace"], "painel": ["painel_musica"],
-              "comfy_musica": ["comfy_musica"], "ace": ["ace"], "texto": ["texto"],
-              "tudo": ["video", "comfy_musica", "ace", "texto"]}
+    grupos = {"video": ["video"], "musica": ["painel_musica"], "painel": ["painel_musica"], "texto": ["texto"],
+              "tudo": ["video", "texto"]}
     if alvo not in grupos:
         return web.json_response({"erro": "Serviço desconhecido."}, status=400)
     if PORTA != 8194:
         return web.json_response({"erro": "Instância de teste: não desliga serviços de verdade."}, status=409)
-    precisa_musica = any(k in grupos[alvo] for k in ("comfy_musica", "ace", "painel_musica"))
+    if "video" in grupos[alvo] or "painel_musica" in grupos[alvo]:
+        # A música gera na ComfyUI: desligar a ComfyUI (ou o painel, que acompanha a geração) com música gerando
+        # ou esperando a vez perderia a música - e o painel pediria a ComfyUI de volta logo em seguida.
+        ocupada, _motivo = await musica_ocupada()
+        if ocupada or PAINEL_INFO.get("na_fila"):
+            return web.json_response({"erro": "Tem música gerando ou na fila. Espere terminar (ou cancele a música "
+                                              "na aba Música) para desligar."}, status=409)
     if "video" in grupos[alvo]:
         visiveis = [j for j in JOBS if not j.get("lixeira")]
         if any(j.get("estado") in ("rodando", "fila") for j in visiveis) or not await _fila_vazia(COMFY):
             return web.json_response({"erro": "Tem imagem ou vídeo gerando ou na fila. Espere terminar para desligar."},
                                      status=409)
-    if precisa_musica:
-        ocupada, motivo = await musica_ocupada()
-        if ocupada or not await _fila_vazia(COMFY_MUSICA):
-            return web.json_response({"erro": "Tem música gerando ou na fila. Espere terminar para desligar."},
-                                     status=409)
     feitos = []
     for k in grupos[alvo]:
+        if k != "texto" and k not in CHAVES_SERVICO:
+            continue  # sem a pasta do painel de música, esse serviço nem existe
         if k == "texto":
             await TEXTO.desligar()
             feitos.append("IA de texto")
@@ -3884,29 +3942,22 @@ TORCH_CARREGADO = 768 * 1024 ** 2  # ComfyUI com mais que isso reservado na plac
 
 async def placa_ocupada_para_texto(papel):
     """Motivo (texto em português) se a placa NÃO pode receber a IA de texto agora; None se está livre.
-    Ocupada = geração/treino em andamento (estúdio, ComfyUI 8188/8189, painel 8190) ou modelo carregado na
-    8188/8189/ACE. Motivo começando com 'VRAM:' = nada gerando, mas falta memória livre para esse modelo."""
+    Ocupada = geração/treino em andamento (estúdio, ComfyUI, painel de música) ou modelo carregado na ComfyUI.
+    Motivo começando com 'VRAM:' = nada gerando, mas falta memória livre para esse modelo.
+    (A ComfyUI é uma só desde 14/11/2026: a música gera nela, então a fila dela já conta a música.)"""
     if trabalhos_ativos() or TAREFAS_ATIVAS:
         return "o estúdio tem trabalho gerando ou na fila"
     if RESERVA["ate"] > time.time():
         return "o estúdio está mandando um trabalho para a placa"
-    q_v, q_m, st_v, st_m, ace, (m_ocup, m_motivo) = await asyncio.gather(
-        _get_json(COMFY + "/queue", 2), _get_json(COMFY_MUSICA + "/queue", 2),
-        _get_json(COMFY + "/system_stats", 2), _get_json(COMFY_MUSICA + "/system_stats", 2),
-        _get_json(ACE + "/health", 2), musica_ocupada())
-    if q_v and (q_v.get("queue_running") or q_v.get("queue_pending")):
-        return "a ComfyUI de vídeo está gerando"
-    if q_m and (q_m.get("queue_running") or q_m.get("queue_pending")):
-        return "a ComfyUI de música está gerando"
-    if m_ocup:
+    q_v, st_v, (m_ocup, m_motivo) = await asyncio.gather(
+        _get_json(COMFY + "/queue", 2), _get_json(COMFY + "/system_stats", 2), musica_ocupada())
+    if m_ocup:  # antes da fila: o motivo do painel diz QUAL música, a fila só diz "gerando"
         return (m_motivo or "o painel de música está usando a placa").rstrip(".")
-    for nome, st in (("de vídeo", st_v), ("de música", st_m)):
-        dev = ((st or {}).get("devices") or [{}])[0]
-        if (dev.get("torch_vram_total") or 0) > TORCH_CARREGADO:
-            return f"a ComfyUI {nome} está com um modelo carregado na placa"
-    ace_d = (ace or {}).get("data") if isinstance(ace, dict) else None
-    if isinstance(ace_d, dict) and (ace_d.get("models_initialized") or ace_d.get("llm_initialized")):
-        return "o ACE-Step está com o modelo carregado na placa"
+    if q_v and (q_v.get("queue_running") or q_v.get("queue_pending")):
+        return "a ComfyUI está gerando"
+    dev = ((st_v or {}).get("devices") or [{}])[0]
+    if (dev.get("torch_vram_total") or 0) > TORCH_CARREGADO:
+        return "a ComfyUI está com um modelo carregado na placa"
     _, livre = await texto.vram_mib()
     precisa = texto.MODELOS[papel]["vram_mib"]
     if livre is not None and livre < precisa:
@@ -3915,7 +3966,8 @@ async def placa_ocupada_para_texto(papel):
     return None
 
 
-ORIGENS_TEXTO = {"http://127.0.0.1:8190", "http://localhost:8190"}
+# as duas formas do endereco do painel de musica (o navegador trata 127.0.0.1 e localhost como origens diferentes)
+ORIGENS_TEXTO = {MUSICA, MUSICA.replace("//127.0.0.1", "//localhost"), MUSICA.replace("//localhost", "//127.0.0.1")}
 
 
 async def api_texto(req):
@@ -3956,10 +4008,21 @@ async def api_texto_opcoes(req):
 
 
 async def api_musica_ligar(req):
-    """Botão "Ligar música" (aba Música): liga o painel (sem ligar em dobro) e espera até 40 s por ele. O painel liga
-    a ComfyUI de música e o ACE-Step ao abrir; o que continuar desligado, o estúdio liga depois."""
+    """Botão "Ligar música" (aba Música): liga o painel (sem ligar em dobro) e espera até 40 s por ele. Também manda
+    ligar a ComfyUI, se estiver desligada: a música gera nela (a mesma da imagem e do vídeo). A ComfyUI leva 1 a 2
+    min e NÃO é esperada aqui: o painel abre logo e a primeira música aguarda na fila dele até ela responder.
+
+    Responde {"musica": painel no ar?, "comfy": "ligada"|"ligando"|"desligada", "erro"?, "erro_comfy"?,
+              "estado": estado_musica()} - com o que falta (motor, modelo) para a tela explicar."""
+    em = estado_musica()
+    if not TEM_MUSICA:
+        return web.json_response({"musica": False, "comfy": "desligada", "estado": em,
+                                  "erro": "O painel de música não está nesta instalação (falta a pasta painel_musica)."})
+    comfy_ligada = await online(COMFY + "/system_stats")
+    if not comfy_ligada and em["motor_instalado"]:
+        pedir_ligar("video")  # com o motor instalado; sem ele o erro certo é "instale o motor" (vai em "estado")
     if not await online(MUSICA):
-        pedir_ligar("painel_musica")  # só o painel: ele liga a ComfyUI de música e o ACE-Step quando precisa
+        pedir_ligar("painel_musica")
         for _ in range(40):
             if await online(MUSICA):
                 break
@@ -3967,9 +4030,13 @@ async def api_musica_ligar(req):
                 break
             await asyncio.sleep(1)
     ok = await online(MUSICA)
-    resp = {"musica": ok}
+    resp = {"musica": ok, "estado": em,
+            "comfy": "ligada" if comfy_ligada or await online(COMFY + "/system_stats")
+                     else "ligando" if "video" in LIGANDO else "desligada"}
     if not ok and "painel_musica" in ERRO_SERVICO:
         resp["erro"] = ERRO_SERVICO["painel_musica"]["msg"]
+    if "video" in ERRO_SERVICO:
+        resp["erro_comfy"] = ERRO_SERVICO["video"]["msg"]
     return web.json_response(resp)
 
 
@@ -3981,7 +4048,7 @@ async def estatico(req):
     return web.FileResponse(arq, headers={"Cache-Control": "no-cache"})
 
 
-ORIGENS_PAINEL = {"http://127.0.0.1:8190", "http://localhost:8190"}
+ORIGENS_PAINEL = set(ORIGENS_TEXTO)
 
 # ===================================================================== CONTA E LICENCA
 
@@ -4133,6 +4200,13 @@ async def api_ias_destino(req):
     if antiga != ias.MODELOS and antiga.is_dir() and any(antiga.rglob("*.safetensors")):
         recado = (f"As IAs que você já baixou continuam em {antiga}. Elas não foram movidas: "
                   "o painel passa a procurar e a baixar no lugar novo.")
+    # A ComfyUI mudou de lugar: o nó da música vai para a custom_nodes do lugar novo (se já houver motor lá).
+    await asyncio.to_thread(copiar_nos_do_pacote, "troca do disco das IAs")
+    # O painel de música recebe a pasta da ComfyUI quando LIGA: ligado, ele continua olhando a pasta antiga.
+    if antiga != ias.MODELOS and TEM_MUSICA and await online(MUSICA):
+        aviso_musica = ("O painel de música ainda está usando a pasta antiga: desligue e ligue o painel de música "
+                        "no Início para ele passar a usar o disco novo.")
+        recado = f"{recado} {aviso_musica}" if recado else aviso_musica
     return web.json_response(_estado_do_destino(recado))
 
 
@@ -4868,6 +4942,17 @@ def _quem_mandou(extra):
             "detalhe": ("cliente " + str(cliente)[:12]) if cliente else ""}
 
 
+def _e_do_painel_de_musica(extra):
+    """Este trabalho da fila da ComfyUI foi mandado pelo painel de musica?
+
+    14/11/2026: a musica passou a gerar na MESMA ComfyUI. Sem este filtro cada musica aparecia
+    DUAS vezes na aba Fila e no "Ja gerado": uma vinda da ComfyUI ("de fora do painel") e outra
+    vinda do painel de musica, que e quem sabe o titulo e a IA. Fica so a do painel. O painel
+    carimba o clientId dele em tudo o que manda (painel_musica/server.py, CLIENTE).
+    """
+    return str((extra or {}).get("client_id") or "").startswith("painel-musica")
+
+
 def _o_que_e(prompt):
     """O que este trabalho parece estar gerando, lido do proprio grafo.
 
@@ -5022,6 +5107,8 @@ async def _absorver_historico():
         linha = it.get("prompt") or []
         grafo = linha[2] if len(linha) > 2 else {}
         extra = linha[3] if len(linha) > 3 else {}
+        if _e_do_painel_de_musica(extra):
+            continue            # a musica entra logo abaixo, pelo painel (com titulo e IA)
         quem = _quem_mandou(extra)
         oque = _o_que_e(grafo)
         arquivos = []
@@ -5116,9 +5203,9 @@ async def api_fila_historico_limpar(req):
 async def api_fila(req):
     """TUDO que esta sendo gerado agora nesta maquina, venha de onde vier.
 
-    Tres fontes, porque sao tres motores diferentes e cada um tem a sua fila:
+    Tres fontes, porque cada uma tem a sua fila:
       ComfyUI (imagem/video)  - inclusive o que o Claude, o GPT ou o Hermes mandaram
-      o painel de musica      - fila propria, outra ComfyUI
+      o painel de musica      - fila propria (espera a vez) e depois a MESMA ComfyUI
       a narracao              - o VoiceStudio nao tem fila: ou esta gerando, ou nao
     """
     itens = []
@@ -5143,6 +5230,8 @@ async def api_fila(req):
                 numero, pid, prompt, extra = linha[0], linha[1], linha[2], (linha[3] if len(linha) > 3 else {})
             except Exception:
                 continue
+            if _e_do_painel_de_musica(extra):
+                continue        # aparece no bloco da musica, logo abaixo
             quem = _quem_mandou(extra)
             oque = _o_que_e(prompt)
             meu = meus.get(pid)
@@ -5377,6 +5466,7 @@ async def api_canal_fila(req):
 
 async def ciclo(app):
     tarefas = [asyncio.create_task(ouvir_comfy()), asyncio.create_task(vigia()),
+               asyncio.create_task(nos_ao_iniciar()),  # o nó da música na custom_nodes da ComfyUI
                asyncio.create_task(reparar_ao_iniciar()), asyncio.create_task(TEXTO.vigiar()),
                asyncio.create_task(ligar_texto_ao_iniciar()),
                asyncio.create_task(renovar_licenca_de_vez_em_quando())]  # "sempre ligada": ~20 s depois, em segundo plano

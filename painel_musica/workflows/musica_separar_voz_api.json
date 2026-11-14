@@ -1,0 +1,62 @@
+{
+ "1": {
+  "inputs": {
+   "audio": "melbandroformer_input.mp3"
+  },
+  "class_type": "LoadAudio",
+  "_meta": {
+   "title": "Load Audio"
+  }
+ },
+ "2": {
+  "inputs": {},
+  "class_type": "MelBandRoFormerModelLoader",
+  "_meta": {
+   "title": "MelBand Model Loader"
+  }
+ },
+ "3": {
+  "inputs": {
+   "model": [
+    "2",
+    0
+   ],
+   "audio": [
+    "1",
+    0
+   ]
+  },
+  "class_type": "MelBandRoFormerSampler",
+  "_meta": {
+   "title": "MelBand Separator"
+  }
+ },
+ "4": {
+  "inputs": {
+   "filename_prefix": "vocals",
+   "quality": "128k",
+   "audio": [
+    "3",
+    0
+   ]
+  },
+  "class_type": "SaveAudioMP3",
+  "_meta": {
+   "title": "Save Vocals"
+  }
+ },
+ "5": {
+  "inputs": {
+   "filename_prefix": "instruments",
+   "quality": "128k",
+   "audio": [
+    "3",
+    1
+   ]
+  },
+  "class_type": "SaveAudioMP3",
+  "_meta": {
+   "title": "Save Instruments"
+  }
+ }
+}
