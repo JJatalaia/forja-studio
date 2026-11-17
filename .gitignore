@@ -1,0 +1,84 @@
+# ATENCAO: comentario NUNCA na mesma linha do padrao.
+# O git nao reconhece '#' no meio da linha: ele le a linha INTEIRA como
+# padrao, e um padrao com espacos e '#' nao casa com nada. Nove regras daqui
+# - inclusive API/ e **/segredos/ - ficaram sem valer nenhum por causa disso,
+# e sem dar nenhum aviso. Achado por lbrsilva no PR #1, conferido com
+# 'git check-ignore -v'.
+# --- o que NUNCA pode subir ---
+# as chaves (elevenlabs, civitai, huggingface, higgsfield, ...)
+API/
+*.key
+*_api_key.txt
+.env
+# o servidor de contas NAO faz parte do pacote
+contas/
+# chave privada da licenca, senha do admin, chave do cofre
+**/segredos/
+# abre o cofre dos presets: mora so no seu PC e na VPS
+chave_presets.json
+# a chave que entra na sua VPS
+chave_vps*
+
+# --- dados de quem usa ---
+# pastas e ajustes da maquina de quem usa
+estudio/config.json
+estudio/historico.json
+# a licenca E o token de quem usa
+estudio/licenca.json
+# a chave do cofre guardada nesta maquina (DPAPI)
+estudio/chave_presets.bin
+# que versao de config esta nesta maquina
+estudio/versao_config.json
+estudio/*.bak_antes_da_atualizacao
+estudio/vozes/
+estudio/vozes.json
+# musica (14/11/2026): a lista de musicas de quem usa (jobs.json), os envios (uploads.json)
+# e as copias convertidas para baixar. O estudio manda o painel guardar tudo aqui
+# (PAINEL_DADOS = <dados do estudio>/musica), FORA da pasta do codigo do painel.
+estudio/musica/
+# Rede de seguranca: se o painel for rodado a mao com PAINEL_DADOS apontando para a pasta
+# dele, ou se alguem copiar o painel antigo por cima, os dados pessoais nao sobem.
+painel_musica/jobs.json
+painel_musica/jobs.json.*
+painel_musica/jobs.tmp
+painel_musica/uploads.json
+painel_musica/baixar_convertido/
+painel_musica/_cache/
+outputs/
+saidas/
+
+# --- modelos: 388 GB, baixados pelo instalador ---
+ComfyUI_windows_portable/
+modelos_texto/*.gguf
+*.safetensors
+*.ckpt
+*.gguf
+*.pth
+*.onnx
+
+# --- lixo ---
+*.bak*
+__pycache__/
+*.pyc
+
+# arquivos temporarios de quem mantem o projeto
+_msg.txt
+
+# Lixo de execucao do abrir.py (12/11/2026). Nascem quando o estudio nao consegue
+# abrir, para a pessoa poder LER o motivo - antes disso o erro ia para DEVNULL.
+# Comentario na linha de cima, nunca na mesma linha do padrao: o git le a linha
+# inteira como padrao e a regra nao vale (ver o cabecalho deste arquivo).
+estudio/nao_abriu.txt
+estudio/servidor_saida.txt
+estudio/web/nao_abriu.html
+
+# A marca de que o estudio ja tentou por o icone na Area de Trabalho (12/11/2026).
+# E de cada maquina, nao do projeto.
+estudio/icone_feito.json
+
+# --- a atualizacao automatica do painel ---
+# o que a ultima atualizacao trouxe, o registro dela e as copias guardadas
+estudio/arquivos_do_pacote.json
+estudio/atualizacao_codigo.log
+_atualizacao/
+*.atualizando

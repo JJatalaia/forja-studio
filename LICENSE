@@ -1,0 +1,179 @@
+LICENÇA DE USO DO JERS · FORJA STUDIO
+
+Copyright (C) 2026 Jerffeson. Todos os direitos reservados.
+
+Este programa é de uso GRATUITO e o código fica à vista, mas NÃO é software livre:
+ele não pode ser redistribuído nem revendido. Leia os três pontos abaixo; o resto
+do texto é o detalhe deles.
+
+  1. Você pode BAIXAR, INSTALAR e USAR, de graça, inclusive para ganhar dinheiro
+     com o que produzir aqui.
+  2. Você PRECISA criar uma conta gratuita para usar. É condição de uso, não
+     detalhe técnico.
+  3. Você NÃO pode redistribuir, republicar, revender, nem usar a configuração
+     deste programa em outro lugar.
+
+  É PROIBIDO VENDER. O Forja Studio é gratuito e tem que continuar gratuito para
+  quem o recebe. Ninguém pode cobrar por ele — nem pelo programa, nem pelo
+  instalador, nem por conta, licença ou acesso. Se alguém cobrou de você por ele,
+  você foi enganado: na origem ele é de graça. O detalhe está no item 2(b).
+
+
+--------------------------------------------------------------------------------
+1. O QUE VOCÊ PODE FAZER
+--------------------------------------------------------------------------------
+
+a) Baixar e instalar o Forja Studio nos seus próprios computadores, respeitando o
+   número de máquinas do seu plano.
+
+b) Usar o programa à vontade, para fins pessoais OU comerciais.
+
+c) FICAR COM TUDO O QUE VOCÊ PRODUZIR. As imagens, vídeos, áudios e textos que
+   saírem daqui são SEUS. O autor deste programa não reivindica nada sobre eles,
+   não cobra participação e não precisa ser citado. Venda, publique, monetize:
+   é o seu trabalho.
+
+d) Criar, usar e distribuir as SUAS próprias configurações e workflows. O que é
+   seu é seu.
+
+e) Ler o código. Ele está à vista de propósito: para você saber o que roda na sua
+   máquina e ter certeza de que nada aqui espiona você.
+
+f) Modificar a sua cópia instalada, para o seu uso pessoal — desde que não
+   redistribua o resultado e não burle o item 2(d).
+
+
+--------------------------------------------------------------------------------
+2. O QUE VOCÊ NÃO PODE FAZER
+--------------------------------------------------------------------------------
+
+a) REDISTRIBUIR. Não republique, não espelhe, não hospede cópias, não inclua em
+   outro pacote, não compartilhe o instalador. Quem quiser o programa pega na
+   origem.
+
+b) VENDER. A VENDA É EXPRESSAMENTE PROIBIDA. Este programa é gratuito, e ninguém
+   além do autor pode cobrar por ele, sob nenhuma forma. Em especial, é proibido:
+
+     - vender, alugar, licenciar ou sublicenciar o programa, inteiro ou em parte,
+       modificado ou não;
+     - cobrar pelo instalador, pelo download, por uma cópia ou por um link para
+       ele;
+     - vender, alugar ou ceder em troca de pagamento contas, licenças, chaves ou
+       qualquer forma de acesso ao programa;
+     - vender a configuração do Forja (presets, workflows, parâmetros), junta ou
+       separada do programa;
+     - incluir o programa em produto, curso, pacote, assinatura ou serviço pago,
+       ou oferecê-lo como brinde ou bônus de algo pago;
+     - cobrar para "liberar", "ativar" ou "desbloquear" o que o programa já
+       entrega de graça.
+
+   O que NÃO é venda do programa: vender o que você PRODUZIU com ele (item 1(c)),
+   e cobrar pelo seu próprio trabalho — por exemplo, um técnico que instala para
+   um cliente —, desde que o cliente baixe da origem, use a conta dele e saiba
+   que o programa é gratuito.
+
+c) FAZER OBRA DERIVADA PARA DISTRIBUIR. Modificar para uso próprio pode (1(f));
+   distribuir a versão modificada, não.
+
+d) BURLAR A CONTA. Não remova, desative, contorne nem ajude a contornar o
+   cadastro, o login, a licença, a verificação de assinatura ou qualquer parte do
+   sistema de contas. Não compartilhe credenciais para esse fim.
+
+e) EXTRAIR A CONFIGURAÇÃO. A configuração do Forja — os presets, os workflows, os
+   parâmetros de cada IA — viaja criptografada e é o coração deste trabalho. Não
+   descriptografe fora do uso normal do programa, não extraia, não publique e não
+   use essa configuração em outro programa, seu ou de terceiros.
+
+f) TIRAR OS AVISOS. Não remova nem altere avisos de autoria, de copyright ou esta
+   licença.
+
+
+--------------------------------------------------------------------------------
+3. PROGRAMAS E MODELOS DE TERCEIROS
+--------------------------------------------------------------------------------
+
+Esta licença cobre SOMENTE o código deste repositório.
+
+Os programas com que o Forja conversa (ComfyUI, VoiceStudio, llama.cpp e outros) e
+os modelos de IA que você baixa têm CADA UM a sua própria licença, e são elas que
+valem para eles. Algumas proíbem uso comercial. O arquivo NOTICE lista quais são, e
+o painel mostra a licença do motor de voz que estiver ligado.
+
+É sua a responsabilidade de conferir a licença do modelo antes de monetizar o que
+produzir com ele.
+
+
+--------------------------------------------------------------------------------
+4. SEM GARANTIA
+--------------------------------------------------------------------------------
+
+ESTE PROGRAMA É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE ESPÉCIE ALGUMA, EXPRESSA OU
+IMPLÍCITA, INCLUINDO MAS NÃO SE LIMITANDO A GARANTIAS DE COMERCIALIZAÇÃO, ADEQUAÇÃO
+A UM FIM ESPECÍFICO E NÃO VIOLAÇÃO.
+
+O AUTOR NÃO RESPONDE POR QUALQUER DANO — DIRETO, INDIRETO, INCIDENTAL, ESPECIAL OU
+CONSEQUENTE — DECORRENTE DO USO OU DA IMPOSSIBILIDADE DE USO DESTE PROGRAMA,
+INCLUINDO PERDA DE DADOS, PERDA DE LUCROS E INTERRUPÇÃO DE TRABALHO.
+
+Você usa por sua conta e risco, na sua máquina.
+
+
+--------------------------------------------------------------------------------
+5. SE VOCÊ DESCUMPRIR
+--------------------------------------------------------------------------------
+
+O direito de usar acaba automaticamente se você violar qualquer item da seção 2, e
+a conta pode ser encerrada. Os itens 2(a), 2(b), 2(c) e 2(e) continuam valendo
+depois disso.
+
+
+--------------------------------------------------------------------------------
+6. QUER FAZER ALGO QUE A LICENÇA NÃO PERMITE?
+--------------------------------------------------------------------------------
+
+Pergunte. Permissão por escrito do autor pode liberar os itens da seção 2:
+distribuição, uso em sala de aula, integração em outro produto — isso é conversável.
+Para esses, o "não" acima quer dizer "não sem combinar", e não "nunca".
+
+A exceção é a VENDA (item 2(b)): o programa é gratuito e não existe licença de
+revenda.
+
+
+--------------------------------------------------------------------------------
+7. LEI E VERSÕES ANTERIORES
+--------------------------------------------------------------------------------
+
+Esta licença é regida pelas leis do Brasil, em especial a Lei 9.609/98 (programa de
+computador) e a Lei 9.610/98 (direitos autorais).
+
+VERSÕES ANTERIORES: até 11 de novembro de 2026, este projeto foi distribuído sob a
+Apache License 2.0. Quem recebeu uma cópia naquele período continua com os direitos
+que aquela licença deu, sobre aquela cópia. Esta licença vale para esta versão e
+para as seguintes.
+
+
+--------------------------------------------------------------------------------
+IN ENGLISH (SHORT)
+--------------------------------------------------------------------------------
+
+JerS · Forja Studio - Copyright (C) 2026 Jerffeson. All rights reserved.
+
+Free to download, install and use, including commercially. A free account is
+required. Everything you create with it is yours, with no claim from the author.
+
+You may NOT redistribute, mirror, resell, sublicense, distribute modified versions,
+circumvent the account/licensing system, or extract and reuse the program's
+encrypted configuration (presets and workflows).
+
+SELLING IS EXPRESSLY FORBIDDEN. The program is free and must stay free: nobody but
+the author may charge for it in any form - not for the program, the installer, a
+copy, an account, a license or access to it, nor bundle it into a paid product,
+course or service. What you create with it is yours to sell.
+
+Third-party programs and AI models keep their own licenses - see NOTICE.
+
+Provided "as is", without warranty of any kind. Governed by the laws of Brazil.
+Want to do something this license forbids? Ask - written permission is available.
+
+Versions distributed before 11 November 2026 were released under the Apache License
+2.0 and remain so for those copies.

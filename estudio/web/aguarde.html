@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forja Studio</title>
+<!--
+  A tela que a pessoa ve no primeiro segundo depois de clicar no icone.
+
+  Ela e um arquivo HTML comum, aberto DO DISCO: funciona com o computador recem
+  ligado e TUDO desligado, sem servidor nenhum atras. Por isso nao tem fonte da
+  internet, nem biblioteca, nem imagem de fora - se tivesse, apareceria quebrada
+  justo na hora em que nada esta no ar.
+
+  Ela NAO liga nada: um .html aberto do disco nao consegue, e o navegador esta
+  certo em proibir. Quem liga e o abrir.py, que o icone chama. Esta tela so bate
+  na porta do estudio de meio em meio segundo e ENTRA sozinha quando ele atende.
+-->
+<style>
+  :root{
+    --fundo:#0b0d12; --painel:#161a23; --borda:#262c3a; --borda-forte:#333a4b;
+    --texto:#e8ebf2; --fraco:#9aa3b5; --brasa:#ff8a3d; --acento:#d7ff3a;
+    --erro:#f87171;
+    --fonte:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    --fonte-titulo:"Bahnschrift","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--fundo); color:var(--texto); font-family:var(--fonte);
+    display:grid; place-items:center; padding:24px;
+    /* o brilho da brasa, so com gradiente: nenhuma imagem para nao depender de arquivo */
+    background-image:
+      radial-gradient(900px 420px at 50% 118%, rgba(255,138,61,.16), transparent 70%),
+      radial-gradient(600px 300px at 50% -10%, rgba(215,255,58,.05), transparent 70%);
+  }
+  .caixa{width:100%; max-width:460px; text-align:center}
+
+  /* a bigorna com a brasa: SVG desenhado aqui dentro, nada de arquivo externo */
+  .marca{width:88px; height:88px; margin:0 auto 22px; display:block}
+  .brasa-luz{transform-origin:50% 62%; animation:pulsar 2.4s ease-in-out infinite}
+  @keyframes pulsar{0%,100%{opacity:.55; transform:scale(.94)} 50%{opacity:1; transform:scale(1.06)}}
+
+  h1{
+    font-family:var(--fonte-titulo); font-size:30px; font-weight:600; margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  h1 .jers{color:var(--brasa)}
+  .sub{color:var(--fraco); font-size:14px; margin:0 0 30px}
+
+  .estado{
+    background:var(--painel); border:1px solid var(--borda); border-radius:14px;
+    padding:18px 20px; text-align:left; display:flex; gap:14px; align-items:center;
+  }
+  .giro{
+    width:20px; height:20px; flex:none; border-radius:50%;
+    border:2px solid var(--borda-forte); border-top-color:var(--brasa);
+    animation:girar .9s linear infinite;
+  }
+  @keyframes girar{to{transform:rotate(360deg)}}
+  .estado b{display:block; font-size:15px; font-weight:600; margin-bottom:2px}
+  .estado span{display:block; color:var(--fraco); font-size:13px; line-height:1.45}
+
+  .barra{height:3px; background:var(--borda); border-radius:99px; overflow:hidden; margin-top:18px}
+  .barra i{display:block; height:100%; width:30%; background:var(--brasa); border-radius:99px;
+           animation:correr 1.5s ease-in-out infinite}
+  @keyframes correr{0%{margin-left:-30%}100%{margin-left:100%}}
+
+  .nota{color:var(--fraco); font-size:12.5px; line-height:1.6; margin-top:26px}
+  .nota b{color:var(--texto); font-weight:600}
+
+  .demora{display:none; margin-top:18px; text-align:left;
+          background:var(--painel); border:1px solid var(--borda); border-left:3px solid var(--brasa);
+          border-radius:12px; padding:16px 18px; font-size:13px; line-height:1.6; color:var(--fraco)}
+  .demora b{color:var(--texto)}
+  .demora code{background:#0b0d12; border:1px solid var(--borda); border-radius:6px;
+               padding:1px 6px; font-size:12px; color:var(--acento)}
+  .demora a{color:var(--brasa)}
+  body.devagar .demora{display:block}
+  body.devagar .giro{border-top-color:var(--erro); animation-duration:2s}
+
+  @media (prefers-reduced-motion: reduce){
+    .giro,.barra i,.brasa-luz{animation:none}
+    .barra i{width:100%}
+  }
+</style>
+</head>
+<body>
+  <main class="caixa">
+    <svg class="marca" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <!-- bigorna -->
+      <path d="M10 30h26l6 6h10l-5 8H22l-4-8h-8z" fill="#1d2230" stroke="#333a4b" stroke-width="1.5"
+            stroke-linejoin="round"/>
+      <path d="M24 44h16l3 9H21z" fill="#161a23" stroke="#333a4b" stroke-width="1.5" stroke-linejoin="round"/>
+      <rect x="15" y="53" width="28" height="4" rx="2" fill="#1d2230" stroke="#333a4b" stroke-width="1.5"/>
+      <!-- a brasa -->
+      <g class="brasa-luz">
+        <path d="M32 6c3 6-1 8 1 11 1.6 2.4 5-.4 5-.4s2.6 4.2 1.4 8.2C38 29.4 34.6 31 31.4 31
+                 27.2 31 24 28 24 23.6 24 17 32 15 32 6z" fill="#ff8a3d"/>
+        <path d="M31.6 16c1.4 3.2-.6 4.4.6 6 .9 1.3 2.6-.2 2.6-.2s1.4 2.3.8 4.5c-.6 2-2.4 2.9-4.2 2.9
+                 -2.2 0-4-1.6-4-4 0-3.6 4.2-4.6 4.2-9.2z" fill="#ffd089"/>
+      </g>
+    </svg>
+
+    <h1><span class="jers">JerS</span> · Forja Studio</h1>
+    <p class="sub">Seu estúdio de criação, rodando na sua máquina</p>
+
+    <div class="estado">
+      <div class="giro"></div>
+      <div>
+        <b id="titulo">Abrindo o estúdio</b>
+        <span id="recado">Um instante. A página entra sozinha quando ficar pronta.</span>
+      </div>
+    </div>
+    <div class="barra"><i></i></div>
+
+    <p class="nota">
+      Isto abre <b>só a página</b> — cerca de 44 MB e <b>sem acender a placa de vídeo</b>.<br>
+      As IAs de imagem, vídeo e música você liga e desliga pelos botões lá dentro,
+      uma de cada vez, do jeito que o seu computador aguentar.
+    </p>
+
+    <div class="demora" id="demora">
+      <b>Está demorando mais que o normal.</b><br>
+      Na primeira vez depois de ligar o computador isso acontece — o Windows ainda está
+      acordando o disco. Se passar de um minuto:
+      <br><br>
+      • deixe esta aba aberta, ela entra sozinha assim que o estúdio responder;<br>
+      • ou abra <a id="link" href="http://127.0.0.1:8194">http://127.0.0.1:8194</a> você mesmo;<br>
+      • se nem assim, rode <code>setup.py</code> de novo: ele confere a instalação e diz o que falta.
+    </div>
+  </main>
+
+<script>
+(function () {
+  // A porta pode vir no proprio endereco (abrir.py manda ?porta=8194). Sem isso, 8194.
+  var porta = 8194;
+  try {
+    var p = new URLSearchParams(location.search).get('porta');
+    if (p && /^\d{2,5}$/.test(p)) porta = parseInt(p, 10);
+  } catch (e) { /* navegador muito velho: segue com 8194 */ }
+
+  var ENDERECO = 'http://127.0.0.1:' + porta + '/';
+  document.getElementById('link').href = ENDERECO;
+  document.getElementById('link').textContent = ENDERECO;
+
+  var inicio = Date.now();
+  var entrando = false;
+
+  function entrar() {
+    if (entrando) return;
+    entrando = true;
+    document.getElementById('titulo').textContent = 'Pronto';
+    document.getElementById('recado').textContent = 'Entrando...';
+    // replace e nao href: assim o "voltar" do navegador nao traz a pessoa de volta
+    // para esta tela de espera depois que o estudio ja abriu.
+    location.replace(ENDERECO);
+  }
+
+  function bater() {
+    if (entrando) return;
+
+    // 'no-cors' de proposito: a resposta vem opaca (nao da para LER nada dela), mas a
+    // promessa so cumpre se alguem atendeu. E tudo o que a gente precisa saber aqui, e
+    // evita exigir cabecalho de CORS do estudio so por causa desta tela.
+    // cache 'no-store' para o navegador nao responder com uma resposta velha guardada.
+    fetch(ENDERECO + 'api/ocupado', { mode: 'no-cors', cache: 'no-store' })
+      .then(entrar)
+      .catch(function () {
+        if (Date.now() - inicio > 20000) document.body.classList.add('devagar');
+        setTimeout(bater, 500);
+      });
+  }
+
+  bater();
+})();
+</script>
+</body>
+</html>

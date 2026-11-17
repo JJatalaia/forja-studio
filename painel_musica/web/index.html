@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Música · Forja Studio</title>
+<link rel="stylesheet" href="/estilo.css?v=20261114q">
+<script>if (/[?&]embed=1/.test(location.search) || window.top !== window.self) document.documentElement.classList.add('embed');</script>
+</head>
+<body>
+<header class="topo">
+  <div class="marca"><span class="marca-ic" data-ic="musica"></span><span class="marca-txt">Forja Studio · <b>Música</b></span></div>
+  <div class="sistema" id="sistema" title="Uso total do computador, incluindo outros programas"></div>
+  <span class="conexao" id="conexao">Conectando…</span>
+</header>
+<p class="aviso-teste" id="avisoReinicio" hidden>O painel de música foi atualizado, mas ainda está rodando a versão antiga. A letra com IA e a música de referência aparecem depois que o painel for reiniciado (feche e abra o Forja Studio com nada gerando).</p>
+<p class="aviso-teste" id="avisoTeste" hidden>Modo de teste: esta cópia do painel não gera música, não envia áudio e não apaga nada do HD (o "Apagar" só simula).</p>
+
+<main class="musica">
+  <aside class="painel" aria-label="Criar música">
+    <form id="form" novalidate>
+      <div class="bloco">
+        <div class="passo"><i>1</i> O que você quer fazer</div>
+        <div class="chips" role="group" aria-label="Tipo de criação">
+          <button type="button" id="modoCriar" aria-pressed="true">Criar música</button>
+          <button type="button" id="modoCover" aria-pressed="false">Fazer cover</button>
+        </div>
+        <p class="nota" id="modoNota">Cria uma música nova a partir do estilo e da letra.</p>
+        <a class="bt-sec pular-bib" href="#biblioteca" id="pularBib">Ver suas músicas ↓</a>
+      </div>
+
+      <div class="bloco">
+        <div class="passo"><i>2</i> Qual IA vai gerar <small>· toque em "Saiba mais"</small></div>
+        <div class="lista-ia" id="motores" role="radiogroup" aria-label="IA de música"><p class="nota">Carregando as IAs…</p></div>
+      </div>
+
+      <div class="bloco" id="blocoReferencia" hidden>
+        <div class="passo"><i>3</i> Áudio de referência</div>
+        <label class="upload" id="upReferencia"><span data-ic="enviar"></span><span>Escolher o áudio original (WAV, MP3, FLAC… até 100 MB)</span>
+          <input id="arquivo" type="file" accept="audio/*"></label>
+        <div class="arquivo-ref" id="nomeReferencia">Nenhum áudio escolhido</div>
+        <canvas class="onda" id="onda" aria-label="Forma de onda do áudio de referência"></canvas>
+        <audio id="playerReferencia" controls preload="metadata" hidden></audio>
+        <div id="linhaOrientacao">
+          <label class="rotulo" for="orientacao">Seguir da referência</label>
+          <select id="orientacao"><option value="melody">Só a melodia (padrão)</option><option value="full">Melodia e acordes</option></select>
+        </div>
+        <div class="duas" id="linhaTrecho">
+          <div><label class="rotulo" for="trecho">Usar da referência</label>
+            <select id="trecho"><option value="full">Música inteira</option><option value="20">20 segundos</option><option value="30">30 segundos</option><option value="60">1 minuto</option><option value="120">2 minutos</option></select></div>
+          <div><label class="rotulo" for="inicio">Começar em (segundos)</label><input id="inicio" type="number" min="0" max="7200" value="0" disabled></div>
+        </div>
+        <div id="linhaInfluencia">
+          <label class="rotulo" for="influencia">Influência do áudio original <output id="influenciaValor">50%</output></label>
+          <input id="influencia" type="range" min="0" max="1" step="0.05" value="0.5">
+          <p class="nota">Quanto a nova versão se prende ao áudio enviado. Não é porcentagem de notas copiadas.</p>
+        </div>
+        <div id="linhaFidelidade" hidden>
+          <label class="rotulo" for="fidelidade">Fidelidade ao original <output id="fidelidadeValor">3</output></label>
+          <input id="fidelidade" type="range" min="1" max="5" step="0.5" value="3">
+          <p class="nota">1 = mais livre (só lembra o original); 5 = segue o original de perto. A Treblo usa os primeiros 90 segundos do áudio.
+            O áudio vai para a nuvem da Treblo: use só músicas suas ou livres.</p>
+        </div>
+      </div>
+
+      <div class="bloco">
+        <div class="passo"><i id="passoEstilo">3</i> Estilo e letra</div>
+        <div class="duas">
+          <div><label class="rotulo" for="genero" id="rotuloGenero">Estilo musical</label><select id="genero"></select></div>
+          <div><label class="rotulo" for="voz">Voz</label>
+            <select id="voz"><option value="male">Masculina</option><option value="female">Feminina</option><option value="instrumental">Instrumental (sem voz)</option></select></div>
+        </div>
+        <p class="nota aviso-voz" id="notaVoz" hidden></p>
+        <div>
+          <label class="rotulo" for="estilo">Descrição do estilo <span class="rotulo-dica">a IA entende melhor em inglês</span></label>
+          <textarea id="estilo" rows="5" placeholder="Ex.: pop rock, guitarras, bateria forte, 120 BPM, voz masculina"></textarea>
+          <div class="sug-estilo" id="sugEstilo" hidden></div>
+        </div>
+        <div class="ia-texto novo-etapa1">
+          <button type="button" class="bt-ia" id="melhorarEstilo" title="A IA de texto do estúdio reescreve a descrição do jeito que a IA de música escolhida entende melhor">✨ Melhorar descrição do estilo</button>
+          <div class="ia-barra" id="barraEstilo" role="status" aria-live="polite" hidden></div>
+        </div>
+        <p class="resumo-estilo" id="resumoEstilo" aria-live="polite"></p>
+        <div id="blocoLetra">
+          <div class="rotulo-linha">
+            <label class="rotulo" for="letra">Letra</label>
+            <label class="idioma-letra novo-etapa1"><span class="fraco">Idioma</span>
+              <select id="idiomaLetra" aria-label="Idioma da letra"><option value="pt">Português</option><option value="en">Inglês</option><option value="es">Espanhol</option></select></label>
+          </div>
+          <p class="nota aviso" id="notaLetraTreblo" hidden>Sem letra, a Treblo escreve uma letra nova. Para manter a letra do original, escreva-a aqui.</p>
+          <div class="ia-texto novo-etapa1">
+            <button type="button" class="bt-ia" id="escreverLetra" title="A IA de texto do estúdio escreve uma letra a partir do tema, do estilo e do idioma">✍️ Escrever letra com IA</button>
+          </div>
+          <textarea id="letra" rows="7" placeholder="[Verso]&#10;Escreva a letra aqui…&#10;&#10;[Refrão]&#10;…"></textarea>
+          <div class="ia-barra" id="barraLetra" role="status" aria-live="polite" hidden></div>
+          <button type="button" class="link" id="limparLetra">Limpar letra</button>
+        </div>
+      </div>
+
+      <div class="bloco novo-etapa1" id="blocoRefEstilo">
+        <details class="ref-estilo" id="detRefEstilo">
+          <summary><span class="ref-titulo"><span data-ic="onda"></span> Música de referência</span>
+            <small>opcional · o estilo vem de um áudio, sem treinar</small><span class="tag ref-selo" id="refSelo" hidden>escolhida</span></summary>
+          <div class="ref-corpo" id="refEstiloConteudo">
+            <p class="aviso-direitos"><b>Use só músicas SUAS ou livres</b> (gravações suas ou músicas geradas aqui, como as do ACE-Step).
+              Não use músicas geradas no Suno (os termos do Suno proíbem usar como base para outra IA) nem músicas de outros artistas.</p>
+            <label class="upload" id="upRefEstilo"><span data-ic="enviar"></span><span>Escolher a música de referência (WAV, MP3, FLAC… até 100 MB)</span>
+              <input id="arquivoRefEstilo" type="file" accept="audio/*"></label>
+            <p class="nota">Ou toque em <b>Usar como referência</b> numa das suas músicas ao lado.</p>
+            <div class="ref-escolhida" id="refEscolhida" hidden>
+              <span class="arquivo-ref" id="nomeRefEstilo"></span>
+              <button type="button" class="link" id="tirarRefEstilo">Tirar a referência</button>
+            </div>
+            <audio id="playerRefEstilo" controls preload="metadata" hidden></audio>
+            <div class="duas">
+              <div><label class="rotulo" for="refInicio">Começar em (segundos)</label><input id="refInicio" type="number" min="0" max="7200" value="0"></div>
+              <div class="nota ref-trecho" id="notaRefTrecho">Usa da referência um trecho com a duração da música.</div>
+            </div>
+            <div>
+              <label class="rotulo" for="refForca">Força da referência <output id="refForcaValor">30%</output></label>
+              <input id="refForca" type="range" min="0.1" max="1" step="0.05" value="0.3">
+              <p class="nota">Baixa (20–40%): pega o clima, os instrumentos e o timbre, e a música segue o seu estilo e a sua letra.
+                Alta (70–100%): passa a copiar também a estrutura e a melodia da referência (fica perto de um cover).</p>
+            </div>
+            <p class="nota" id="notaRefMotor"></p>
+          </div>
+          <p class="nota aviso" id="refSemSuporte" hidden></p>
+        </details>
+      </div>
+
+      <div class="bloco">
+        <div class="duas">
+          <div id="linhaDuracao"><label class="rotulo" for="duracao" id="rotuloDuracao">Duração</label>
+            <select id="duracao"><option value="auto">Automática</option><option value="20">20 segundos</option><option value="30">30 segundos</option><option value="60">1 minuto</option><option value="120">2 minutos</option><option value="180">3 minutos</option><option value="240">4 minutos</option><option value="360">6 minutos</option></select></div>
+          <div id="linhaVariacao"><label class="rotulo" for="variacao">Variação</label>
+            <select id="variacao"><option value="new">Nova a cada geração</option><option value="fixed">Repetir a mesma</option></select></div>
+          <div id="linhaModelo" hidden><label class="rotulo" for="modeloMusicful">Modelo</label>
+            <select id="modeloMusicful"><option value="MFV3.0">MFV3.0 (o mais novo · padrão)</option><option value="MFV2.0">MFV2.0</option><option value="MFV1.5X">MFV1.5X</option></select></div>
+        </div>
+        <label class="checa" id="linhaPlanejamento"><input type="checkbox" id="planejamento" checked>
+          <span><span id="textoPlanejamento">Planejamento musical</span><small id="notaPlanejamento">Uma IA pequena pensa a estrutura da música antes de gerar.</small></span></label>
+        <label class="checa" id="linhaTirarVoz" hidden><input type="checkbox" id="tirarVoz" checked>
+          <span>Tirar qualquer voz no final <small>Depois de gerar, passa a música no separador de voz (MelBandRoFormer) e guarda só o instrumental. O original fica salvo. Deixa a geração um pouco mais demorada. <button type="button" class="link" data-ficha="separador">Saiba mais</button></small></span></label>
+        <label class="checa"><input type="checkbox" id="finalSuave" checked>
+          <span>Final suave (2 segundos) <small>Abaixa o volume nos 2 segundos finais. Não cria um final musical.</small></span></label>
+        <details class="avancado" id="avancado">
+          <summary>Ajustes avançados</summary>
+          <div class="opcoes">
+            <div class="duas" id="linhaAce">
+              <div id="linhaPassos"><label class="rotulo" for="passos">Passos de síntese</label><input id="passos" type="number" min="1" max="20" value="8"></div>
+              <div id="linhaBpm"><label class="rotulo" for="bpm">BPM (opcional)</label><input id="bpm" type="number" min="30" max="300" placeholder="Automático"></div>
+            </div>
+            <div id="linhaProximidade">
+              <label class="rotulo" for="proximidade">Proximidade sonora <output id="proximidadeValor">0%</output></label>
+              <input id="proximidade" type="range" min="0" max="1" step="0.05" value="0">
+              <p class="nota">Valor maior aproxima o resultado do áudio original, inclusive das vozes que estiverem nele.</p>
+            </div>
+            <div id="linhaCriatividade">
+              <label class="rotulo" for="criatividade">Criatividade <output id="criatividadeValor">60%</output></label>
+              <input id="criatividade" type="range" min="0.7" max="1.2" step="0.05" value="1">
+              <p class="nota">0% = temperatura 0,70; 100% = 1,20. Mais criatividade pode deixar menos fiel.</p>
+            </div>
+            <div id="linhaOrientacaoTexto">
+              <label class="rotulo" for="orientacaoTexto">Influência do estilo e da letra <output id="orientacaoTextoValor">0%</output></label>
+              <input id="orientacaoTexto" type="range" min="1" max="1.5" step="0.05" value="1">
+              <p class="nota">0% = CFG 1,00; 100% = 1,50. Orienta estilo e letra juntos; aumentar gasta mais memória.</p>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="bloco">
+        <div><label class="rotulo" for="titulo">Nome da música</label><input id="titulo" maxlength="120" placeholder="Minha música"></div>
+        <p class="erro-form" id="erro" role="alert" hidden></p>
+        <div class="acoes-form">
+          <button class="gerar" id="gerar" type="submit">Gerar música</button>
+          <p class="nota" id="notaGerar">Uma geração por vez na placa: se uma imagem ou um vídeo estiver gerando, a música espera na fila.</p>
+        </div>
+      </div>
+    </form>
+  </aside>
+
+  <section class="biblioteca" aria-label="Suas músicas" id="biblioteca">
+    <div class="bib-topo">
+      <h2>Suas músicas <span class="conta" id="conta">0</span></h2>
+      <span class="conexao" id="conexaoEmbed"></span>
+      <div class="bib-filtros">
+        <label class="busca"><span data-ic="buscar"></span><input id="busca" type="search" placeholder="Buscar por nome, estilo ou IA" aria-label="Buscar música"></label>
+        <!-- 02/11/2026: eram duas caixas de seleção. Viraram pílulas, iguais às das abas
+             Imagem e Vídeo do estúdio — e agora mostram a contagem de cada uma. -->
+        <div class="chips-filtro" id="filtroTipo" role="group" aria-label="Tipo de música">
+          <button type="button" class="todas" data-v="todas" aria-pressed="true">Todas</button>
+          <button type="button" data-v="favoritas">★ Favoritas</button>
+          <button type="button" data-v="voz">Com voz</button>
+          <button type="button" data-v="instrumental">Instrumentais</button>
+          <button type="button" data-v="cover">Covers</button>
+          <button type="button" data-v="erro">Com erro</button>
+        </div>
+        <div class="chips-filtro chips-ia" id="filtroIa" role="group" aria-label="IA que gerou"></div>
+      </div>
+    </div>
+    <div class="faixa-aviso" id="avisoLixeira" hidden></div>
+    <div class="grade-musicas" id="andamento" aria-live="polite"></div>
+    <div class="grade-musicas" id="lista"><p class="vazio">Carregando suas músicas…</p></div>
+  </section>
+</main>
+
+<section class="player" id="player" aria-label="Player" hidden>
+  <div class="player-info"><span class="selo" id="playerSelo"><span></span></span><b id="playerTitulo"></b></div>
+  <div class="player-bts">
+    <button type="button" class="ic-bt" id="anterior" title="Música anterior" aria-label="Música anterior" data-ic="anterior"></button>
+    <button type="button" class="ic-bt" id="proxima" title="Próxima música" aria-label="Próxima música" data-ic="proxima"></button>
+    <button type="button" class="ic-bt" id="aleatorio" title="Ordem aleatória" aria-label="Ordem aleatória" aria-pressed="false" data-ic="aleatorio"></button>
+    <button type="button" class="ic-bt" id="repetir" title="Repetir a lista" aria-label="Repetir a lista" aria-pressed="false" data-ic="repetir"></button>
+    <button type="button" class="ic-bt" id="fecharPlayer" title="Fechar o player" aria-label="Fechar o player" data-ic="fechar"></button>
+  </div>
+  <audio id="audio" controls preload="none"></audio>
+  <p class="player-status" id="playerStatus" role="status"></p>
+</section>
+
+<dialog class="janela larga" id="dlgFicha" aria-labelledby="fichaTitulo"></dialog>
+<dialog class="janela" id="dlgApagar" aria-labelledby="apagarTitulo"></dialog>
+<dialog class="janela larga" id="dlgDetalhe" aria-labelledby="detalheTitulo"></dialog>
+<dialog class="janela" id="dlgConfirmar" aria-labelledby="confirmarTitulo"></dialog>
+<dialog class="janela" id="dlgLetra" aria-labelledby="letraTitulo"></dialog>
+<dialog class="janela" id="dlgChave" aria-labelledby="chaveTitulo"></dialog>
+<dialog class="janela eq-janela" id="dlgEq" aria-labelledby="eqTitulo"></dialog>
+<div class="sentinela" id="sentinela" aria-hidden="true"></div>
+
+<!-- ?v= igual ao VERSAO_TELA do server.py: troque os dois juntos quando mudar a tela (o navegador não mistura versões) -->
+<script src="/generos.js?v=20261114q"></script>
+<script src="/exemplos_estilo.js?v=20261114q"></script>
+<script src="/sugestoes_estilo.js?v=20261114q"></script>
+<script src="/painel.js?v=20261114q"></script>
+</body>
+</html>
